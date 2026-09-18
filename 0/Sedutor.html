@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SK-Editor v4 — Estrutura Visual</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #141c0d;
+      color: #e0e0e0;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════ */
+    /* LAYOUT PRINCIPAL (2 colunas) */
+    /* ═══════════════════════════════════════════════════════════════ */
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    /* ─────────────────────────────────────────────────────────────── */
+    /* TOP BAR (navegação) */
+    /* ─────────────────────────────────────────────────────────────── */
+
+    .top-bar {
+      height: 44px;
+      background: #1c2714;
+      border-bottom: 1px solid rgba(107, 114, 91, 0.4);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 12px;
+      flex-shrink: 0;
+    }
+
+    .top-bar button {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: transparent;
+      color: #888;
+      cursor: pointer;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .top-bar button:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #bbb;
+    }
+
+    .top-bar .separator {
+      width: 1px;
+      height: 20px;
+      background: rgba(107, 114, 91, 0.3);
+      margin: 0 4px;
+    }
+
+    .top-bar .file-indicator {
+      flex: 1;
+      font-size: 12px;
+      color: #999;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ─────────────────────────────────────────────────────────────── */
+    /* TAB BAR (abas de arquivos) */
+    /* ─────────────────────────────────────────────────────────────── */
+
+    .tab-bar {
+      height: 36px;
+      background: #1c2714;
+      border-bottom: 1px solid rgba(107, 114, 91, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 0;
+      flex-shrink: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .tab-bar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tab {
+      height: 100%;
+      padding: 0 12px;
+      border-right: 1px solid rgba(107, 114, 91, 0.2);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 11px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: all 0.2s;
+      color: #888;
+    }
+
+    .tab:hover {
+      background: rgba(255, 255, 255, 0.03);
+      color: #aaa;
+    }
+
+    .tab.active {
+      background: #141c0d;
+      color: #ddd;
+      border-top: 2px solid #3b82f6;
+    }
+
+    .tab .close {
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0.6;
+      transition: opacity 0.2s;
+    }
+
+    .tab .close:hover {
+      opacity: 1;
+    }
+
+    /* ─────────────────────────────────────────────────────────────── */
+    /* MAIN CONTENT (editor + painéis) */
+    /* ─────────────────────────────────────────────────────────────── */
+
+    .main-content {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    /* ─────────────────────────────────────────────────────────────── */
+    /* COLUNA ESQUERDA (editor + terminal) */
+    /* ─────────────────────────────────────────────────────────────── */
+
+    .left-column {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    /* ─────────────────────────────────────────────────────────────── */
+    /* EDITOR (código) */
+    /* ─────────────────────────────────────────────────────────────── */
+
+    .editor {
+      flex: 1;
+      background: #141c0d;
+      border: 1px solid rgba(107, 114, 91, 0.2);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #666;
+      font-size: 13px;
+      min-height: 0;
+    }
+
+    .editor.empty {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+    }
+
+    /* ─────────────────────────────────────────────────────────────── */
+    /* BOTTOM PANEL (terminal ou preview) */
+    /* ─────────────────────────────────────────────────────────────── */
+
+    .bottom-panel {
+      height: 50%;
+      background: #1c2714;
+      border-top: 1px solid rgba(107, 114, 91, 0.4);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .bottom-panel.hidden {
+      display: none;
+    }
+
+    .bottom-panel-header {
+      height: 36px;
+      background: #1c2714;
+      border-bottom: 1px solid rgba(107, 114, 91, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 12px;
+      flex-shrink: 0;
+    }
+
+    .bottom-panel-header button {
+      padding: 4px 12px;
+      border-radius: 6px;
+      border: none;
+      background: transparent;
+      color: #888;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .bottom-panel-header button:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #bbb;
+    }
+
+    .bottom-panel-header button.active {
+      background: #141c0d;
+      color: #ddd;
+    }
+
+    .bottom-panel-content {
+      flex: 1;
+      overflow: auto;
+      padding: 12px;
+      font-size: 12px;
+      font-family: "Monaco", "Courier New", monospace;
+      color: #999;
+      line-height: 1.5;
+    }
+
+    /* ─────────────────────────────────────────────────────────────── */
+    /* COLUNA DIREITA (Jasmim - IA) */
+    /* ─────────────────────────────────────────────────────────────── */
+
+    .right-column {
+      width: 0;
+      background: #141c0d;
+      border-left: 1px solid rgba(107, 114, 91, 0.4);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: width 0.3s ease;
+    }
+
+    .right-column.open {
+      width: 360px;
+    }
+
+    .right-column.hidden {
+      display: none;
+    }
+
+    .right-column-header {
+      height: 44px;
+      background: #1c2714;
+      border-bottom: 1px solid rgba(107, 114, 91, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      flex-shrink: 0;
+    }
+
+    .right-column-header .title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #ddd;
+    }
+
+    .right-column-header .close-btn {
+      width: 28px;
+      height: 28px;
+      border: none;
+      background: transparent;
+      color: #888;
+      cursor: pointer;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .right-column-header .close-btn:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #bbb;
+    }
+
+    .right-column-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .chat-message {
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .chat-message.user {
+      background: #3b82f6;
+      color: white;
+      align-self: flex-end;
+      max-width: 85%;
+    }
+
+    .chat-message.assistant {
+      background: #1c2714;
+      color: #ddd;
+      border: 1px solid rgba(107, 114, 91, 0.3);
+      align-self: flex-start;
+      max-width: 85%;
+    }
+
+    /* ─────────────────────────────────────────────────────────────── */
+    /* STATUS BAR (rodapé) */
+    /* ─────────────────────────────────────────────────────────────── */
+
+    .status-bar {
+      height: 32px;
+      background: #1c2714;
+      border-top: 1px solid rgba(107, 114, 91, 0.4);
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      gap: 12px;
+      font-size: 10px;
+      color: #888;
+      flex-shrink: 0;
+    }
+
+    .status-bar .separator {
+      width: 1px;
+      height: 16px;
+      background: rgba(107, 114, 91, 0.3);
+    }
+
+    /* ─────────────────────────────────────────────────────────────── */
+    /* BOTTOM TOOLBAR (teclas rápidas) */
+    /* ─────────────────────────────────────────────────────────────── */
+
+    .bottom-toolbar {
+      background: #1c2714;
+      border-top: 1px solid rgba(107, 114, 91, 0.4);
+      flex-shrink: 0;
+    }
+
+    .toolbar-row {
+      height: 44px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0 8px;
+      border-bottom: 1px solid rgba(107, 114, 91, 0.2);
+    }
+
+    .toolbar-row:last-child {
+      border-bottom: none;
+    }
+
+    .toolbar-btn {
+      width: 40px;
+      height: 36px;
+      border: none;
+      background: transparent;
+      color: #888;
+      cursor: pointer;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .toolbar-btn:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #bbb;
+    }
+
+    .toolbar-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #999;
+      font-size: 11px;
+      font-family: monospace;
+      outline: none;
+      padding: 0 8px;
+    }
+
+    .toolbar-input::placeholder {
+      color: #666;
+    }
+
+    /* ─────────────────────────────────────────────────────────────── */
+    /* OVERLAY PANELS (File Panel, GitHub, etc) */
+    /* ─────────────────────────────────────────────────────────────── */
+
+    .overlay-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 40;
+      display: none;
+    }
+
+    .overlay-backdrop.visible {
+      display: block;
+    }
+
+    .file-panel {
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 280px;
+      background: #141c0d;
+      border-right: 2px solid rgba(107, 114, 91, 0.6);
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+      z-index: 50;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .file-panel.open {
+      transform: translateX(0);
+    }
+
+    .file-panel-header {
+      height: 44px;
+      background: #1c2714;
+      border-bottom: 1px solid rgba(107, 114, 91, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      flex-shrink: 0;
+    }
+
+    .file-panel-header .title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .file-panel-header .buttons {
+      display: flex;
+      gap: 4px;
+    }
+
+    .file-panel-header button {
+      width: 28px;
+      height: 28px;
+      border: none;
+      background: transparent;
+      color: #888;
+      cursor: pointer;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .file-panel-header button:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #bbb;
+    }
+
+    .file-tree {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+    }
+
+    .file-item {
+      padding: 6px 8px;
+      margin: 2px 0;
+      border-radius: 6px;
+      font-size: 11px;
+      color: #999;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .file-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #bbb;
+    }
+
+    .file-item.active {
+      background: rgba(59, 130, 246, 0.2);
+      color: #3b82f6;
+    }
+
+    .file-item.folder::before {
+      content: "📁";
+      font-size: 10px;
+    }
+
+    .file-item.file::before {
+      content: "📄";
+      font-size: 10px;
+    }
+
+    /* ─────────────────────────────────────────────────────────────── */
+    /* RESPONSIVO (Mobile) */
+    /* ─────────────────────────────────────────────────────────────── */
+
+    @media (max-width: 768px) {
+      .right-column.open {
+        width: 100%;
+        position: fixed;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        z-index: 60;
+      }
+
+      .bottom-panel {
+        height: 40%;
+      }
+
+      .editor {
+        flex: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- TOP BAR -->
+    <div class="top-bar">
+      <button title="Menu">☰</button>
+      <button title="Voltar">←</button>
+      <button title="Avançar">→</button>
+      <div class="separator"></div>
+      <div class="file-indicator">App.tsx</div>
+      <div style="flex: 1;"></div>
+      <button title="Buscar">🔍</button>
+      <button title="Sincronizar">🔄</button>
+      <button title="Rodar">▶</button>
+      <button title="Mais">⋯</button>
+    </div>
+
+    <!-- TAB BAR -->
+    <div class="tab-bar">
+      <div class="tab active">
+        <span>App.tsx</span>
+        <span class="close">✕</span>
+      </div>
+      <div class="tab">
+        <span>index.html</span>
+        <span class="close">✕</span>
+      </div>
+      <div class="tab">
+        <span>style.css</span>
+        <span class="close">✕</span>
+      </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+      <!-- LEFT COLUMN -->
+      <div class="left-column">
+        <!-- EDITOR -->
+        <div class="editor empty">
+          <div style="text-align: center;">
+            <div style="font-size: 24px; margin-bottom: 8px;">📝</div>
+            <div>Nenhum arquivo aberto</div>
+            <div style="font-size: 11px; color: #555; margin-top: 4px;">Abra um arquivo ou peça para a IA criar</div>
+          </div>
+        </div>
+
+        <!-- BOTTOM PANEL (Terminal) -->
+        <div class="bottom-panel">
+          <div class="bottom-panel-header">
+            <button class="active">⬛ Terminal</button>
+            <button>🌐 Preview</button>
+            <div style="flex: 1;"></div>
+            <button>🔨 Compilar</button>
+            <button>▶ Rodar</button>
+            <button>✕</button>
+          </div>
+          <div class="bottom-panel-content">
+            $ npm start<br>
+            <span style="color: #4ade80;">✓ Servidor iniciado em http://localhost:3000</span><br>
+            <br>
+            $ _
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN (Jasmim) -->
+      <div class="right-column open">
+        <div class="right-column-header">
+          <div class="title">
+            <span>🤖</span>
+            <span>Jasmim</span>
+          </div>
+          <button class="close-btn">✕</button>
+        </div>
+        <div class="right-column-content">
+          <div class="chat-message assistant">
+            Olá! Sou a Jasmim, sua assistente de IA. Como posso ajudar?
+          </div>
+          <div class="chat-message user">
+            Crie um componente React para um botão</div>
+          <div class="chat-message assistant">
+            Claro! Vou criar um componente de botão reutilizável para você.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATUS BAR -->
+    <div class="status-bar">
+      <span>Ln 1, Col 1</span>
+      <div class="separator"></div>
+      <span>Sp: 2</span>
+      <div style="flex: 1;"></div>
+      <span>TypeScript</span>
+      <div class="separator"></div>
+      <span>UTF-8</span>
+    </div>
+
+    <!-- BOTTOM TOOLBAR -->
+    <div class="bottom-toolbar">
+      <div class="toolbar-row">
+        <button class="toolbar-btn" title="Tab">⇥</button>
+        <button class="toolbar-btn">↑</button>
+        <button class="toolbar-btn">↓</button>
+        <button class="toolbar-btn">←</button>
+        <button class="toolbar-btn">→</button>
+        <div style="flex: 1;"></div>
+        <button class="toolbar-btn" title="Terminal">⬛</button>
+        <button class="toolbar-btn" title="Preview">👁</button>
+        <button class="toolbar-btn" title="Jasmim">🤖</button>
+      </div>
+      <div class="toolbar-row">
+        <span style="color: #666; font-size: 11px;">$</span>
+        <input class="toolbar-input" placeholder="Digite um comando e pressione Enter…" />
+        <span style="color: #666; font-size: 10px;">↵</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- OVERLAY BACKDROP -->
+  <div class="overlay-backdrop" id="backdrop"></div>
+
+  <!-- FILE PANEL (overlay) -->
+  <div class="file-panel open" id="filePanel">
+    <div class="file-panel-header">
+      <div class="title">📁 Arquivos</div>
+      <div class="buttons">
+        <button>➕</button>
+        <button>📂</button>
+        <button>✕</button>
+      </div>
+    </div>
+    <div class="file-tree">
+      <div class="file-item folder">src/</div>
+      <div class="file-item file" style="margin-left: 16px;">App.tsx</div>
+      <div class="file-item file" style="margin-left: 16px;">index.tsx</div>
+      <div class="file-item folder">components/</div>
+      <div class="file-item file" style="margin-left: 16px;">Button.tsx</div>
+      <div class="file-item file" style="margin-left: 16px;">Card.tsx</div>
+      <div class="file-item file">package.json</div>
+      <div class="file-item file">tsconfig.json</div>
+    </div>
+  </div>
+
+  <script>
+    // Simples interatividade para demonstrar
+    document.querySelectorAll(".tab").forEach(tab => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+      });
+    });
+
+    document.querySelectorAll(".bottom-panel-header button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".bottom-panel-header button").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+      });
+    });
+  </script>
+</body>
+</html>
