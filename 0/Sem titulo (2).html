@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guia: Descobrir e Replicar Estruturas de Projetos</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    .container { max-width: 900px; margin: 0 auto; }
+    h1 { color: #333; margin: 30px 0 20px; border-bottom: 3px solid #0066cc; padding-bottom: 10px; }
+    h2 { color: #0066cc; margin: 25px 0 15px; }
+    h3 { color: #333; margin: 15px 0 10px; }
+    p { color: #555; margin: 10px 0; }
+    .box {
+      background: white;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 15px 0;
+      border-left: 5px solid #0066cc;
+    }
+    .box.warning {
+      border-left-color: #ff6600;
+      background: #fff9f0;
+    }
+    .box.success {
+      border-left-color: #00cc00;
+      background: #f0fff0;
+    }
+    .terminal {
+      background: #1e1e1e;
+      color: #00ff00;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+      margin: 10px 0;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      border: 2px solid #333;
+    }
+    .command { color: #ffff00; font-weight: bold; }
+    .output { color: #00ff00; }
+    .structure {
+      background: #1e1e1e;
+      color: #00ff00;
+      padding: 15px;
+      border-radius: 5px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      margin: 15px 0;
+      line-height: 1.8;
+    }
+    .highlight { background: #ffff00; color: #000; padding: 2px 5px; border-radius: 3px; font-weight: bold; }
+    .important { background: #ffcccc; padding: 15px; border-radius: 5px; margin: 20px 0; font-weight: bold; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+      background: white;
+    }
+    table th, table td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+    table th {
+      background: #0066cc;
+      color: white;
+    }
+    table tr:nth-child(even) { background: #f9f9f9; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <h1>🗺️ Guia: Descobrir e Replicar Estruturas de Projetos</h1>
+
+  <!-- SEÇÃO 1 -->
+  <h2>1️⃣ O PROBLEMA QUE VOCÊ TEM</h2>
+
+  <div class="box warning">
+    <h3>❌ O que você quer fazer:</h3>
+    <ol>
+      <li>Pegar um projeto (ZIP ou pasta)</li>
+      <li>Ver a estrutura (árvore de pastas)</li>
+      <li>Usar essa estrutura no seu editor</li>
+      <li>Criar as pastas automaticamente</li>
+    </ol>
+  </div>
+
+  <div class="box success">
+    <h3>✅ Solução:</h3>
+    <p>Usar ferramentas para <span class="highlight">GERAR O MAPA</span> da estrutura.</p>
+    <p>Depois usar esse mapa para <span class="highlight">CRIAR AS PASTAS</span> automaticamente.</p>
+  </div>
+
+  <!-- SEÇÃO 2 -->
+  <h2>2️⃣ FERRAMENTAS PARA GERAR O MAPA (ÁRVORE)</h2>
+
+  <h3>Ferramenta 1: TREE (Comando Terminal)</h3>
+  <div class="box">
+    <p>Mostra a estrutura de pastas em forma de árvore.</p>
+    
+    <h4>Como usar (Windows):</h4>
+    <div class="terminal">
+<span class="command">tree</span> <span class="output">C:\Users\Seu_Usuario\meu-projeto</span>
+    </div>
+
+    <h4>Como usar (Mac/Linux):</h4>
+    <div class="terminal">
+<span class="command">tree</span> <span class="output">~/meu-projeto</span>
+    </div>
+
+    <h4>Resultado:</h4>
+    <div class="structure">
+meu-projeto/
+├── index.html
+├── css/
+│   ├── style.css
+│   └── navbar.css
+├── js/
+│   ├── app.js
+│   └── files.js
+└── assets/
+    └── imagens/
+    </div>
+
+    <p><strong>Nota:</strong> Se não funcionar, instale com:</p>
+    <div class="terminal">
+<span class="command">brew install tree</span> <span class="output">(Mac)</span>
+<span class="command">choco install tree</span> <span class="output">(Windows)</span>
+    </div>
+  </div>
+
+  <h3>Ferramenta 2: DIR (Windows)</h3>
+  <div class="box">
+    <p>Comando nativo do Windows para listar pastas.</p>
+    <div class="terminal">
+<span class="command">dir</span> <span class="output">/s /b</span>
+    </div>
+    <p>Mostra todas as pastas e arquivos.</p>
+  </div>
+
+  <h3>Ferramenta 3: LS (Mac/Linux)</h3>
+  <div class="box">
+    <p>Comando nativo para listar pastas.</p>
+    <div class="terminal">
+<span class="command">ls -la</span>
+    </div>
+    <p>Mostra todos os arquivos e pastas.</p>
+  </div>
+
+  <h3>Ferramenta 4: FIND (Buscar Tudo)</h3>
+  <div class="box">
+    <p>Encontra todos os arquivos e pastas.</p>
+    <div class="terminal">
+<span class="command">find</span> <span class="output">. -type f -o -type d</span>
+    </div>
+  </div>
+
+  <!-- SEÇÃO 3 -->
+  <h2>3️⃣ FERRAMENTAS ONLINE (Sem Terminal)</h2>
+
+  <h3>Opção 1: VS Code (Editor de Código)</h3>
+  <div class="box success">
+    <p>Abra a pasta no VS Code e veja a árvore na esquerda!</p>
+    <div class="structure">
+📁 meu-projeto
+  📄 index.html
+  📁 css
+    📄 style.css
+  📁 js
+    📄 app.js
+    </div>
+    <p>Você pode ver EXATAMENTE como está organizado.</p>
+  </div>
+
+  <h3>Opção 2: Gerador de Árvore Online</h3>
+  <div class="box">
+    <p>Sites que geram árvore de estrutura:</p>
+    <ul>
+      <li><strong>tree.nathanfriend.io</strong> - Cole o texto e gera a árvore</li>
+      <li><strong>ascii-tree-generator.com</strong> - Cria árvore em ASCII</li>
+      <li><strong>github.com</strong> - Veja a estrutura direto no GitHub</li>
+    </ul>
+  </div>
+
+  <!-- SEÇÃO 4 -->
+  <h2>4️⃣ PASSO A PASSO: DESCOBRIR ESTRUTURA</h2>
+
+  <div class="box">
+    <h3>Você tem um projeto em ZIP. Como descobrir a estrutura?</h3>
+  </div>
+
+  <h3>Passo 1: Extrair o ZIP</h3>
+  <div class="terminal">
+<span class="command">unzip</span> <span class="output">projeto.zip</span>
+  </div>
+
+  <h3>Passo 2: Entrar na Pasta</h3>
+  <div class="terminal">
+<span class="command">cd</span> <span class="output">projeto</span>
+  </div>
+
+  <h3>Passo 3: Gerar o Mapa</h3>
+  <div class="terminal">
+<span class="command">tree</span> <span class="output">-L 3</span> <span class="output">> estrutura.txt</span>
+  </div>
+  <p>Salva a estrutura em um arquivo chamado "estrutura.txt"</p>
+
+  <h3>Passo 4: Ver o Mapa</h3>
+  <div class="terminal">
+<span class="command">cat</span> <span class="output">estrutura.txt</span>
+  </div>
+
+  <!-- SEÇÃO 5 -->
+  <h2>5️⃣ CRIAR PASTAS A PARTIR DO MAPA</h2>
+
+  <div class="box success">
+    <h3>Agora que você tem o mapa, como criar as pastas?</h3>
+  </div>
+
+  <h3>Opção 1: Manualmente (Lento)</h3>
+  <div class="box">
+    <p>Você vê o mapa e cria cada pasta:</p>
+    <div class="terminal">
+<span class="command">mkdir</span> <span class="output">css</span>
+<span class="command">mkdir</span> <span class="output">js</span>
+<span class="command">mkdir</span> <span class="output">assets</span>
+    </div>
+  </div>
+
+  <h3>Opção 2: Script Automático (Rápido)</h3>
+  <div class="box success">
+    <p>Crie um script que lê o mapa e cria as pastas:</p>
+    
+    <h4>Arquivo: criar-estrutura.js</h4>
+    <div class="terminal">
+const fs = require('fs');
+const path = require('path');
+
+const estrutura = {
+  'css': [],
+  'js': [],
+  'assets': ['imagens', 'icons']
+};
+
+function criarPastas(obj, basePath = '.') {
+  for (const [pasta, subpastas] of Object.entries(obj)) {
+    const caminhoCompleto = path.join(basePath, pasta);
+    if (!fs.existsSync(caminhoCompleto)) {
+      fs.mkdirSync(caminhoCompleto, { recursive: true });
+      console.log(`✅ Criada: ${caminhoCompleto}`);
+    }
+    
+    if (subpastas.length > 0) {
+      subpastas.forEach(sub => {
+        const subCaminho = path.join(caminhoCompleto, sub);
+        if (!fs.existsSync(subCaminho)) {
+          fs.mkdirSync(subCaminho, { recursive: true });
+          console.log(`✅ Criada: ${subCaminho}`);
+        }
+      });
+    }
+  }
+}
+
+criarPastas(estrutura);
+    </div>
+
+    <h4>Como usar:</h4>
+    <div class="terminal">
+<span class="command">node</span> <span class="output">criar-estrutura.js</span>
+    </div>
+  </div>
+
+  <!-- SEÇÃO 6 -->
+  <h2>6️⃣ CONVERTER MAPA EM COMANDO</h2>
+
+  <div class="box">
+    <h3>Você tem esse mapa:</h3>
+    <div class="structure">
+projeto/
+├── css/
+├── js/
+├── assets/
+│   ├── imagens/
+│   └── icons/
+└── index.html
+    </div>
+
+    <h3>Converta para esse comando:</h3>
+    <div class="terminal">
+<span class="command">mkdir -p</span> <span class="output">projeto/{css,js,assets/{imagens,icons}}</span>
+    </div>
+
+    <h3>Ou para criar os arquivos também:</h3>
+    <div class="terminal">
+<span class="command">mkdir -p</span> <span class="output">projeto/{css,js,assets/{imagens,icons}}</span>
+<span class="command">touch</span> <span class="output">projeto/index.html</span>
+    </div>
+  </div>
+
+  <!-- SEÇÃO 7 -->
+  <h2>7️⃣ FERRAMENTA PRONTA: GERAR ESTRUTURA</h2>
+
+  <div class="box success">
+    <h3>Aqui está um programa que faz TUDO:</h3>
+    <p>Ele lê um mapa e cria as pastas automaticamente!</p>
+  </div>
+
+  <h3>Arquivo: estrutura.json (O MAPA)</h3>
+  <div class="terminal">
+{
+  "nome": "meu-projeto",
+  "pastas": [
+    "css",
+    "js",
+    {
+      "nome": "assets",
+      "subpastas": ["imagens", "icons"]
+    }
+  ],
+  "arquivos": [
+    "index.html",
+    "README.md"
+  ]
+}
+  </div>
+
+  <h3>Arquivo: criar.js (O PROGRAMA)</h3>
+  <div class="terminal">
+const fs = require('fs');
+const path = require('path');
+
+const config = require('./estrutura.json');
+
+function criar(obj, basePath = '.') {
+  // Criar pastas
+  obj.pastas.forEach(item => {
+    if (typeof item === 'string') {
+      const dir = path.join(basePath, item);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+        console.log(`✅ Pasta: ${dir}`);
+      }
+    } else if (typeof item === 'object') {
+      const dir = path.join(basePath, item.nome);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+      item.subpastas.forEach(sub => {
+        const subDir = path.join(dir, sub);
+        if (!fs.existsSync(subDir)) {
+          fs.mkdirSync(subDir, { recursive: true });
+          console.log(`✅ Pasta: ${subDir}`);
+        }
+      });
+    }
+  });
+
+  // Criar arquivos
+  obj.arquivos.forEach(arquivo => {
+    const filePath = path.join(basePath, arquivo);
+    if (!fs.existsSync(filePath)) {
+      fs.writeFileSync(filePath, '');
+      console.log(`✅ Arquivo: ${filePath}`);
+    }
+  });
+}
+
+criar(config, config.nome);
+console.log('✅ Estrutura criada!');
+  </div>
+
+  <h3>Como usar:</h3>
+  <div class="terminal">
+<span class="command">node</span> <span class="output">criar.js</span>
+  </div>
+
+  <!-- SEÇÃO 8 -->
+  <h2>8️⃣ RESUMO: COMO FAZER</h2>
+
+  <table>
+    <tr>
+      <th>Etapa</th>
+      <th>Ferramenta</th>
+      <th>Comando</th>
+    </tr>
+    <tr>
+      <td><strong>1. Ver a estrutura</strong></td>
+      <td>VS Code ou Tree</td>
+      <td><code>tree</code></td>
+    </tr>
+    <tr style="background: #f9f9f9;">
+      <td><strong>2. Salvar o mapa</strong></td>
+      <td>Tree ou arquivo JSON</td>
+      <td><code>tree > estrutura.txt</code></td>
+    </tr>
+    <tr>
+      <td><strong>3. Converter para comando</strong></td>
+      <td>Manual ou script</td>
+      <td><code>mkdir -p projeto/{...}</code></td>
+    </tr>
+    <tr style="background: #f9f9f9;">
+      <td><strong>4. Criar as pastas</strong></td>
+      <td>Terminal ou Node.js</td>
+      <td><code>node criar.js</code></td>
+    </tr>
+  </table>
+
+  <!-- SEÇÃO 9 -->
+  <h2>9️⃣ EXEMPLO PRÁTICO COMPLETO</h2>
+
+  <div class="important">
+    <h3>Você tem um projeto em ZIP. Aqui está o passo a passo:</h3>
+    
+    <h4>1️⃣ Extrair</h4>
+    <div class="terminal">
+<span class="command">unzip</span> <span class="output">projeto-antigo.zip</span>
+    </div>
+
+    <h4>2️⃣ Ver a estrutura</h4>
+    <div class="terminal">
+<span class="command">tree</span> <span class="output">projeto-antigo</span>
+    </div>
+
+    <h4>3️⃣ Salvar em arquivo</h4>
+    <div class="terminal">
+<span class="command">tree</span> <span class="output">projeto-antigo > estrutura.txt</span>
+    </div>
+
+    <h4>4️⃣ Criar novo projeto com a mesma estrutura</h4>
+    <div class="terminal">
+<span class="command">mkdir -p</span> <span class="output">novo-projeto/{css,js,assets}</span>
+    </div>
+
+    <h4>5️⃣ Pronto!</h4>
+    <p>Agora você tem a mesma estrutura em um novo projeto!</p>
+  </div>
+
+  <!-- SEÇÃO 10 -->
+  <h2>🔟 FERRAMENTAS QUE VOCÊ PRECISA</h2>
+
+  <div class="box success">
+    <h3>Para fazer tudo isso, você precisa de:</h3>
+    <ul>
+      <li>✅ <strong>Terminal</strong> (já tem no computador)</li>
+      <li>✅ <strong>Tree</strong> (instale: <code>brew install tree</code>)</li>
+      <li>✅ <strong>Node.js</strong> (opcional, para scripts)</li>
+      <li>✅ <strong>VS Code</strong> (editor de código)</li>
+    </ul>
+  </div>
+
+</div>
+
+</body>
+</html>
