@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SK Database Manager + IA</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0d0d0d; --bg2: #141414; --bg3: #1a1a1a;
+    --border: #2a2a2a; --accent: #4f8ef7; --accent2: #7c3aed;
+    --green: #22c55e; --red: #ef4444; --yellow: #f59e0b; --purple: #a78bfa;
+    --text: #e5e5e5; --text2: #888; --text3: #555;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+  .header { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 10px 20px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .logo { font-size: 17px; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+  .logo span { color: var(--text2); font-size: 12px; font-weight: 400; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text3); flex-shrink: 0; }
+  .status-dot.connected { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .status-dot.error { background: var(--red); }
+  #statusText { font-size: 12px; color: var(--text2); }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .ai-key-wrap { display: flex; align-items: center; gap: 6px; background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; }
+  .ai-key-badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: var(--bg2); color: var(--text3); border: 1px solid var(--border); white-space: nowrap; }
+  .ai-key-badge.groq    { color: #f472b6; border-color: #f472b6; background: #1a0510; }
+  .ai-key-badge.openai  { color: var(--green); border-color: var(--green); background: #052b0e; }
+  .ai-key-badge.gemini  { color: var(--accent); border-color: var(--accent); background: #05142b; }
+  .ai-key-badge.openrouter { color: var(--yellow); border-color: var(--yellow); background: #1a1205; }
+  .ai-key-badge.xai     { color: var(--purple); border-color: var(--purple); background: #140520; }
+  .ai-key-badge.anthropic { color: #fb923c; border-color: #fb923c; background: #1a0a05; }
+  #aiKeyInput { background: transparent; border: none; color: var(--text2); font-size: 12px; font-family: monospace; width: 220px; outline: none; }
+  #aiKeyInput::placeholder { color: var(--text3); }
+  button { background: var(--accent); color: white; border: none; padding: 7px 14px; border-radius: 6px; font-size: 13px; cursor: pointer; font-weight: 600; transition: opacity 0.15s; white-space: nowrap; }
+  button:hover { opacity: 0.85; }
+  button.sec { background: var(--bg2); color: var(--text2); border: 1px solid var(--border); font-weight: 400; }
+  button.sec:hover { border-color: var(--accent); color: var(--text); }
+  button.green { background: var(--green); }
+  button.purple { background: var(--accent2); }
+
+  .conn-bar { background: var(--bg3); border-bottom: 1px solid var(--border); padding: 8px 16px; display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+  .conn-bar input { flex: 1; background: var(--bg2); border: 1px solid var(--border); color: var(--text); padding: 7px 12px; border-radius: 6px; font-size: 12px; font-family: 'Cascadia Code', monospace; }
+  .conn-bar input:focus { outline: none; border-color: var(--accent); }
+  .conn-bar input::placeholder { color: var(--text3); }
+
+  .main { flex: 1; display: flex; overflow: hidden; }
+
+  /* SIDEBAR */
+  .sidebar { width: 200px; background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+  .sidebar-title { padding: 10px 14px; font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); }
+  .sidebar-list { flex: 1; overflow-y: auto; padding: 6px 0; }
+  .table-item { padding: 7px 14px; font-size: 12px; cursor: pointer; color: var(--text2); display: flex; align-items: center; gap: 7px; border-left: 2px solid transparent; }
+  .table-item:hover { background: var(--bg3); color: var(--text); }
+  .table-item.active { color: var(--accent); border-left-color: var(--accent); background: var(--bg3); }
+  .sidebar-actions { padding: 6px; border-top: 1px solid var(--border); display: flex; gap: 5px; }
+  .sidebar-actions button { flex: 1; font-size: 11px; padding: 5px 6px; }
+
+  /* CENTER CONTENT */
+  .content { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+  .tabs { background: var(--bg2); border-bottom: 1px solid var(--border); display: flex; padding: 0 14px; flex-shrink: 0; }
+  .tab { padding: 9px 14px; font-size: 12px; cursor: pointer; color: var(--text2); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .editor-area { padding: 12px; background: var(--bg); flex-shrink: 0; border-bottom: 1px solid var(--border); }
+  .editor-label { font-size: 10px; color: var(--text3); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+  textarea#sqlInput { width: 100%; height: 100px; background: var(--bg2); border: 1px solid var(--border); color: var(--text); padding: 10px; border-radius: 6px; font-family: 'Cascadia Code', monospace; font-size: 12px; resize: vertical; line-height: 1.5; }
+  textarea#sqlInput:focus { outline: none; border-color: var(--accent); }
+  .editor-actions { display: flex; gap: 6px; margin-top: 7px; align-items: center; flex-wrap: wrap; }
+  .editor-actions select { background: var(--bg2); border: 1px solid var(--border); color: var(--text2); padding: 6px 8px; border-radius: 6px; font-size: 11px; cursor: pointer; }
+  .shortcuts { font-size: 10px; color: var(--text3); margin-left: auto; }
+  .results-area { flex: 1; overflow: auto; padding: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { background: var(--bg2); color: var(--text2); padding: 7px 10px; text-align: left; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); position: sticky; top: 0; white-space: nowrap; }
+  td { padding: 7px 10px; border-bottom: 1px solid var(--border); color: var(--text); max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  tr:hover td { background: var(--bg2); }
+  td.null { color: var(--text3); font-style: italic; }
+  td.num  { color: #a78bfa; font-family: monospace; }
+  td.bool-t { color: var(--green); }
+  td.bool-f { color: var(--red); }
+  .results-info { font-size: 11px; color: var(--text2); margin-bottom: 8px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .badge { background: var(--bg3); border: 1px solid var(--border); padding: 2px 7px; border-radius: 20px; font-size: 10px; }
+  .badge.green { border-color: var(--green); color: var(--green); background: #052b0e; }
+  .badge.red   { border-color: var(--red);   color: var(--red);   background: #2b0505; }
+  .msg { padding: 10px 14px; border-radius: 7px; font-size: 12px; margin-bottom: 10px; border: 1px solid; }
+  .msg.success { background: #052b0e; border-color: var(--green); color: var(--green); }
+  .msg.error   { background: #2b0505; border-color: var(--red);   color: #f87171; }
+  .msg.info    { background: #05142b; border-color: var(--accent); color: #93c5fd; }
+  .msg pre { font-family: monospace; font-size: 11px; margin-top: 5px; white-space: pre-wrap; opacity: 0.8; }
+  .loading { display: flex; align-items: center; gap: 8px; color: var(--text2); font-size: 12px; padding: 16px; }
+  .spinner { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .empty { text-align: center; padding: 40px 16px; color: var(--text3); }
+  .empty .icon { font-size: 40px; margin-bottom: 12px; }
+  .empty h3 { font-size: 14px; color: var(--text2); margin-bottom: 6px; }
+  .empty p { font-size: 12px; line-height: 1.6; }
+  .export-bar { display: flex; gap: 6px; padding: 8px 12px; background: var(--bg2); border-top: 1px solid var(--border); flex-shrink: 0; align-items: center; }
+  .export-bar span { font-size: 11px; color: var(--text3); }
+  .schema-view { padding: 14px; overflow: auto; flex: 1; }
+  .schema-table-name { font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 7px; }
+  .col-list { background: var(--bg2); border: 1px solid var(--border); border-radius: 7px; overflow: hidden; margin-bottom: 18px; }
+  .col-item { display: grid; grid-template-columns: 160px 150px 70px 1fr; gap: 8px; padding: 7px 12px; border-bottom: 1px solid var(--border); font-size: 11px; align-items: center; }
+  .col-item:last-child { border-bottom: none; }
+  .col-name { color: var(--text); font-family: monospace; }
+  .col-type { color: var(--yellow); font-family: monospace; }
+  .col-nullable.yes { color: var(--text3); }
+  .col-nullable.no  { color: var(--green); }
+  .col-default { color: var(--text3); font-family: monospace; }
+
+  /* AI PANEL */
+  .ai-panel { width: 340px; background: var(--bg2); border-left: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+  .ai-panel-header { padding: 10px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .ai-panel-header h3 { font-size: 13px; font-weight: 600; flex: 1; }
+  .ai-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text3); }
+  .ai-dot.on { background: var(--purple); box-shadow: 0 0 5px var(--purple); }
+  .ai-messages { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+  .ai-msg { max-width: 95%; padding: 8px 11px; border-radius: 8px; font-size: 12px; line-height: 1.55; }
+  .ai-msg.user { background: #05142b; border: 1px solid #1a3a6b; align-self: flex-end; color: #93c5fd; }
+  .ai-msg.bot  { background: var(--bg3); border: 1px solid var(--border); align-self: flex-start; color: var(--text); }
+  .ai-msg.bot pre { background: var(--bg); border: 1px solid var(--border); border-radius: 5px; padding: 8px; font-size: 11px; overflow-x: auto; margin: 6px 0; white-space: pre-wrap; }
+  .ai-msg.bot code { background: var(--bg); padding: 1px 5px; border-radius: 3px; font-size: 11px; font-family: monospace; color: var(--yellow); }
+  .ai-msg .copy-sql { margin-top: 5px; font-size: 10px; color: var(--accent); cursor: pointer; text-decoration: underline; }
+  .ai-msg .copy-sql:hover { color: white; }
+  .ai-input-area { border-top: 1px solid var(--border); padding: 8px; flex-shrink: 0; }
+  .ai-quick-btns { display: flex; gap: 4px; margin-bottom: 6px; flex-wrap: wrap; }
+  .ai-quick-btns button { font-size: 10px; padding: 3px 8px; background: var(--bg3); border: 1px solid var(--border); color: var(--text2); font-weight: 400; }
+  .ai-quick-btns button:hover { border-color: var(--accent2); color: var(--purple); }
+  .ai-input-row { display: flex; gap: 6px; }
+  .ai-input-row textarea { flex: 1; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 7px 10px; border-radius: 6px; font-size: 12px; font-family: inherit; resize: none; height: 60px; line-height: 1.4; }
+  .ai-input-row textarea:focus { outline: none; border-color: var(--accent2); }
+  .ai-input-row button { align-self: flex-end; background: var(--accent2); padding: 7px 12px; }
+  .ai-typing { display: none; align-items: center; gap: 6px; padding: 6px 11px; font-size: 11px; color: var(--text3); }
+  .ai-typing-dots span { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--text3); animation: dot 1.2s infinite; margin: 0 1px; }
+  .ai-typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .ai-typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes dot { 0%,80%,100%{opacity:.2;transform:scale(0.8)} 40%{opacity:1;transform:scale(1)} }
+
+  /* MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 22px; width: 480px; max-width: 95vw; }
+  .modal h3 { font-size: 15px; margin-bottom: 14px; }
+  .modal input, .modal select { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 7px 10px; border-radius: 6px; font-size: 12px; margin-bottom: 8px; }
+  .modal input:focus, .modal select:focus { outline: none; border-color: var(--accent); }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px; }
+  .col-builder { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 8px; margin-bottom: 8px; max-height: 180px; overflow-y: auto; }
+  .col-row { display: flex; gap: 5px; margin-bottom: 5px; align-items: center; }
+  .col-row input, .col-row select { margin: 0; flex: 1; }
+
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">🗄️ SK Database Manager <span>+ IA</span></div>
+  <div style="display:flex;align-items:center;gap:6px;">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusText" style="font-size:12px;color:var(--text2);">Desconectado</span>
+  </div>
+  <div class="header-right">
+    <div class="ai-key-wrap">
+      <span id="aiKeyBadge" class="ai-key-badge">🤖 IA</span>
+      <input id="aiKeyInput" type="password" placeholder="Cole sua chave de IA aqui (gsk_, sk-, AIza…)" oninput="detectarChave(this.value)" />
+    </div>
+  </div>
+</div>
+
+<!-- CONNECTION BAR -->
+<div class="conn-bar">
+  <input type="text" id="connInput" placeholder="postgresql://usuario:senha@host.neon.tech/banco?sslmode=require" />
+  <button onclick="conectar()">🔌 Conectar</button>
+  <button class="sec" onclick="desconectar()">✕</button>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-title">📋 Tabelas</div>
+    <div class="sidebar-list" id="tableList">
+      <div style="padding:14px;color:var(--text3);font-size:11px;">Conecte para ver as tabelas</div>
+    </div>
+    <div class="sidebar-actions">
+      <button class="sec" onclick="listarTabelas()" title="Recarregar">🔄</button>
+      <button class="sec" onclick="abrirModalTabela()">+ Nova</button>
+    </div>
+  </div>
+
+  <!-- CENTER -->
+  <div class="content">
+    <div class="tabs">
+      <div class="tab active" onclick="trocarAba('query')">🔍 Query SQL</div>
+      <div class="tab" onclick="trocarAba('schema')">📐 Esquema</div>
+      <div class="tab" onclick="trocarAba('dados')">📊 Dados</div>
+    </div>
+
+    <!-- ABA QUERY -->
+    <div id="abaQuery" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
+      <div class="editor-area">
+        <div class="editor-label">Editor SQL — <span style="color:var(--text3)">Ctrl+Enter executa</span></div>
+        <textarea id="sqlInput" placeholder="-- Digite sua query SQL aqui&#10;SELECT * FROM tabela LIMIT 50;"></textarea>
+        <div class="editor-actions">
+          <button onclick="executarSQL()">▶ Executar</button>
+          <button class="sec" onclick="limparEditor()">🗑</button>
+          <select id="templateSelect" onchange="inserirTemplate()">
+            <option value="">📋 Templates...</option>
+            <option value="select">SELECT * FROM tabela LIMIT 100</option>
+            <option value="count">SELECT COUNT(*) FROM tabela</option>
+            <option value="tables">Listar todas as tabelas</option>
+            <option value="schema">Ver colunas de uma tabela</option>
+            <option value="create">CREATE TABLE modelo</option>
+            <option value="insert">INSERT INTO tabela</option>
+            <option value="update">UPDATE tabela</option>
+            <option value="delete">DELETE FROM tabela</option>
+            <option value="tamanho">Tamanho das tabelas</option>
+            <option value="indices">Ver índices</option>
+          </select>
+          <span class="shortcuts">Ctrl+Enter = Executar · Ctrl+L = Limpar</span>
+        </div>
+      </div>
+      <div class="results-area" id="resultsArea">
+        <div class="empty">
+          <div class="icon">⚡</div>
+          <h3>Pronto para executar</h3>
+          <p>Digite uma query SQL ou<br>peça ajuda para a IA à direita</p>
+        </div>
+      </div>
+      <div class="export-bar" id="exportBar" style="display:none;">
+        <span>Exportar resultados:</span>
+        <button class="sec" onclick="exportarCSV()">📥 CSV</button>
+        <button class="sec" onclick="exportarSQL()">📥 SQL</button>
+        <button class="sec" onclick="exportarJSON()">📥 JSON</button>
+        <button class="sec" onclick="enviarResultadoParaIA()" style="margin-left:auto;">🤖 Analisar com IA</button>
+      </div>
+    </div>
+
+    <!-- ABA SCHEMA -->
+    <div id="abaSchema" style="display:none;flex:1;overflow:auto;">
+      <div class="schema-view" id="schemaView">
+        <div class="empty" id="schemaEmpty">
+          <div class="icon">📐</div>
+          <h3>Estrutura do banco</h3>
+          <p>Clique em uma tabela na barra lateral</p>
+        </div>
+        <div id="schemaContent"></div>
+      </div>
+    </div>
+
+    <!-- ABA DADOS -->
+    <div id="abaDados" style="display:none;flex:1;flex-direction:column;overflow:hidden;">
+      <div style="padding:10px 14px;background:var(--bg3);border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:center;flex-shrink:0;">
+        <select id="tabelaDados" onchange="carregarDados()" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:6px;font-size:12px;">
+          <option>-- Selecione uma tabela --</option>
+        </select>
+        <input type="number" id="limiteDados" value="100" min="1" max="5000" style="width:70px;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:6px 8px;border-radius:6px;font-size:12px;">
+        <button onclick="carregarDados()">🔄</button>
+        <span style="font-size:11px;color:var(--text3);margin-left:auto;" id="dadosInfo"></span>
+      </div>
+      <div style="flex:1;overflow:auto;padding:12px;" id="dadosArea">
+        <div class="empty"><div class="icon">📊</div><h3>Selecione uma tabela</h3></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI PANEL -->
+  <div class="ai-panel">
+    <div class="ai-panel-header">
+      <div class="ai-dot" id="aiDot"></div>
+      <h3>Assistente IA</h3>
+      <span id="aiProviderLabel" style="font-size:10px;color:var(--text3);"></span>
+      <button class="sec" onclick="limparChat()" style="font-size:10px;padding:3px 7px;">🗑</button>
+    </div>
+    <div class="ai-messages" id="aiMessages">
+      <div class="ai-msg bot">
+        👋 Olá! Cole sua chave de IA no campo acima (detecta automaticamente o provedor) e conecte ao banco.<br><br>
+        Posso te ajudar a:<br>
+        • Escrever queries SQL<br>
+        • Explicar erros<br>
+        • Criar tabelas<br>
+        • Analisar dados<br>
+        • Entender o esquema<br><br>
+        <span style="color:var(--text3);font-size:11px;">Provedores aceitos: Groq, OpenAI, Gemini, OpenRouter, xAI, Anthropic</span>
+      </div>
+    </div>
+    <div class="ai-typing" id="aiTyping">
+      <div class="ai-typing-dots"><span></span><span></span><span></span></div>
+      Pensando...
+    </div>
+    <div class="ai-input-area">
+      <div class="ai-quick-btns">
+        <button onclick="perguntarRapido('Explica o esquema do banco conectado')">📐 Esquema</button>
+        <button onclick="perguntarRapido('Cria uma query para listar todos os registros com paginação')">📋 SELECT</button>
+        <button onclick="perguntarRapido('Como criar uma tabela para um sistema jurídico de processos?')">⚖️ Jurídico</button>
+        <button onclick="perguntarRapido('Explica o último erro que aconteceu')">🔴 Erro</button>
+        <button onclick="perguntarRapido('Como faço backup dos dados em SQL?')">💾 Backup</button>
+      </div>
+      <div class="ai-input-row">
+        <textarea id="aiChatInput" placeholder="Pergunte qualquer coisa sobre SQL, banco de dados, erros..." onkeydown="if(event.ctrlKey&&event.key==='Enter')enviarIA()"></textarea>
+        <button onclick="enviarIA()" class="purple">➤</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NOVA TABELA -->
+<div class="modal-overlay" id="modalTabela">
+  <div class="modal">
+    <h3>➕ Criar nova tabela</h3>
+    <input type="text" id="nomeTabela" placeholder="Nome da tabela (ex: processos)" />
+    <div style="font-size:11px;color:var(--text2);margin-bottom:6px;">Colunas:</div>
+    <div class="col-builder" id="colBuilder">
+      <div class="col-row">
+        <input type="text" value="id" readonly style="color:var(--accent);flex:1.2;" />
+        <select style="flex:1.5;"><option>SERIAL PRIMARY KEY</option><option>BIGSERIAL PRIMARY KEY</option></select>
+        <button class="sec" style="padding:3px 7px;font-size:10px;" disabled>🔒</button>
+      </div>
+    </div>
+    <button class="sec" onclick="adicionarColuna()" style="width:100%;margin-bottom:8px;font-size:11px;">+ Adicionar coluna</button>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">💡 Não sabe que colunas criar? Pergunte para a IA!</div>
+    <div class="modal-actions">
+      <button class="sec" onclick="fecharModal('modalTabela')">Cancelar</button>
+      <button class="green" onclick="criarTabela()">✅ Criar tabela</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== ESTADO =====
+let conectado = false;
+let connStr = '';
+let ultimosResultados = [];
+let ultimasColunas = [];
+let aiKey = '';
+let aiProvider = '';
+let schemaContexto = '';
+let ultimoErro = '';
+
+// ===== DETECÇÃO DE CHAVE DE IA =====
+function detectarChave(val) {
+  val = val.trim();
+  aiKey = val;
+  const badge = document.getElementById('aiKeyBadge');
+  const dot = document.getElementById('aiDot');
+  const label = document.getElementById('aiProviderLabel');
+
+  if (!val) {
+    badge.className = 'ai-key-badge'; badge.textContent = '🤖 IA';
+    dot.className = 'ai-dot'; aiProvider = ''; label.textContent = ''; return;
+  }
+  if (val.startsWith('gsk_')) {
+    aiProvider = 'groq'; badge.className = 'ai-key-badge groq'; badge.textContent = '⚡ Groq';
+    dot.className = 'ai-dot on'; label.textContent = 'Groq (llama-3.3-70b)';
+  } else if (val.startsWith('sk-or-')) {
+    aiProvider = 'openrouter'; badge.className = 'ai-key-badge openrouter'; badge.textContent = '🔀 OpenRouter';
+    dot.className = 'ai-dot on'; label.textContent = 'OpenRouter';
+  } else if (val.startsWith('sk-ant')) {
+    aiProvider = 'anthropic'; badge.className = 'ai-key-badge anthropic'; badge.textContent = '🧠 Anthropic';
+    dot.className = 'ai-dot on'; label.textContent = 'Claude';
+  } else if (val.startsWith('sk-')) {
+    aiProvider = 'openai'; badge.className = 'ai-key-badge openai'; badge.textContent = '🟢 OpenAI';
+    dot.className = 'ai-dot on'; label.textContent = 'GPT-4o';
+  } else if (val.startsWith('AIza') || val.startsWith('ya29')) {
+    aiProvider = 'gemini'; badge.className = 'ai-key-badge gemini'; badge.textContent = '💎 Gemini';
+    dot.className = 'ai-dot on'; label.textContent = 'Gemini 2.0 Flash';
+  } else if (val.startsWith('xai-')) {
+    aiProvider = 'xai'; badge.className = 'ai-key-badge xai'; badge.textContent = '✕ xAI';
+    dot.className = 'ai-dot on'; label.textContent = 'Grok';
+  } else {
+    badge.className = 'ai-key-badge'; badge.textContent = '❓ ?';
+    dot.className = 'ai-dot'; aiProvider = ''; label.textContent = 'Chave não reconhecida';
+  }
+
+  // Salvar no localStorage
+  if (aiProvider) localStorage.setItem('sk_ai_key', val);
+}
+
+// ===== CHAMAR IA =====
+async function chamarIA(mensagens) {
+  if (!aiKey || !aiProvider) throw new Error('Configure a chave de IA no campo acima');
+
+  if (aiProvider === 'groq') {
+    const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${aiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'llama-3.3-70b-versatile', messages: mensagens, temperature: 0.3, max_tokens: 2048 })
+    });
+    if (!r.ok) { const e = await r.text(); throw new Error(e); }
+    const d = await r.json();
+    return d.choices[0].message.content;
+  }
+
+  if (aiProvider === 'openai' || aiProvider === 'openrouter') {
+    const url = aiProvider === 'openai' ? 'https://api.openai.com/v1/chat/completions' : 'https://openrouter.ai/api/v1/chat/completions';
+    const model = aiProvider === 'openai' ? 'gpt-4o' : 'openai/gpt-4o';
+    const r = await fetch(url, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${aiKey}`, 'Content-Type': 'application/json', 'HTTP-Referer': 'https://sk-editor.app' },
+      body: JSON.stringify({ model, messages: mensagens, temperature: 0.3, max_tokens: 2048 })
+    });
+    if (!r.ok) { const e = await r.text(); throw new Error(e); }
+    const d = await r.json();
+    return d.choices[0].message.content;
+  }
+
+  if (aiProvider === 'gemini') {
+    const msgs = mensagens.filter(m => m.role !== 'system');
+    const contents = msgs.map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] }));
+    const sys = mensagens.find(m => m.role === 'system');
+    const body = { contents };
+    if (sys) body.system_instruction = { parts: [{ text: sys.content }] };
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${aiKey}`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+    });
+    if (!r.ok) { const e = await r.text(); throw new Error(e); }
+    const d = await r.json();
+    return d.candidates[0].content.parts[0].text;
+  }
+
+  if (aiProvider === 'xai') {
+    const r = await fetch('https://api.x.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${aiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'grok-3', messages: mensagens, temperature: 0.3, max_tokens: 2048 })
+    });
+    if (!r.ok) { const e = await r.text(); throw new Error(e); }
+    const d = await r.json();
+    return d.choices[0].message.content;
+  }
+
+  if (aiProvider === 'anthropic') {
+    const sys = mensagens.find(m => m.role === 'system');
+    const msgs = mensagens.filter(m => m.role !== 'system');
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'x-api-key': aiKey, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-3-5-sonnet-20241022', max_tokens: 2048, system: sys?.content || '', messages: msgs })
+    });
+    if (!r.ok) { const e = await r.text(); throw new Error(e); }
+    const d = await r.json();
+    return d.content[0].text;
+  }
+
+  throw new Error('Provedor não suportado');
+}
+
+// ===== ENVIAR MENSAGEM IA =====
+const historico = [];
+
+async function enviarIA() {
+  const input = document.getElementById('aiChatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  if (!aiKey || !aiProvider) {
+    adicionarMensagemIA('bot', '⚠️ Cole sua chave de IA no campo do cabeçalho. Aceito: Groq (gsk_), OpenAI (sk-), Gemini (AIza), OpenRouter (sk-or-), xAI (xai-), Anthropic (sk-ant)');
+    return;
+  }
+  input.value = '';
+  adicionarMensagemIA('user', msg);
+  historico.push({ role: 'user', content: msg });
+  mostrarTyping(true);
+
+  const sistema = `Você é um assistente especialista em banco de dados PostgreSQL e SQL. Responda sempre em português brasileiro.
+Quando escrever SQL, use blocos \`\`\`sql ... \`\`\`. Seja direto e prático.
+${schemaContexto ? `\n\nEsquema atual do banco:\n${schemaContexto}` : ''}
+${ultimoErro ? `\n\nÚltimo erro SQL: ${ultimoErro}` : ''}`;
+
+  const mensagens = [{ role: 'system', content: sistema }, ...historico.slice(-10)];
+
+  try {
+    const resp = await chamarIA(mensagens);
+    historico.push({ role: 'assistant', content: resp });
+    adicionarMensagemIA('bot', resp);
+  } catch(e) {
+    adicionarMensagemIA('bot', `❌ Erro na IA: ${e.message}`);
+    historico.pop();
+  } finally {
+    mostrarTyping(false);
+  }
+}
+
+function perguntarRapido(pergunta) {
+  document.getElementById('aiChatInput').value = pergunta;
+  enviarIA();
+}
+
+function adicionarMensagemIA(tipo, texto) {
+  const cont = document.getElementById('aiMessages');
+  const div = document.createElement('div');
+  div.className = `ai-msg ${tipo}`;
+
+  if (tipo === 'bot') {
+    // Formatar markdown simples
+    let html = texto
+      .replace(/```sql\n?([\s\S]*?)```/gi, (_, code) => {
+        const escaped = code.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        return `<pre>${escaped}</pre><span class="copy-sql" onclick="copiarSQL(\`${code.replace(/`/g,'\\`')}\`)">📋 Usar no editor</span>`;
+      })
+      .replace(/```([\s\S]*?)```/g, (_, code) => `<pre>${code.replace(/</g,'&lt;')}</pre>`)
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\n/g, '<br>');
+    div.innerHTML = html;
+  } else {
+    div.textContent = texto;
+  }
+
+  cont.appendChild(div);
+  cont.scrollTop = cont.scrollHeight;
+}
+
+function copiarSQL(sql) {
+  document.getElementById('sqlInput').value = sql.trim();
+  trocarAba('query');
+}
+
+function mostrarTyping(show) {
+  document.getElementById('aiTyping').style.display = show ? 'flex' : 'none';
+  const cont = document.getElementById('aiMessages');
+  cont.scrollTop = cont.scrollHeight;
+}
+
+function limparChat() {
+  historico.length = 0;
+  document.getElementById('aiMessages').innerHTML = '<div class="ai-msg bot">Chat limpo. Como posso ajudar?</div>';
+}
+
+function enviarResultadoParaIA() {
+  if (!ultimosResultados.length) return;
+  const amostra = ultimosResultados.slice(0,5);
+  const texto = `Analisa estes dados do banco:\n\nColunas: ${ultimasColunas.join(', ')}\nAmostra (${amostra.length} de ${ultimosResultados.length} registros):\n${JSON.stringify(amostra, null, 2)}`;
+  document.getElementById('aiChatInput').value = texto;
+  enviarIA();
+}
+
+// ===== NEON HTTP API =====
+function parseConn(str) {
+  try {
+    str = str.trim().replace(/^postgresql:\/\//, 'http://').replace(/^postgres:\/\//, 'http://');
+    const url = new URL(str);
+    return { host: url.hostname, user: decodeURIComponent(url.username), password: decodeURIComponent(url.password), database: url.pathname.replace('/', '') };
+  } catch(e) { return null; }
+}
+
+async function runQuery(sql) {
+  const info = parseConn(connStr);
+  if (!info) throw new Error('String de conexão inválida');
+  const auth = btoa(`${info.user}:${info.password}`);
+  const resp = await fetch(`https://${info.host}/sql`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Basic ${auth}`, 'Neon-Connection-String': connStr },
+    body: JSON.stringify({ query: sql, params: [] })
+  });
+  if (!resp.ok) { const e = await resp.text(); throw new Error(e); }
+  return await resp.json();
+}
+
+// ===== CONEXÃO =====
+async function conectar() {
+  const val = document.getElementById('connInput').value.trim();
+  if (!val) return;
+  connStr = val;
+  setStatus('loading', 'Conectando...');
+  try {
+    await runQuery('SELECT 1');
+    conectado = true;
+    setStatus('connected', 'Conectado');
+    await listarTabelas();
+    mostrarMsg('resultsArea', 'success', '✅ Conexão estabelecida com sucesso!');
+    localStorage.setItem('sk_db_conn', val);
+  } catch(e) {
+    conectado = false;
+    setStatus('error', 'Erro de conexão');
+    ultimoErro = e.message;
+    mostrarMsg('resultsArea', 'error', '❌ Falha na conexão', e.message);
+  }
+}
+
+function desconectar() {
+  conectado = false; connStr = '';
+  setStatus('off', 'Desconectado');
+  document.getElementById('tableList').innerHTML = '<div style="padding:14px;color:var(--text3);font-size:11px;">Desconectado</div>';
+  document.getElementById('resultsArea').innerHTML = '<div class="empty"><div class="icon">🔌</div><h3>Desconectado</h3></div>';
+  document.getElementById('exportBar').style.display = 'none';
+  schemaContexto = '';
+}
+
+function setStatus(type, text) {
+  const dot = document.getElementById('statusDot');
+  dot.className = 'status-dot' + (type==='connected'?' connected':type==='error'?' error':'');
+  document.getElementById('statusText').textContent = text;
+}
+
+// ===== TABELAS =====
+async function listarTabelas() {
+  if (!conectado) return;
+  try {
+    const res = await runQuery("SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY table_name");
+    const lista = document.getElementById('tableList');
+    const sel = document.getElementById('tabelaDados');
+    if (!res.rows || !res.rows.length) { lista.innerHTML = '<div style="padding:14px;color:var(--text3);font-size:11px;">Nenhuma tabela</div>'; return; }
+    lista.innerHTML = ''; sel.innerHTML = '<option>-- Selecione --</option>';
+    let schemaTexto = 'Tabelas no banco: ' + res.rows.map(r => r.table_name).join(', ');
+    schemaContexto = schemaTexto;
+    res.rows.forEach(r => {
+      const nome = r.table_name;
+      const item = document.createElement('div');
+      item.className = 'table-item';
+      item.innerHTML = `<span>📋</span>${nome}`;
+      item.onclick = () => { document.querySelectorAll('.table-item').forEach(i=>i.classList.remove('active')); item.classList.add('active'); verEsquema(nome); preencherEditor(nome); };
+      lista.appendChild(item);
+      const opt = document.createElement('option'); opt.value = nome; opt.textContent = nome;
+      sel.appendChild(opt);
+    });
+  } catch(e) { console.error(e); }
+}
+
+// ===== SQL =====
+async function executarSQL() {
+  if (!conectado) { adicionarMensagemIA('bot','💡 Conecte ao banco primeiro antes de executar queries.'); return; }
+  const sql = document.getElementById('sqlInput').value.trim();
+  if (!sql) return;
+  const area = document.getElementById('resultsArea');
+  area.innerHTML = '<div class="loading"><div class="spinner"></div> Executando...</div>';
+  document.getElementById('exportBar').style.display = 'none';
+  const t0 = Date.now();
+  try {
+    const res = await runQuery(sql);
+    const ms = Date.now()-t0;
+    ultimoErro = '';
+    if (res.rows && res.rows.length > 0) {
+      ultimosResultados = res.rows; ultimasColunas = Object.keys(res.rows[0]);
+      renderTabela(area, res.rows, ultimasColunas, res.rows.length, ms);
+      document.getElementById('exportBar').style.display = 'flex';
+    } else {
+      const n = res.rowCount || 0;
+      area.innerHTML = `<div class="msg success">✅ Executado em ${ms}ms — ${n} linha(s) afetada(s)</div>`;
+      if (/create|drop|alter/i.test(sql)) await listarTabelas();
+    }
+  } catch(e) {
+    ultimoErro = e.message;
+    area.innerHTML = `<div class="msg error">❌ Erro SQL<pre>${e.message}</pre></div>`;
+    if (aiKey && aiProvider) adicionarMensagemIA('bot', `🔴 Detectei um erro SQL. Você quer que eu ajude a corrigi-lo? O erro foi: \`${e.message}\``);
+  }
+}
+
+function renderTabela(area, rows, cols, total, ms) {
+  let html = `<div class="results-info"><span class="badge green">✅ ${total} linha(s)</span><span class="badge">${cols.length} col</span><span class="badge">${ms}ms</span></div><table><thead><tr>`;
+  cols.forEach(c => { html += `<th>${c}</th>`; });
+  html += '</tr></thead><tbody>';
+  rows.forEach(row => {
+    html += '<tr>';
+    cols.forEach(c => {
+      const v = row[c];
+      if (v === null || v === undefined) html += `<td class="null">NULL</td>`;
+      else if (typeof v === 'number') html += `<td class="num">${v}</td>`;
+      else if (v === true) html += `<td class="bool-t">✓</td>`;
+      else if (v === false) html += `<td class="bool-f">✗</td>`;
+      else { const s = String(v); html += `<td title="${s.replace(/"/g,'&quot;')}">${s.length>80?s.slice(0,80)+'…':s}</td>`; }
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  area.innerHTML = html;
+}
+
+// ===== ESQUEMA =====
+async function verEsquema(tabela) {
+  if (!conectado) return;
+  trocarAba('schema');
+  const content = document.getElementById('schemaContent');
+  document.getElementById('schemaEmpty').style.display = 'none';
+  content.innerHTML = '<div class="loading"><div class="spinner"></div> Carregando esquema...</div>';
+  try {
+    const res = await runQuery(`SELECT column_name,data_type,is_nullable,column_default,character_maximum_length FROM information_schema.columns WHERE table_name='${tabela}' AND table_schema='public' ORDER BY ordinal_position`);
+    schemaContexto = `Tabela "${tabela}" com colunas: ` + res.rows.map(r => `${r.column_name} (${r.data_type}${r.is_nullable==='NO'?' NOT NULL':''})`).join(', ');
+    let html = `<div class="schema-table-name">📋 ${tabela} <span style="color:var(--text3);font-weight:400;font-size:11px">(${res.rows.length} colunas)</span></div>
+    <div class="col-list">
+    <div class="col-item" style="background:var(--bg3);font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;"><span>COLUNA</span><span>TIPO</span><span>NULO?</span><span>PADRÃO</span></div>`;
+    res.rows.forEach(col => {
+      const tipo = col.character_maximum_length ? `${col.data_type}(${col.character_maximum_length})` : col.data_type;
+      html += `<div class="col-item"><span class="col-name">${col.column_name}</span><span class="col-type">${tipo}</span><span class="col-nullable ${col.is_nullable==='YES'?'yes':'no'}">${col.is_nullable==='YES'?'○ Sim':'● Não'}</span><span class="col-default">${col.column_default||'—'}</span></div>`;
+    });
+    html += '</div>';
+    content.innerHTML = html;
+  } catch(e) { content.innerHTML = `<div class="msg error">❌ ${e.message}</div>`; }
+}
+
+// ===== DADOS =====
+async function carregarDados() {
+  if (!conectado) return;
+  const tabela = document.getElementById('tabelaDados').value;
+  const limite = document.getElementById('limiteDados').value || 100;
+  if (!tabela || tabela.startsWith('--')) return;
+  const area = document.getElementById('dadosArea');
+  area.innerHTML = '<div class="loading"><div class="spinner"></div> Carregando...</div>';
+  try {
+    const res = await runQuery(`SELECT * FROM ${tabela} LIMIT ${limite}`);
+    const ms = 0;
+    if (res.rows && res.rows.length > 0) {
+      ultimosResultados = res.rows; ultimasColunas = Object.keys(res.rows[0]);
+      renderTabela(area, res.rows, ultimasColunas, res.rows.length, ms);
+      document.getElementById('dadosInfo').textContent = `${res.rows.length} linhas`;
+    } else {
+      area.innerHTML = '<div class="msg info">ℹ️ Tabela vazia</div>';
+    }
+  } catch(e) { area.innerHTML = `<div class="msg error">❌ ${e.message}</div>`; }
+}
+
+// ===== EXPORTAR =====
+function exportarCSV() {
+  if (!ultimosResultados.length) return;
+  let csv = ultimasColunas.join(',') + '\n';
+  ultimosResultados.forEach(row => {
+    csv += ultimasColunas.map(c => { const v = row[c]; if (v===null) return ''; const s=String(v); return s.includes(',')||s.includes('"')||s.includes('\n')?`"${s.replace(/"/g,'""')}"`:s; }).join(',') + '\n';
+  });
+  baixar(csv, 'dados.csv', 'text/csv');
+}
+function exportarJSON() { if (!ultimosResultados.length) return; baixar(JSON.stringify(ultimosResultados,null,2),'dados.json','application/json'); }
+function exportarSQL() {
+  if (!ultimosResultados.length) return;
+  let sql = `-- Exportado em ${new Date().toLocaleString('pt-BR')}\n\n`;
+  ultimosResultados.forEach(row => {
+    const cols = ultimasColunas.filter(c=>row[c]!==null);
+    const vals = cols.map(c => { const v=row[c]; if(v===null)return'NULL'; if(typeof v==='number'||typeof v==='boolean')return v; return `'${String(v).replace(/'/g,"''")}'`; });
+    sql += `INSERT INTO tabela (${cols.join(', ')}) VALUES (${vals.join(', ')});\n`;
+  });
+  baixar(sql, 'dados.sql', 'text/plain');
+}
+function baixar(c, n, t) { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([c],{type:t})); a.download=n; a.click(); }
+
+// ===== CRIAR TABELA =====
+function abrirModalTabela() { document.getElementById('modalTabela').classList.add('open'); }
+function fecharModal(id) { document.getElementById(id).classList.remove('open'); }
+function adicionarColuna() {
+  const row = document.createElement('div'); row.className = 'col-row';
+  row.innerHTML = `<input type="text" placeholder="nome_coluna" style="flex:1.2;"/><select style="flex:1.5;"><option>VARCHAR(255)</option><option>TEXT</option><option>INTEGER</option><option>BIGINT</option><option>BOOLEAN</option><option>TIMESTAMPTZ</option><option>DECIMAL(10,2)</option><option>UUID</option><option>JSONB</option><option>DATE</option></select><input type="text" placeholder="NOT NULL / DEFAULT..." style="flex:1;"/><button class="sec" onclick="this.parentElement.remove()" style="padding:3px 7px;font-size:10px;">✕</button>`;
+  document.getElementById('colBuilder').appendChild(row);
+}
+async function criarTabela() {
+  const nome = document.getElementById('nomeTabela').value.trim();
+  if (!nome) { alert('Digite o nome da tabela'); return; }
+  const rows = document.querySelectorAll('#colBuilder .col-row');
+  const cols = [];
+  rows.forEach(row => {
+    const inputs = row.querySelectorAll('input,select');
+    const n = inputs[0].value.trim(), t = inputs[1].value, o = inputs[2]?.value.trim()||'';
+    if (n && t) cols.push(`${n} ${t}${o?' '+o:''}`);
+  });
+  if (!cols.length) { alert('Adicione ao menos uma coluna'); return; }
+  const sql = `CREATE TABLE IF NOT EXISTS ${nome} (\n  ${cols.join(',\n  ')}\n);`;
+  document.getElementById('sqlInput').value = sql;
+  fecharModal('modalTabela');
+  trocarAba('query');
+  await executarSQL();
+}
+
+// ===== UI =====
+function mostrarMsg(id, tipo, msg, det) {
+  document.getElementById(id).innerHTML = `<div class="msg ${tipo}">${msg}${det?`<pre>${det}</pre>`:''}</div>`;
+}
+function trocarAba(aba) {
+  document.querySelectorAll('.tab').forEach((t,i) => { t.classList.remove('active'); if((aba==='query'&&i===0)||(aba==='schema'&&i===1)||(aba==='dados'&&i===2)) t.classList.add('active'); });
+  document.getElementById('abaQuery').style.display = aba==='query'?'flex':'none';
+  document.getElementById('abaSchema').style.display = aba==='schema'?'block':'none';
+  document.getElementById('abaDados').style.display = aba==='dados'?'flex':'none';
+  if (aba==='dados') document.getElementById('abaDados').style.flexDirection='column';
+}
+function limparEditor() { document.getElementById('sqlInput').value=''; document.getElementById('resultsArea').innerHTML='<div class="empty"><div class="icon">⚡</div><h3>Editor limpo</h3></div>'; document.getElementById('exportBar').style.display='none'; }
+function inserirTemplate() {
+  const v = document.getElementById('templateSelect').value;
+  const t = {
+    select:'SELECT * FROM tabela LIMIT 100;', count:'SELECT COUNT(*) FROM tabela;',
+    tables:"SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY table_name;",
+    schema:"SELECT column_name,data_type,is_nullable,column_default FROM information_schema.columns WHERE table_name='tabela' ORDER BY ordinal_position;",
+    create:"CREATE TABLE nome (\n  id SERIAL PRIMARY KEY,\n  nome VARCHAR(255) NOT NULL,\n  criado_em TIMESTAMPTZ DEFAULT NOW()\n);",
+    insert:"INSERT INTO tabela (col1, col2) VALUES ('valor1', 'valor2');",
+    update:"UPDATE tabela SET coluna = 'valor' WHERE id = 1;",
+    delete:"DELETE FROM tabela WHERE id = 1;",
+    tamanho:"SELECT relname AS tabela, pg_size_pretty(pg_total_relation_size(relid)) AS tamanho\nFROM pg_catalog.pg_statio_user_tables\nORDER BY pg_total_relation_size(relid) DESC;",
+    indices:"SELECT indexname, indexdef FROM pg_indexes WHERE schemaname='public' ORDER BY tablename;"
+  };
+  if (t[v]) { document.getElementById('sqlInput').value=t[v]; document.getElementById('templateSelect').value=''; }
+}
+function preencherEditor(t) { document.getElementById('sqlInput').value=`SELECT * FROM ${t} LIMIT 100;`; }
+
+// Atalhos
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey && e.key==='Enter') { if(document.activeElement===document.getElementById('aiChatInput')) enviarIA(); else executarSQL(); }
+  if (e.ctrlKey && e.key==='l') { e.preventDefault(); limparEditor(); }
+  if (e.key==='Escape') document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.remove('open'));
+});
+
+// Restaurar dados salvos
+window.onload = () => {
+  const k = localStorage.getItem('sk_ai_key');
+  if (k) { document.getElementById('aiKeyInput').value = k; detectarChave(k); }
+  const c = localStorage.getItem('sk_db_conn');
+  if (c) document.getElementById('connInput').value = c;
+};
+</script>
+</body>
+</html>
