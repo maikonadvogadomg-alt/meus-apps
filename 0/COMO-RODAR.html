@@ -1,0 +1,125 @@
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>COMO-RODAR.md</title><style>
+    body{font-family:Georgia,Cambria,'Times New Roman',serif;max-width:860px;margin:30px auto;padding:0 24px;color:#222;line-height:1.7;background:#fafafa}
+    h1,h2,h3,h4{color:#2d4a1e;margin-top:28px;margin-bottom:12px}
+    h1{border-bottom:2px solid #5aab56;padding-bottom:8px}
+    h2{border-bottom:1px solid #ccc;padding-bottom:6px}
+    a{color:#0066cc}
+    code{background:#eee;padding:2px 5px;border-radius:3px;font-family:Consolas,monospace;font-size:90%}
+    pre{background:#0d1309;color:#a8d5a2;padding:14px;border-radius:6px;overflow-x:auto;font-size:13px;line-height:1.5}
+    pre code{background:transparent;color:inherit;padding:0}
+    blockquote{border-left:4px solid #5aab56;padding:6px 14px;margin:14px 0;background:#f0f7ed;color:#444}
+    table{border-collapse:collapse;margin:14px 0;width:100%}
+    th,td{border:1px solid #ccc;padding:8px 12px;text-align:left}
+    th{background:#e8f5e9}
+    .copy-btn{font-size:11px;padding:4px 10px;border:1px solid #5aab56;background:#fff;color:#2d4a1e;border-radius:5px;cursor:pointer;margin-left:8px}
+    .copy-btn:hover{background:#5aab56;color:#fff}
+    .code-wrap{position:relative;margin:14px 0}
+    .code-wrap .copy-btn{position:absolute;top:8px;right:8px}
+    @media print{.copy-btn{display:none}body{background:#fff}}
+  </style></head><body><h1 style="border:none">COMO-RODAR.md</h1><div class="md" id="md"><h1 id="codelens-local-como-rodar-e-gerar-executavel" data-heading="1" data-raw="CodeLens Local — Como Rodar e Gerar Executável">CodeLens Local — Como Rodar e Gerar Executável<button class="copy-btn" data-section="codelens-local-como-rodar-e-gerar-executavel">📋 Seção</button></h1><h2 id="pre-requisitos-instale-uma-vez-so" data-heading="2" data-raw="Pré-requisitos (instale uma vez só)">Pré-requisitos (instale uma vez só)<button class="copy-btn" data-section="pre-requisitos-instale-uma-vez-so">📋 Seção</button></h2><ul>
+<li><strong>Node.js LTS</strong> → <a href="https://nodejs.org">https://nodejs.org</a></li>
+</ul>
+<hr>
+<h2 id="opcao-1-rodar-direto-no-navegador-mais-simples" data-heading="2" data-raw="Opção 1: Rodar direto no navegador (mais simples)">Opção 1: Rodar direto no navegador (mais simples)<button class="copy-btn" data-section="opcao-1-rodar-direto-no-navegador-mais-simples">📋 Seção</button></h2><div class="code-wrap"><button class="copy-btn" data-code="# No terminal, dentro da pasta do projeto:
+npm install
+npm run dev
+
+# Depois abra: http://localhost:5000">📋 Copiar</button><pre><code class="language-bash"># No terminal, dentro da pasta do projeto:
+npm install
+npm run dev
+
+# Depois abra: http://localhost:5000</code></pre></div><hr>
+<h2 id="opcao-2-abrir-como-app-electron-janela-propria-sem-navegador" data-heading="2" data-raw="Opção 2: Abrir como app Electron (janela própria, sem navegador)">Opção 2: Abrir como app Electron (janela própria, sem navegador)<button class="copy-btn" data-section="opcao-2-abrir-como-app-electron-janela-propria-sem-navegador">📋 Seção</button></h2><div class="code-wrap"><button class="copy-btn" data-code="npm install
+npm run electron:dev">📋 Copiar</button><pre><code class="language-bash">npm install
+npm run electron:dev</code></pre></div><hr>
+<h2 id="opcao-3-gerar-o-executavel-exe-windows" data-heading="2" data-raw="Opção 3: Gerar o executável .exe (Windows)">Opção 3: Gerar o executável .exe (Windows)<button class="copy-btn" data-section="opcao-3-gerar-o-executavel-exe-windows">📋 Seção</button></h2><div class="code-wrap"><button class="copy-btn" data-code="npm install
+npm run electron:build">📋 Copiar</button><pre><code class="language-bash">npm install
+npm run electron:build</code></pre></div><p>O instalador <code>.exe</code> estará na pasta <code>dist-electron/</code>.</p>
+<hr>
+<h2 id="configurar-a-ia" data-heading="2" data-raw="Configurar a IA">Configurar a IA<button class="copy-btn" data-section="configurar-a-ia">📋 Seção</button></h2><p>Dentro do app:</p>
+<ol>
+<li>Clique em <strong>Configurações</strong> (ícone de engrenagem)</li>
+<li>Cole sua chave de API</li>
+<li>Escolha o modelo</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Provedor</th>
+<th>Chave começa com</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Claude (Anthropic)</td>
+<td><code>sk-ant-...</code></td>
+</tr>
+<tr>
+<td>Gemini (Google)</td>
+<td><code>AIza...</code></td>
+</tr>
+<tr>
+<td>Groq</td>
+<td><code>gsk_...</code></td>
+</tr>
+<tr>
+<td>OpenAI</td>
+<td><code>sk-...</code></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="banco-de-dados-sqlite-local-sem-internet" data-heading="2" data-raw="Banco de dados (SQLite — local, sem internet)">Banco de dados (SQLite — local, sem internet)<button class="copy-btn" data-section="banco-de-dados-sqlite-local-sem-internet">📋 Seção</button></h2><ul>
+<li>Os dados ficam salvos automaticamente no seu computador</li>
+<li><strong>Windows:</strong> <code>C:\Users\SeuNome\AppData\Roaming\CodeLens\codelens.db</code></li>
+<li><strong>Mac:</strong> <code>~/Library/Application Support/CodeLens/codelens.db</code></li>
+<li>Não precisa de Neon, PostgreSQL ou internet para funcionar</li>
+</ul>
+<hr>
+<h2 id="playground-html" data-heading="2" data-raw="Playground HTML">Playground HTML<button class="copy-btn" data-section="playground-html">📋 Seção</button></h2><ul>
+<li>Acesse pelo menu lateral (ícone de arquivo de código)</li>
+<li>Escreva HTML/CSS/JS e veja o resultado ao vivo</li>
+<li>Salve quantos arquivos quiser — ficam no banco local</li>
+<li>Botão <strong>Baixar .html</strong> para exportar o arquivo</li>
+</ul>
+<hr>
+<h2 id="problemas-comuns" data-heading="2" data-raw="Problemas comuns">Problemas comuns<button class="copy-btn" data-section="problemas-comuns">📋 Seção</button></h2><table>
+<thead>
+<tr>
+<th>Erro</th>
+<th>Solução</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Porta 5000 em uso</td>
+<td>Mude <code>PORT=5001</code> no arquivo <code>.env</code></td>
+</tr>
+<tr>
+<td><code>npm install</code> falha</td>
+<td>Certifique-se de ter Node.js 18+ instalado</td>
+</tr>
+<tr>
+<td>App não abre</td>
+<td>Tente <code>npm run dev</code> primeiro para ver o erro</td>
+</tr>
+</tbody></table>
+</div>
+    <script>
+    document.querySelectorAll('.copy-btn[data-code]').forEach(b=>{
+      b.onclick=()=>{navigator.clipboard.writeText(b.dataset.code);b.textContent='✓ Copiado!';setTimeout(()=>b.textContent='📋 Copiar',1500)};
+    });
+    document.querySelectorAll('.copy-btn[data-section]').forEach(b=>{
+      b.onclick=()=>{
+        const h=document.getElementById(b.dataset.section);
+        const lvl=parseInt(h.tagName[1]);
+        let txt=h.innerText.replace('📋 Seção','').trim()+'\n\n';
+        let el=h.nextElementSibling;
+        while(el){
+          if(/^H[1-6]$/.test(el.tagName)&&parseInt(el.tagName[1])<=lvl)break;
+          txt+=el.innerText+'\n\n';
+          el=el.nextElementSibling;
+        }
+        navigator.clipboard.writeText(txt.trim());
+        b.textContent='✓ Copiado!';setTimeout(()=>b.textContent='📋 Seção',1500);
+      };
+    });
+    </script>
+  </body></html>
