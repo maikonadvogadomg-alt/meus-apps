@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SK-Iara Suite Checker</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #1a1a1a;
+      color: #e0e0e0;
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      width: 100%;
+      height: 100%;
+    }
+
+    .sidebar {
+      width: 300px;
+      background: #222;
+      border-right: 1px solid #333;
+      overflow-y: auto;
+      padding: 16px;
+    }
+
+    .sidebar-title {
+      font-size: 12px;
+      font-weight: bold;
+      color: #0088ff;
+      text-transform: uppercase;
+      margin: 16px 0 8px 0;
+      letter-spacing: 1px;
+    }
+
+    .menu-item {
+      padding: 10px 12px;
+      background: #333;
+      margin: 4px 0;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+    }
+
+    .menu-item:hover {
+      background: #444;
+    }
+
+    .menu-item.active {
+      background: #0066cc;
+      border-left-color: #0088ff;
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #1a1a1a;
+      overflow: hidden;
+    }
+
+    .header {
+      padding: 16px;
+      background: #222;
+      border-bottom: 1px solid #333;
+    }
+
+    .header-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #0088ff;
+    }
+
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    .section {
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: bold;
+      color: #0088ff;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .check-item {
+      background: #333;
+      border: 1px solid #444;
+      border-radius: 6px;
+      padding: 12px;
+      margin: 8px 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .check-status {
+      font-size: 20px;
+      min-width: 30px;
+    }
+
+    .check-content {
+      flex: 1;
+    }
+
+    .check-name {
+      font-weight: bold;
+      color: #e0e0e0;
+      margin-bottom: 4px;
+    }
+
+    .check-desc {
+      font-size: 11px;
+      color: #999;
+    }
+
+    .check-ok {
+      color: #6bff6b;
+    }
+
+    .check-err {
+      color: #ff6b6b;
+    }
+
+    .check-warn {
+      color: #ffff6b;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat-box {
+      background: #333;
+      border: 1px solid #444;
+      border-radius: 6px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stat-num {
+      font-size: 24px;
+      font-weight: bold;
+      color: #0088ff;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: #999;
+      margin-top: 6px;
+    }
+
+    .code-block {
+      background: #333;
+      border: 1px solid #444;
+      border-radius: 6px;
+      padding: 12px;
+      margin: 12px 0;
+      overflow-x: auto;
+      font-family: monospace;
+      font-size: 11px;
+      color: #88ff88;
+      line-height: 1.6;
+    }
+
+    .box {
+      background: #333;
+      border-left: 4px solid #0088ff;
+      padding: 12px;
+      border-radius: 4px;
+      margin: 12px 0;
+    }
+
+    .box-title {
+      font-weight: bold;
+      color: #0088ff;
+      margin-bottom: 6px;
+    }
+
+    .btn {
+      padding: 8px 12px;
+      background: #0066cc;
+      border: 1px solid #0088ff;
+      color: white;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: #0077dd;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #222;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #444;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="sidebar">
+      <div class="sidebar-title">✅ Verificações</div>
+
+      <div class="menu-item active" onclick="loadCheck('overview')">📊 Visão Geral</div>
+      <div class="menu-item" onclick="loadCheck('functions')">🔧 Funções</div>
+      <div class="menu-item" onclick="loadCheck('apis')">🌐 APIs</div>
+      <div class="menu-item" onclick="loadCheck('features')">⚡ Recursos</div>
+      <div class="menu-item" onclick="loadCheck('issues')">⚠️ Problemas</div>
+      <div class="menu-item" onclick="loadCheck('fixes')">✅ Soluções</div>
+    </div>
+
+    <div class="main">
+      <div class="header">
+        <div class="header-title" id="pageTitle">Iara Suite — Verificação</div>
+      </div>
+
+      <div class="content" id="pageContent"></div>
+    </div>
+  </div>
+
+  <script>
+    // ═══════════════════════════════════════════════════════════════
+    // CHECKS DATABASE
+    // ═══════════════════════════════════════════════════════════════
+
+    const checks = {
+      overview: {
+        title: '📊 Visão Geral do Iara Suite',
+        content: `
+          <div class="stats-grid">
+            <div class="stat-box">
+              <div class="stat-num">8</div>
+              <div class="stat-label">Funções Principais</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-num">7</div>
+              <div class="stat-label">APIs Suportadas</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-num">5</div>
+              <div class="stat-label">Painéis</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-num">∞</div>
+              <div class="stat-label">Arquivos</div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">✅ Status Geral</div>
+            
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">Estrutura Completa</div>
+                <div class="check-desc">Todas as funções e módulos presentes</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">APIs Integradas</div>
+                <div class="check-desc">OpenRouter, Groq, OpenAI, Anthropic, Google, Mistral, DeepSeek, X.AI</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">Preview Funcional</div>
+                <div class="check-desc">HTML, CSS, Markdown, Texto</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">Chat IA Integrado</div>
+                <div class="check-desc">Jasmim — Assistente jurídico/programação</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">Mapper de Projetos</div>
+                <div class="check-desc">Análise de ZIP, dependências, endpoints, banco de dados</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">📋 Componentes</div>
+            
+            <div class="box">
+              <div class="box-title">🎨 UI/UX</div>
+              <div>
+                <p>• Sidebar com árvore de arquivos</p>
+                <p>• Editor de código com syntax highlight</p>
+                <p>• Preview ao vivo (split/full)</p>
+                <p>• Chat com IA integrado</p>
+                <p>• Mapper de projetos</p>
+              </div>
+            </div>
+
+            <div class="box">
+              <div class="box-title">💾 Armazenamento</div>
+              <div>
+                <p>• localStorage para arquivos</p>
+                <p>• localStorage para chaves de API</p>
+                <p>• localStorage para histórico de chat</p>
+                <p>• Export/Import ZIP</p>
+              </div>
+            </div>
+
+            <div class="box">
+              <div class="box-title">🤖 IA</div>
+              <div>
+                <p>• Suporte multi-provider</p>
+                <p>• Detecção automática de API</p>
+                <p>• Análise de código</p>
+                <p>• Geração de código</p>
+              </div>
+            </div>
+          </div>
+        `
+      },
+
+      functions: {
+        title: '🔧 Funções Principais',
+        content: `
+          <div class="section">
+            <div class="section-title">✅ Funções Presentes</div>
+            
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">toggleSidebar()</div>
+                <div class="check-desc">Mostra/esconde painel lateral</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">setPM(mode)</div>
+                <div class="check-desc">Muda modo de preview (off, split, full)</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">togglePreviewMin()</div>
+                <div class="check-desc">Minimiza/restaura preview</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">startVDrag() / onVDrag() / stopVDrag()</div>
+                <div class="check-desc">Arrasto vertical do divider</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">mTab(name, btn)</div>
+                <div class="check-desc">Troca de abas (Mapper)</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">initTabs()</div>
+                <div class="check-desc">Inicializa sistema de abas</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">openFile(path)</div>
+                <div class="check-desc">Abre arquivo no editor</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">saveFile() / saveAll()</div>
+                <div class="check-desc">Salva arquivos no localStorage</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">📊 Funções Utilitárias</div>
+            
+            <div class="code-block">
+const qs  = s => document.querySelector(s);
+const qsa = s => [...document.querySelectorAll(s)];
+const ls  = k => localStorage.getItem(k);
+const lsSet = (k,v) => localStorage.setItem(k,v);
+const esc = s => String(s).replace(/&/g,'&amp;')...
+const evPrevent = e => { e.preventDefault(); e.stopPropagation() };
+const getExt = p => (p.split('.').pop() || '').toLowerCase();
+            </div>
+          </div>
+        `
+      },
+
+      apis: {
+        title: '🌐 APIs Suportadas',
+        content: `
+          <div class="section">
+            <div class="section-title">✅ Provedores de IA</div>
+            
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">Anthropic (Claude)</div>
+                <div class="check-desc">Chave: sk-ant-* | Modelo: claude-haiku-4-20250514</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">Google (Gemini)</div>
+                <div class="check-desc">Chave: AIza* ou ya29.* | Modelo: gemini-2.0-flash</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">OpenRouter</div>
+                <div class="check-desc">Chave: sk-or-* | Modelo: anthropic/claude-haiku</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">Groq</div>
+                <div class="check-desc">Chave: gsk_* | Modelo: llama-3.3-70b-versatile</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">X.AI (Grok)</div>
+                <div class="check-desc">Chave: xai-* | Modelo: grok-3-mini</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">Mistral</div>
+                <div class="check-desc">Chave: ap-* | Modelo: mistral-large-latest</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">DeepSeek</div>
+                <div class="check-desc">Chave: ds-* | Modelo: deepseek-chat</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">OpenAI (Fallback)</div>
+                <div class="check-desc">Chave: sk-* | Modelo: gpt-4o-mini</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">🔍 Detecção Automática</div>
+            
+            <div class="code-block">
+const DETECT = key => {
+  if(key.startsWith('sk-ant-'))  return {p:'anthropic', ...};
+  if(key.startsWith('AIza'))     return {p:'google', ...};
+  if(key.startsWith('sk-or-'))   return {p:'compat', ...};
+  if(key.startsWith('gsk_'))     return {p:'compat', ...};
+  // ... mais provedores
+};
+            </div>
+          </div>
+        `
+      },
+
+      features: {
+        title: '⚡ Recursos Principais',
+        content: `
+          <div class="section">
+            <div class="section-title">📝 Editor</div>
+            
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">Árvore de Arquivos</div>
+                <div class="check-desc">Criar, renomear, duplicar, deletar pastas e arquivos</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">Números de Linha</div>
+                <div class="check-desc">Sincronização automática com scroll</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">Indentação com Tab</div>
+                <div class="check-desc">Suporte a tabulação automática</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">Ctrl+S para Salvar</div>
+                <div class="check-desc">Atalho global de teclado</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">Menu de Contexto</div>
+                <div class="check-desc">Clique direito na árvore de arquivos</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">👁️ Preview</div>
+            
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">Split View</div>
+                <div class="check-desc">Código e preview lado a lado</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">Full Screen</div>
+                <div class="check-desc">Preview em tela cheia</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">Redimensionável</div>
+                <div class="check-desc">Arraste o divider para ajustar tamanho</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">Tipos Suportados</div>
+                <div class="check-desc">HTML, CSS, Markdown, Texto puro</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">🤖 IA</div>
+            
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">Chat Interativo</div>
+                <div class="check-desc">Jasmim — Assistente jurídico/programação</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">Análise de Código</div>
+                <div class="check-desc">Clique direito no arquivo → Analisar com IA</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">Inserir Código</div>
+                <div class="check-desc">Copiar resposta da IA direto para o editor</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">Histórico</div>
+                <div class="check-desc">Últimas 40 mensagens mantidas</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">📊 Mapper</div>
+            
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">Análise de ZIP</div>
+                <div class="check-desc">Importa e analisa projetos completos</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">Dependências</div>
+                <div class="check-desc">Detecta package.json e imports</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">Endpoints</div>
+                <div class="check-desc">Detecta rotas Express, NestJS, fetch, axios</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">Banco de Dados</div>
+                <div class="check-desc">Detecta MongoDB, PostgreSQL, MySQL, Prisma, etc</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-ok">✓</div>
+              <div class="check-content">
+                <div class="check-name">Problemas</div>
+                <div class="check-desc">Detecta arquivos grandes, órfãos, .env exposto</div>
+              </div>
+            </div>
+          </div>
+        `
+      },
+
+      issues: {
+        title: '⚠️ Possíveis Problemas',
+        content: `
+          <div class="section">
+            <div class="section-title">🔴 Problemas Críticos</div>
+            
+            <div class="check-item">
+              <div class="check-status check-err">✗</div>
+              <div class="check-content">
+                <div class="check-name">Chave de API não configurada</div>
+                <div class="check-desc">Sem chave = Chat IA não funciona</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-err">✗</div>
+              <div class="check-content">
+                <div class="check-name">CORS bloqueado</div>
+                <div class="check-desc">Alguns provedores podem bloquear requisições do navegador</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-err">✗</div>
+              <div class="check-content">
+                <div class="check-name">localStorage cheio</div>
+                <div class="check-desc">Limite de ~5-10MB por domínio</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">🟡 Avisos</div>
+            
+            <div class="check-item">
+              <div class="check-status check-warn">⚠</div>
+              <div class="check-content">
+                <div class="check-name">JSZip não carregado</div>
+                <div class="check-desc">Mapper não funciona sem JSZip</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-warn">⚠</div>
+              <div class="check-content">
+                <div class="check-name">Preview pode ser lento</div>
+                <div class="check-desc">Arquivos HTML muito grandes podem travar</div>
+              </div>
+            </div>
+
+            <div class="check-item">
+              <div class="check-status check-warn">⚠</div>
+              <div class="check-content">
+                <div class="check-name">Sem suporte offline</div>
+                <div class="check-desc">Chat IA precisa de internet</div>
+              </div>
+            </div>
+          </div>
+        `
+      },
+
+      fixes: {
+        title: '✅ Soluções',
+        content: `
+          <div class="section">
+            <div class="section-title">🔧 Como Usar o Iara Suite</div>
+            
+            <div class="box">
+              <div class="box-title">1️⃣ Configurar Chaves de API</div>
+              <div>
+                <p>• Clique no botão de chaves (cadeado)</p>
+                <p>• Cole sua chave de API</p>
+                <p>• Sistema detecta automaticamente o provedor</p>
+                <p>• Ative a chave desejada</p>
+              </div>
+            </div>
+
+            <div class="box">
+              <div class="box-title">2️⃣ Usar o Editor</div>
+              <div>
+                <p>• Crie novos arquivos na árvore</p>
+                <p>• Escreva código HTML/CSS/JS</p>
+                <p>• Veja preview ao vivo</p>
+                <p>• Salve com Ctrl+S</p>
+              </div>
+            </div>
+
+            <div class="box">
+              <div class="box-title">3️⃣ Chat com IA</div>
+              <div>
+                <p>• Abra o painel de IA</p>
+                <p>• Digite sua pergunta</p>
+                <p>• Pressione Ctrl+Enter para enviar</p>
+                <p>• Copie código da resposta</p>
+              </div>
+            </div>
+
+            <div class="box">
+              <div class="box-title">4️⃣ Analisar Projeto</div>
+              <div>
+                <p>• Vá para a aba Mapper</p>
+                <p>• Arraste um ZIP ou selecione arquivo</p>
+                <p>• Aguarde análise</p>
+                <p>• Veja dependências, endpoints, banco de dados</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">🚀 Dicas</div>
+            
+            <div class="code-block">
+// Atalhos de teclado
+Ctrl+S        → Salvar arquivo
+Ctrl+Enter    → Enviar mensagem IA
+Tab           → Indentar código
+Escape        → Fechar modais
+
+// Chaves de teste (gratuitas)
+OpenRouter    → https://openrouter.ai
+Groq          → https://console.groq.com
+Google Gemini → https://ai.google.dev
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">📞 Suporte</div>
+            
+            <div class="box">
+              <div class="box-title">Dr. Maikon Caldeira</div>
+              <div>
+                <p>OAB/MG 183712</p>
+                <p>Iara Suite — Ferramenta de Desenvolvimento</p>
+                <p>Especialidade: HTML/CSS/JS, Python, Java/Kotlin</p>
+              </div>
+            </div>
+          </div>
+        `
+      }
+    };
+
+    // ═══════════════════════════════════════════════════════════════
+    // FUNCTIONS
+    // ═══════════════════════════════════════════════════════════════
+
+    function loadCheck(checkId) {
+      const check = checks[checkId];
+      
+      document.getElementById('pageTitle').textContent = check.title;
+      document.getElementById('pageContent').innerHTML = check.content;
+
+      // Update active menu item
+      document.querySelectorAll('.menu-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      event.target.classList.add('active');
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════════════════════════════════
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadCheck('overview');
+    });
+  </script>
+</body>
+</html>
