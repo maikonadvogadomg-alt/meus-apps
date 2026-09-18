@@ -1,0 +1,1440 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TSX → HTML Modular | Conversor Inteligente</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 24px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 1200px) {
+            .grid-3 {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            background: #f8f9ff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-area:hover {
+            background: #e3f2fd;
+            border-color: #764ba2;
+        }
+
+        .upload-area.dragover {
+            background: #e3f2fd;
+            border-color: #764ba2;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-small {
+            width: auto;
+            padding: 8px 15px;
+            font-size: 12px;
+            margin: 5px;
+        }
+
+        .file-tree {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .file-item {
+            padding: 8px;
+            margin: 3px 0;
+            background: #2d2d2d;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid #667eea;
+        }
+
+        .file-item:hover {
+            background: #3d3d3d;
+            transform: translateX(5px);
+        }
+
+        .file-item.selected {
+            background: #667eea;
+            color: white;
+        }
+
+        .file-item.tsx {
+            border-left-color: #4ec9b0;
+        }
+
+        .file-item.css {
+            border-left-color: #ce9178;
+        }
+
+        .file-item.json {
+            border-left-color: #d4d4d4;
+        }
+
+        .file-item.ts {
+            border-left-color: #569cd6;
+        }
+
+        .dependency-graph {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .dependency-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 3px;
+            border-left: 3px solid #28a745;
+            font-size: 12px;
+        }
+
+        .dependency-item.external {
+            border-left-color: #ffc107;
+        }
+
+        .dependency-item.internal {
+            border-left-color: #17a2b8;
+        }
+
+        .dependency-item.style {
+            border-left-color: #e83e8c;
+        }
+
+        .code-preview {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 500px;
+            overflow: auto;
+            line-height: 1.6;
+        }
+
+        .code-line {
+            padding: 2px 0;
+        }
+
+        .keyword {
+            color: #569cd6;
+        }
+
+        .string {
+            color: #ce9178;
+        }
+
+        .function {
+            color: #dcdcaa;
+        }
+
+        .comment {
+            color: #6a9955;
+        }
+
+        .tag {
+            color: #4ec9b0;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-size: 13px;
+            color: #1565c0;
+            line-height: 1.6;
+        }
+
+        .success-box {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-size: 13px;
+            color: #155724;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-size: 13px;
+            color: #856404;
+        }
+
+        .error-box {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-size: 13px;
+            color: #721c24;
+        }
+
+        .copy-btn {
+            padding: 10px 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .copy-btn:hover {
+            background: #764ba2;
+        }
+
+        .download-btn {
+            padding: 10px 15px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 10px;
+            margin-left: 5px;
+        }
+
+        .download-btn:hover {
+            background: #218838;
+        }
+
+        .module-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .module-card h4 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .module-card p {
+            color: #666;
+            font-size: 12px;
+            margin: 5px 0;
+        }
+
+        .stat-badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 11px;
+            margin: 3px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .sidebar {
+            position: fixed;
+            right: 20px;
+            top: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            max-width: 300px;
+            max-height: 80vh;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .sidebar h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .sidebar-item {
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 3px;
+            margin: 5px 0;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .sidebar-item:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .tree-indent {
+            margin-left: 20px;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            font-size: 12px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal.show {
+            display: block;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .close-modal {
+            color: #999;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-modal:hover {
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 13px;
+            font-family: 'Courier New', monospace;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+        }
+
+        .component-structure {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .component-structure-item {
+            padding: 8px;
+            margin: 3px 0;
+            background: white;
+            border-radius: 3px;
+            border-left: 3px solid #667eea;
+        }
+
+        .component-structure-item.prop {
+            border-left-color: #ffc107;
+            margin-left: 20px;
+        }
+
+        .component-structure-item.state {
+            border-left-color: #17a2b8;
+            margin-left: 20px;
+        }
+
+        .component-structure-item.method {
+            border-left-color: #28a745;
+            margin-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚛️ TSX → HTML Modular</h1>
+            <p>Converta componentes React/TSX em HTML modular com todas as dependências</p>
+        </div>
+
+        <!-- FERRAMENTA 1: IMPORTAR PROJETO -->
+        <div class="card">
+            <h2>📦 Passo 1: Importar Projeto</h2>
+            
+            <div class="upload-area" id="uploadArea" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                <div style="font-size: 48px; margin-bottom: 10px;">📁</div>
+                <p style="font-weight: 600; color: #333;">Arraste seu projeto ZIP aqui</p>
+                <p style="color: #999; font-size: 12px;">Suporta: React, Next.js, Vue, Angular</p>
+            </div>
+
+            <input type="file" id="fileInput" style="display: none;" accept=".zip" onchange="handleFileSelect(event)">
+
+            <button class="btn" onclick="document.getElementById('fileInput').click()">📤 Selecionar Arquivo</button>
+
+            <div id="importStatus"></div>
+        </div>
+
+        <!-- FERRAMENTA 2: ANÁLISE DE ARQUIVOS -->
+        <div class="card">
+            <h2>🔍 Passo 2: Selecionar Componente</h2>
+            
+            <div class="grid-3">
+                <div>
+                    <h3 style="color: #667eea; margin-bottom: 15px;">📂 Arquivos do Projeto</h3>
+                    <div class="file-tree" id="fileTree">
+                        <p style="color: #999;">Nenhum projeto importado</p>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 style="color: #667eea; margin-bottom: 15px;">🔗 Dependências</h3>
+                    <div class="dependency-graph" id="dependencyGraph">
+                        <p style="color: #999; font-size: 12px;">Selecione um arquivo para ver dependências</p>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 style="color: #667eea; margin-bottom: 15px;">📊 Análise</h3>
+                    <div id="analysisPanel">
+                        <p style="color: #999; font-size: 12px;">Selecione um arquivo para análise</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FERRAMENTA 3: PREVIEW E CONVERSÃO -->
+        <div class="card">
+            <h2>🎨 Passo 3: Preview e Conversão</h2>
+            
+            <div class="tabs">
+                <button class="tab-btn active" onclick="mudarTab('preview-original')">📝 Original</button>
+                <button class="tab-btn" onclick="mudarTab('preview-html')">🌐 HTML Convertido</button>
+                <button class="tab-btn" onclick="mudarTab('preview-modular')">📦 Modular</button>
+                <button class="tab-btn" onclick="mudarTab('preview-structure')">🏗️ Estrutura</button>
+            </div>
+
+            <div id="tab-preview-original" class="tab-content active">
+                <div class="code-preview" id="originalCode">
+                    <p style="color: #999;">Selecione um arquivo para visualizar</p>
+                </div>
+            </div>
+
+            <div id="tab-preview-html" class="tab-content">
+                <div class="code-preview" id="convertedHtml">
+                    <p style="color: #999;">Conversão será exibida aqui</p>
+                </div>
+                <button class="copy-btn" onclick="copiarCodigo('convertedHtml')">📋 Copiar HTML</button>
+                <button class="download-btn" onclick="baixarArquivo('convertedHtml', 'componente.html')">⬇️ Baixar HTML</button>
+            </div>
+
+            <div id="tab-preview-modular" class="tab-content">
+                <div id="modularPreview">
+                    <p style="color: #999; font-size: 12px;">Estrutura modular será exibida aqui</p>
+                </div>
+                <button class="download-btn" onclick="baixarTodoModular()">⬇️ Baixar Tudo (ZIP)</button>
+            </div>
+
+            <div id="tab-preview-structure" class="tab-content">
+                <div class="component-structure" id="componentStructure">
+                    <p style="color: #999; font-size: 12px;">Estrutura do componente será exibida aqui</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- FERRAMENTA 4: CONFIGURAÇÕES DE CONVERSÃO -->
+        <div class="card">
+            <h2>⚙️ Configurações de Conversão</h2>
+            
+            <div class="grid-3">
+                <div class="form-group">
+                    <label>Framework Original:</label>
+                    <select id="frameworkOrigem">
+                        <option value="react">React/TSX</option>
+                        <option value="vue">Vue</option>
+                        <option value="angular">Angular</option>
+                        <option value="svelte">Svelte</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Incluir Estilos:</label>
+                    <select id="incluirEstilos">
+                        <option value="inline">Inline (CSS no HTML)</option>
+                        <option value="external">Externo (arquivo .css)</option>
+                        <option value="tailwind">Tailwind Classes</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Incluir Scripts:</label>
+                    <select id="incluirScripts">
+                        <option value="inline">Inline (JS no HTML)</option>
+                        <option value="external">Externo (arquivo .js)</option>
+                        <option value="module">ES Modules</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="incluirDependencias" checked>
+                    Incluir todas as dependências relacionadas
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="incluirTemas" checked>
+                    Incluir temas e cores
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="incluirUtilidades" checked>
+                    Incluir funções utilitárias
+                </label>
+            </div>
+
+            <button class="btn" onclick="iniciarConversao()">🚀 Converter Componente</button>
+        </div>
+
+        <!-- FERRAMENTA 5: DOWNLOAD COMPLETO -->
+        <div class="card">
+            <h2>📥 Download Completo</h2>
+            
+            <div class="info-box">
+                ℹ️ Baixe tudo relacionado ao componente selecionado em um único arquivo ZIP
+            </div>
+
+            <div class="grid-3">
+                <div>
+                    <h4 style="color: #667eea; margin-bottom: 10px;">📦 Incluir no ZIP:</h4>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="zipHtml" checked>
+                            HTML Convertido
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="zipCss" checked>
+                            Estilos CSS
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="zipJs" checked>
+                            Scripts JavaScript
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 style="color: #667eea; margin-bottom: 10px;">🎨 Recursos:</h4>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="zipTemas" checked>
+                            Temas/Cores
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="zipUtilidades" checked>
+                            Utilitários
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="zipDependencias" checked>
+                            Dependências
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 style="color: #667eea; margin-bottom: 10px;">📄 Documentação:</h4>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="zipReadme" checked>
+                            README.md
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="zipPackageJson" checked>
+                            package.json
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="zipIndex" checked>
+                            index.html
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn" onclick="baixarCompleto()">📥 Baixar Tudo em ZIP</button>
+        </div>
+
+        <div class="footer">
+            <p>© 2024 TSX → HTML Modular Converter | Transforme seus componentes</p>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // ESTADO GLOBAL
+        // ============================================
+
+        let projetoAtual = {
+            arquivos: {},
+            estrutura: {},
+            dependencias: {},
+            temas: {},
+            utilidades: {}
+        };
+
+        let arquivoSelecionado = null;
+        let analiseArquivo = null;
+
+        // ============================================
+        // UPLOAD E PROCESSAMENTO
+        // ============================================
+
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleFileSelect({ target: { files } });
+            }
+        }
+
+        function handleFileSelect(event) {
+            const files = event.target.files;
+            if (files.length > 0) {
+                processarZip(files[0]);
+            }
+        }
+
+        async function processarZip(file) {
+            const statusDiv = document.getElementById('importStatus');
+            statusDiv.innerHTML = '<div class="info-box">⏳ Processando arquivo...</div>';
+
+            try {
+                const zip = new JSZip();
+                const conteudo = await zip.loadAsync(file);
+
+                projetoAtual = {
+                    arquivos: {},
+                    estrutura: {},
+                    dependencias: {},
+                    temas: {},
+                    utilidades: {}
+                };
+
+                // Processar cada arquivo
+                for (const [caminho, item] of Object.entries(conteudo.files)) {
+                    if (!item.dir) {
+                        const extensao = caminho.split('.').pop().toLowerCase();
+                        const conteudoArquivo = await item.async('string');
+
+                        projetoAtual.arquivos[caminho] = {
+                            conteudo: conteudoArquivo,
+                            extensao: extensao,
+                            tamanho: item._data.uncompressedSize
+                        };
+
+                        // Analisar arquivo
+                        analisarArquivo(caminho, conteudoArquivo, extensao);
+                    }
+                }
+
+                exibirArvoreArquivos();
+                statusDiv.innerHTML = '<div class="success-box">✅ Projeto importado com sucesso! ' + Object.keys(projetoAtual.arquivos).length + ' arquivos encontrados</div>';
+
+            } catch (error) {
+                statusDiv.innerHTML = '<div class="error-box">❌ Erro ao processar arquivo: ' + error.message + '</div>';
+            }
+        }
+
+        // ============================================
+        // ANÁLISE DE ARQUIVOS
+        // ============================================
+
+        function analisarArquivo(caminho, conteudo, extensao) {
+            if (extensao === 'tsx' || extensao === 'jsx' || extensao === 'ts' || extensao === 'js') {
+                analisarComponente(caminho, conteudo);
+            } else if (extensao === 'css' || extensao === 'scss') {
+                analisarEstilos(caminho, conteudo);
+            } else if (extensao === 'json') {
+                analisarJson(caminho, conteudo);
+            }
+        }
+
+        function analisarComponente(caminho, conteudo) {
+            const imports = extrairImports(conteudo);
+            const exports = extrairExports(conteudo);
+            const props = extrairProps(conteudo);
+            const states = extrairStates(conteudo);
+            const funcoes = extrairFuncoes(conteudo);
+            const cores = extrairCores(conteudo);
+
+            projetoAtual.dependencias[caminho] = {
+                imports: imports,
+                exports: exports,
+                props: props,
+                states: states,
+                funcoes: funcoes
+            };
+
+            if (cores.length > 0) {
+                projetoAtual.temas[caminho] = cores;
+            }
+        }
+
+        function analisarEstilos(caminho, conteudo) {
+            const cores = extrairCoresCSS(conteudo);
+            const classes = extrairClasses(conteudo);
+            const variaveis = extrairVariaveisCSS(conteudo);
+
+            projetoAtual.temas[caminho] = {
+                cores: cores,
+                classes: classes,
+                variaveis: variaveis
+            };
+        }
+
+        function analisarJson(caminho, conteudo) {
+            try {
+                const json = JSON.parse(conteudo);
+                if (caminho.includes('package.json')) {
+                    projetoAtual.dependencias['package.json'] = json.dependencies || {};
+                }
+            } catch (e) {
+                // Ignorar erros de parse
+            }
+        }
+
+        // ============================================
+        // EXTRAÇÃO DE DADOS
+        // ============================================
+
+        function extrairImports(conteudo) {
+            const regex = /import\s+(?:{[^}]*}|[\w*]+)\s+from\s+['"]([^'"]+)['"]/g;
+            const imports = [];
+            let match;
+            while ((match = regex.exec(conteudo)) !== null) {
+                imports.push(match[1]);
+            }
+            return imports;
+        }
+
+        function extrairExports(conteudo) {
+            const regex = /export\s+(?:default\s+)?(?:const|function|class)\s+(\w+)/g;
+            const exports = [];
+            let match;
+            while ((match = regex.exec(conteudo)) !== null) {
+                exports.push(match[1]);
+            }
+            return exports;
+        }
+
+        function extrairProps(conteudo) {
+            const regex = /interface\s+(\w+)Props\s*{([^}]*)}/;
+            const match = conteudo.match(regex);
+            if (match) {
+                const props = match[2].split(';').filter(p => p.trim());
+                return props.map(p => p.trim());
+            }
+            return [];
+        }
+
+        function extrairStates(conteudo) {
+            const regex = /useState\s*<[^>]*>\s*\(\s*([^)]*)\s*\)/g;
+            const states = [];
+            let match;
+            while ((match = regex.exec(conteudo)) !== null) {
+                states.push(match[1]);
+            }
+            return states;
+        }
+
+        function extrairFuncoes(conteudo) {
+            const regex = /(?:const|function)\s+(\w+)\s*=?\s*(?:\([^)]*\))?\s*(?:=>|{)/g;
+            const funcoes = [];
+            let match;
+            while ((match = regex.exec(conteudo)) !== null) {
+                if (match[1] !== 'useState' && match[1] !== 'useEffect') {
+                    funcoes.push(match[1]);
+                }
+            }
+            return [...new Set(funcoes)];
+        }
+
+        function extrairCores(conteudo) {
+            const regex = /#[0-9a-fA-F]{6}|rgb\([^)]*\)|hsl\([^)]*\)/g;
+            return [...new Set(conteudo.match(regex) || [])];
+        }
+
+        function extrairCoresCSS(conteudo) {
+            const regex = /#[0-9a-fA-F]{6}|rgb\([^)]*\)|hsl\([^)]*\)/g;
+            return [...new Set(conteudo.match(regex) || [])];
+        }
+
+        function extrairClasses(conteudo) {
+            const regex = /\.([a-zA-Z_-][a-zA-Z0-9_-]*)\s*{/g;
+            const classes = [];
+            let match;
+            while ((match = regex.exec(conteudo)) !== null) {
+                classes.push(match[1]);
+            }
+            return classes;
+        }
+
+        function extrairVariaveisCSS(conteudo) {
+            const regex = /--([a-zA-Z_-][a-zA-Z0-9_-]*)\s*:\s*([^;]+)/g;
+            const variaveis = {};
+            let match;
+            while ((match = regex.exec(conteudo)) !== null) {
+                variaveis[match[1]] = match[2].trim();
+            }
+            return variaveis;
+        }
+
+        // ============================================
+        // EXIBIÇÃO DE ÁRVORE
+        // ============================================
+
+        function exibirArvoreArquivos() {
+            const fileTree = document.getElementById('fileTree');
+            let html = '';
+
+            const arquivos = Object.keys(projetoAtual.arquivos).sort();
+
+            // Agrupar por tipo
+            const porTipo = {};
+            arquivos.forEach(arquivo => {
+                const ext = arquivo.split('.').pop();
+                if (!porTipo[ext]) porTipo[ext] = [];
+                porTipo[ext].push(arquivo);
+            });
+
+            for (const [tipo, arqs] of Object.entries(porTipo)) {
+                html += `<div style="margin-bottom: 10px;">`;
+                html += `<div style="color: #667eea; font-weight: 600; margin-bottom: 5px;">📄 ${tipo.toUpperCase()}</div>`;
+                arqs.forEach(arq => {
+                    const nome = arq.split('/').pop();
+                    html += `<div class="file-item ${tipo}" onclick="selecionarArquivo('${arq}')">
+                        ${nome}
+                    </div>`;
+                });
+                html += `</div>`;
+            }
+
+            fileTree.innerHTML = html;
+        }
+
+        function selecionarArquivo(caminho) {
+            arquivoSelecionado = caminho;
+            const arquivo = projetoAtual.arquivos[caminho];
+
+            // Atualizar preview original
+            document.getElementById('originalCode').innerHTML = `<pre>${escapeHtml(arquivo.conteudo)}</pre>`;
+
+            // Atualizar dependências
+            exibirDependencias(caminho);
+
+            // Atualizar análise
+            exibirAnalise(caminho);
+
+            // Converter
+            if (arquivo.extensao === 'tsx' || arquivo.extensao === 'jsx') {
+                converterComponente(caminho, arquivo.conteudo);
+            }
+
+            // Marcar como selecionado
+            document.querySelectorAll('.file-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+        }
+
+        function exibirDependencias(caminho) {
+            const deps = projetoAtual.dependencias[caminho];
+            const depGraph = document.getElementById('dependencyGraph');
+
+            if (!deps) {
+                depGraph.innerHTML = '<p style="color: #999; font-size: 12px;">Nenhuma dependência encontrada</p>';
+                return;
+            }
+
+            let html = '';
+
+            if (deps.imports && deps.imports.length > 0) {
+                html += '<div style="margin-bottom: 10px;"><strong style="color: #17a2b8;">📦 Imports:</strong>';
+                deps.imports.forEach(imp => {
+                    const tipo = imp.includes('react') ? 'external' : imp.startsWith('.') ? 'internal' : 'external';
+                    html += `<div class="dependency-item ${tipo}">${imp}</div>`;
+                });
+                html += '</div>';
+            }
+
+            if (deps.exports && deps.exports.length > 0) {
+                html += '<div style="margin-bottom: 10px;"><strong style="color: #28a745;">📤 Exports:</strong>';
+                deps.exports.forEach(exp => {
+                    html += `<div class="dependency-item">${exp}</div>`;
+                });
+                html += '</div>';
+            }
+
+            if (deps.props && deps.props.length > 0) {
+                html += '<div style="margin-bottom: 10px;"><strong style="color: #ffc107;">⚙️ Props:</strong>';
+                deps.props.forEach(prop => {
+                    html += `<div class="dependency-item">${prop}</div>`;
+                });
+                html += '</div>';
+            }
+
+            depGraph.innerHTML = html;
+        }
+
+        function exibirAnalise(caminho) {
+            const deps = projetoAtual.dependencias[caminho];
+            const panel = document.getElementById('analysisPanel');
+
+            if (!deps) {
+                panel.innerHTML = '<p style="color: #999; font-size: 12px;">Nenhuma análise disponível</p>';
+                return;
+            }
+
+            let html = `
+                <div class="module-card">
+                    <h4>📊 Estatísticas</h4>
+                    <p><span class="stat-badge">Imports: ${(deps.imports || []).length}</span></p>
+                    <p><span class="stat-badge">Exports: ${(deps.exports || []).length}</span></p>
+                    <p><span class="stat-badge">Props: ${(deps.props || []).length}</span></p>
+                    <p><span class="stat-badge">States: ${(deps.states || []).length}</span></p>
+                    <p><span class="stat-badge">Funções: ${(deps.funcoes || []).length}</span></p>
+                </div>
+            `;
+
+            if (deps.states && deps.states.length > 0) {
+                html += `<div class="module-card">
+                    <h4>🔄 Estados</h4>
+                    ${deps.states.map(s => `<p>• ${s}</p>`).join('')}
+                </div>`;
+            }
+
+            if (deps.funcoes && deps.funcoes.length > 0) {
+                html += `<div class="module-card">
+                    <h4>🔧 Funções</h4>
+                    ${deps.funcoes.slice(0, 5).map(f => `<p>• ${f}()</p>`).join('')}
+                    ${deps.funcoes.length > 5 ? `<p>... e mais ${deps.funcoes.length - 5}</p>` : ''}
+                </div>`;
+            }
+
+            panel.innerHTML = html;
+        }
+
+        // ============================================
+        // CONVERSÃO TSX → HTML
+        // ============================================
+
+        function converterComponente(caminho, conteudo) {
+            const framework = document.getElementById('frameworkOrigem').value;
+            const incluirEstilos = document.getElementById('incluirEstilos').value;
+            const incluirScripts = document.getElementById('incluirScripts').value;
+
+            let html = '';
+
+            // Extrair JSX/TSX
+            const componentName = extrairNomeComponente(conteudo);
+            const jsxContent = extrairJSX(conteudo);
+            const cssContent = extrairCSSEmbutido(conteudo);
+
+            // Criar HTML
+            html += '<!DOCTYPE html>\n';
+            html += '<html lang="pt-BR">\n';
+            html += '<head>\n';
+            html += '  <meta charset="UTF-8">\n';
+            html += '  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n';
+            html += `  <title>${componentName}</title>\n`;
+
+            // Estilos
+            if (incluirEstilos === 'inline' && cssContent) {
+                html += '  <style>\n';
+                html += cssContent;
+                html += '  </style>\n';
+            } else if (incluirEstilos === 'external') {
+                html += '  <link rel="stylesheet" href="styles.css">\n';
+            }
+
+            html += '</head>\n';
+            html += '<body>\n';
+            html += '  <div id="root">\n';
+            html += jsxContent;
+            html += '  </div>\n';
+
+            // Scripts
+            if (incluirScripts === 'inline') {
+                html += '  <script>\n';
+                html += extrairJavaScript(conteudo);
+                html += '  </script>\n';
+            } else if (incluirScripts === 'external') {
+                html += '  <script src="script.js"></script>\n';
+            }
+
+            html += '</body>\n';
+            html += '</html>\n';
+
+            document.getElementById('convertedHtml').innerHTML = `<pre>${escapeHtml(html)}</pre>`;
+
+            // Exibir estrutura
+            exibirEstrutura(conteudo);
+
+            // Exibir modular
+            exibirModular(caminho, conteudo);
+
+            analiseArquivo = {
+                html: html,
+                css: cssContent,
+                js: extrairJavaScript(conteudo),
+                componentName: componentName
+            };
+        }
+
+        function extrairNomeComponente(conteudo) {
+            const regex = /export\s+(?:default\s+)?(?:const|function)\s+(\w+)/;
+            const match = conteudo.match(regex);
+            return match ? match[1] : 'Component';
+        }
+
+        function extrairJSX(conteudo) {
+            // Extrair o return JSX
+            const regex = /return\s*\(\s*([\s\S]*?)\s*\);/;
+            const match = conteudo.match(regex);
+            if (match) {
+                let jsx = match[1];
+                // Converter JSX para HTML
+                jsx = jsx.replace(/className=/g, 'class=');
+                jsx = jsx.replace(/{([^}]*)}/g, '<!-- $1 -->');
+                return jsx;
+            }
+            return '<div>Componente</div>';
+        }
+
+        function extrairCSSEmbutido(conteudo) {
+            const regex = /const\s+styles\s*=\s*{([\s\S]*?)};/;
+            const match = conteudo.match(regex);
+            if (match) {
+                return match[1];
+            }
+            return '';
+        }
+
+        function extrairJavaScript(conteudo) {
+            // Extrair funções e lógica
+            const regex = /(?:const|function)\s+(\w+)\s*=?\s*(?:\([^)]*\))?\s*(?:=>|{)([\s\S]*?)(?:;|$)/g;
+            let js = '';
+            let match;
+            while ((match = regex.exec(conteudo)) !== null) {
+                if (match[1] !== 'useState' && match[1] !== 'useEffect') {
+                    js += `function ${match[1]}() {\n  ${match[2]}\n}\n\n`;
+                }
+            }
+            return js;
+        }
+
+        function exibirEstrutura(conteudo) {
+            const deps = projetoAtual.dependencias[arquivoSelecionado];
+            let html = '';
+
+            html += `<div class="component-structure-item">
+                <strong>🏗️ ${extrairNomeComponente(conteudo)}</strong>
+            </div>`;
+
+            if (deps && deps.props) {
+                deps.props.forEach(prop => {
+                    html += `<div class="component-structure-item prop">
+                        📌 ${prop}
+                    </div>`;
+                });
+            }
+
+            if (deps && deps.states) {
+                deps.states.forEach(state => {
+                    html += `<div class="component-structure-item state">
+                        🔄 ${state}
+                    </div>`;
+                });
+            }
+
+            if (deps && deps.funcoes) {
+                deps.funcoes.forEach(func => {
+                    html += `<div class="component-structure-item method">
+                        🔧 ${func}()
+                    </div>`;
+                });
+            }
+
+            document.getElementById('componentStructure').innerHTML = html;
+        }
+
+        function exibirModular(caminho, conteudo) {
+            const componentName = extrairNomeComponente(conteudo);
+            const deps = projetoAtual.dependencias[caminho];
+
+            let html = `
+                <div class="module-card">
+                    <h4>📦 ${componentName}.html</h4>
+                    <p>Componente principal convertido</p>
+                    <button class="btn-small" onclick="copiarCodigo('convertedHtml')">📋 Copiar</button>
+                </div>
+            `;
+
+            if (deps && deps.imports && deps.imports.length > 0) {
+                html += `<div class="module-card">
+                    <h4>🔗 Dependências (${deps.imports.length})</h4>
+                    ${deps.imports.map(imp => `<p>• ${imp}</p>`).join('')}
+                </div>`;
+            }
+
+            if (Object.keys(projetoAtual.temas).length > 0) {
+                html += `<div class="module-card">
+                    <h4>🎨 Temas e Cores</h4>
+                    <p>Arquivo: theme.css</p>
+                    <button class="btn-small" onclick="baixarTema()">⬇️ Baixar</button>
+                </div>`;
+            }
+
+            html += `<div class="module-card">
+                <h4>📄 Arquivos Relacionados</h4>
+                <p>• ${componentName}.html</p>
+                <p>• ${componentName}.css</p>
+                <p>• ${componentName}.js</p>
+                <p>• theme.css</p>
+                <p>• utils.js</p>
+            </div>`;
+
+            document.getElementById('modularPreview').innerHTML = html;
+        }
+
+        // ============================================
+        // DOWNLOAD
+        // ============================================
+
+        function copiarCodigo(elementId) {
+            const elemento = document.getElementById(elementId);
+            const texto = elemento.textContent || elemento.innerText;
+            navigator.clipboard.writeText(texto).then(() => {
+                alert('✅ Copiado para a área de transferência!');
+            });
+        }
+
+        function baixarArquivo(elementId, nomeArquivo) {
+            const elemento = document.getElementById(elementId);
+            const texto = elemento.textContent || elemento.innerText;
+            const blob = new Blob([texto], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = nomeArquivo;
+            a.click();
+        }
+
+        async function baixarCompleto() {
+            if (!analiseArquivo) {
+                alert('❌ Selecione um componente primeiro!');
+                return;
+            }
+
+            const zip = new JSZip();
+            const componentName = analiseArquivo.componentName;
+
+            // Adicionar arquivos
+            if (document.getElementById('zipHtml').checked) {
+                zip.file(`${componentName}.html`, analiseArquivo.html);
+            }
+
+            if (document.getElementById('zipCss').checked && analiseArquivo.css) {
+                zip.file(`${componentName}.css`, analiseArquivo.css);
+            }
+
+            if (document.getElementById('zipJs').checked && analiseArquivo.js) {
+                zip.file(`${componentName}.js`, analiseArquivo.js);
+            }
+
+            if (document.getElementById('zipReadme').checked) {
+                const readme = `# ${componentName}\n\nComponente convertido de TSX para HTML Modular.\n\n## Arquivos\n- ${componentName}.html\n- ${componentName}.css\n- ${componentName}.js`;
+                zip.file('README.md', readme);
+            }
+
+            if (document.getElementById('zipIndex').checked) {
+                const index = `<!DOCTYPE html>\n<html>\n<head>\n  <link rel="stylesheet" href="${componentName}.css">\n</head>\n<body>\n  <div id="root"></div>\n  <script src="${componentName}.js"></script>\n</body>\n</html>`;
+                zip.file('index.html', index);
+            }
+
+            // Gerar ZIP
+            const blob = await zip.generateAsync({ type: 'blob' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${componentName}-modular.zip`;
+            a.click();
+        }
+
+        function baixarTodoModular() {
+            baixarCompleto();
+        }
+
+        // ============================================
+        // CONVERSÃO
+        // ============================================
+
+        function iniciarConversao() {
+            if (!arquivoSelecionado) {
+                alert('❌ Selecione um arquivo primeiro!');
+                return;
+            }
+
+            const arquivo = projetoAtual.arquivos[arquivoSelecionado];
+            converterComponente(arquivoSelecionado, arquivo.conteudo);
+            alert('✅ Conversão concluída!');
+        }
+
+        // ============================================
+        // UTILITÁRIOS
+        // ============================================
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function mudarTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            event.target.classList.add('active');
+            document.getElementById(`tab-${tab}`).classList.add('active');
+        }
+
+        function baixarTema() {
+            alert('🎨 Tema será baixado em breve!');
+        }
+    </script>
+</body>
+</html>
