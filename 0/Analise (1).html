@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisador Universal de Projetos</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 24px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+        }
+
+        .card h3 {
+            color: #667eea;
+            margin-top: 20px;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 1200px) {
+            .grid-4 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .grid-3 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .grid-4, .grid-3, .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            background: #f8f9ff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-area:hover {
+            background: #e3f2fd;
+            border-color: #764ba2;
+        }
+
+        .upload-area.dragover {
+            background: #e3f2fd;
+            border-color: #764ba2;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-small {
+            width: auto;
+            padding: 8px 15px;
+            font-size: 12px;
+            margin: 5px;
+            display: inline-block;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .stat-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-box h4 {
+            color: #667eea;
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .stat-box p {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-size: 13px;
+            color: #1565c0;
+            line-height: 1.6;
+        }
+
+        .success-box {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-size: 13px;
+            color: #155724;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-size: 13px;
+            color: #856404;
+        }
+
+        .error-box {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-size: 13px;
+            color: #721c24;
+        }
+
+        .file-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 5px;
+            margin: 8px 0;
+            border-left: 4px solid #667eea;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .file-item:hover {
+            background: #e3f2fd;
+            transform: translateX(5px);
+        }
+
+        .file-item.selected {
+            background: #667eea;
+            color: white;
+        }
+
+        .file-item.bug {
+            border-left-color: #dc3545;
+        }
+
+        .file-item.todo {
+            border-left-color: #ffc107;
+        }
+
+        .file-item.config {
+            border-left-color: #17a2b8;
+        }
+
+        .code-preview {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow: auto;
+            line-height: 1.6;
+        }
+
+        .copy-btn {
+            padding: 10px 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .copy-btn:hover {
+            background: #764ba2;
+        }
+
+        .download-btn {
+            padding: 10px 15px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 10px;
+            margin-left: 5px;
+        }
+
+        .download-btn:hover {
+            background: #218838;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+            margin: 2px;
+        }
+
+        .badge-bug {
+            background: #dc3545;
+            color: white;
+        }
+
+        .badge-todo {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .badge-fixme {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .badge-config {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .badge-dependency {
+            background: #28a745;
+            color: white;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+        }
+
+        .mermaid {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            font-size: 12px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 13px;
+            font-family: 'Courier New', monospace;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+        }
+
+        .issue-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #dc3545;
+        }
+
+        .issue-card.fixed {
+            border-left-color: #28a745;
+            background: #f0f9f5;
+        }
+
+        .issue-card strong {
+            color: #333;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .issue-card p {
+            color: #666;
+            margin: 5px 0;
+            font-size: 12px;
+        }
+
+        .dependency-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 5px;
+            margin: 8px 0;
+            border-left: 4px solid #28a745;
+            font-size: 12px;
+        }
+
+        .dependency-item.dev {
+            border-left-color: #ffc107;
+        }
+
+        .dependency-item.peer {
+            border-left-color: #17a2b8;
+        }
+
+        .dependency-item.optional {
+            border-left-color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Analisador Universal de Projetos</h1>
+            <p>Analise qualquer projeto: Bugs, Dependências, Configurações, Estrutura</p>
+        </div>
+
+        <!-- FERRAMENTA 1: IMPORTAR PROJETO -->
+        <div class="card">
+            <h2>📦 Passo 1: Importar Projeto</h2>
+            
+            <div class="upload-area" id="uploadArea" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                <div style="font-size: 48px; margin-bottom: 10px;">📁</div>
+                <p style="font-weight: 600; color: #333;">Arraste seu projeto ZIP aqui</p>
+                <p style="color: #999; font-size: 12px;">Suporta: React, Vue, Angular, Node.js, Python, etc</p>
+            </div>
+
+            <input type="file" id="fileInput" style="display: none;" accept=".zip" onchange="handleFileSelect(event)">
+
+            <button class="btn" onclick="document.getElementById('fileInput').click()">📤 Selecionar Arquivo</button>
+
+            <div id="importStatus"></div>
+        </div>
+
+        <!-- FERRAMENTA 2: VISÃO GERAL -->
+        <div class="card">
+            <h2>📊 Passo 2: Visão Geral do Projeto</h2>
+            
+            <div class="grid-4">
+                <div class="stat-box">
+                    <h4 id="totalArquivos">0</h4>
+                    <p>Arquivos</p>
+                </div>
+                <div class="stat-box">
+                    <h4 id="totalBugs">0</h4>
+                    <p>Bugs/Issues</p>
+                </div>
+                <div class="stat-box">
+                    <h4 id="totalDependencias">0</h4>
+                    <p>Dependências</p>
+                </div>
+                <div class="stat-box">
+                    <h4 id="totalConfiguracao">0</h4>
+                    <p>Configurações</p>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab-btn active" onclick="mudarTab('overview-arquivos')">📂 Arquivos</button>
+                <button class="tab-btn" onclick="mudarTab('overview-tipos')">📊 Tipos</button>
+                <button class="tab-btn" onclick="mudarTab('overview-tamanho')">💾 Tamanho</button>
+            </div>
+
+            <div id="tab-overview-arquivos" class="tab-content active">
+                <input type="text" class="search-box" id="searchArquivos" placeholder="🔍 Buscar arquivos..." onkeyup="filtrarArquivos()">
+                <div id="listaArquivos"></div>
+            </div>
+
+            <div id="tab-overview-tipos" class="tab-content">
+                <div id="tiposArquivos"></div>
+            </div>
+
+            <div id="tab-overview-tamanho" class="tab-content">
+                <div id="tamanhoArquivos"></div>
+            </div>
+        </div>
+
+        <!-- FERRAMENTA 3: ANÁLISE DE BUGS/ISSUES -->
+        <div class="card">
+            <h2>🐛 Passo 3: Análise de Bugs e Issues</h2>
+            
+            <div class="tabs">
+                <button class="tab-btn active" onclick="mudarTab('bugs-todos')">🔴 Todos</button>
+                <button class="tab-btn" onclick="mudarTab('bugs-bugs')">🐛 Bugs</button>
+                <button class="tab-btn" onclick="mudarTab('bugs-todo')">📝 TODOs</button>
+                <button class="tab-btn" onclick="mudarTab('bugs-fixme')">🔧 FIXMEs</button>
+            </div>
+
+            <div id="tab-bugs-todos" class="tab-content active">
+                <div id="todosBugs"></div>
+            </div>
+
+            <div id="tab-bugs-bugs" class="tab-content">
+                <div id="apenasbugs"></div>
+            </div>
+
+            <div id="tab-bugs-todo" class="tab-content">
+                <div id="apenastodo"></div>
+            </div>
+
+            <div id="tab-bugs-fixme" class="tab-content">
+                <div id="apenastfixme"></div>
+            </div>
+        </div>
+
+        <!-- FERRAMENTA 4: DEPENDÊNCIAS -->
+        <div class="card">
+            <h2>🔗 Passo 4: Análise de Dependências</h2>
+            
+            <div class="tabs">
+                <button class="tab-btn active" onclick="mudarTab('deps-todas')">📦 Todas</button>
+                <button class="tab-btn" onclick="mudarTab('deps-dev')">🛠️ Dev</button>
+                <button class="tab-btn" onclick="mudarTab('deps-peer')">🤝 Peer</button>
+                <button class="tab-btn" onclick="mudarTab('deps-optional')">❓ Opcionais</button>
+            </div>
+
+            <div id="tab-deps-todas" class="tab-content active">
+                <input type="text" class="search-box" placeholder="🔍 Buscar dependência...">
+                <div id="todasDeps"></div>
+            </div>
+
+            <div id="tab-deps-dev" class="tab-content">
+                <div id="devDeps"></div>
+            </div>
+
+            <div id="tab-deps-peer" class="tab-content">
+                <div id="peerDeps"></div>
+            </div>
+
+            <div id="tab-deps-optional" class="tab-content">
+                <div id="optionalDeps"></div>
+            </div>
+        </div>
+
+        <!-- FERRAMENTA 5: CONFIGURAÇÕES -->
+        <div class="card">
+            <h2>⚙️ Passo 5: Configurações do Projeto</h2>
+            
+            <div class="tabs">
+                <button class="tab-btn active" onclick="mudarTab('config-package')">📦 package.json</button>
+                <button class="tab-btn" onclick="mudarTab('config-arquivos')">📄 Arquivos Config</button>
+                <button class="tab-btn" onclick="mudarTab('config-scripts')">🔧 Scripts</button>
+            </div>
+
+            <div id="tab-config-package" class="tab-content active">
+                <div class="code-preview" id="packageJsonPreview"></div>
+                <button class="copy-btn" onclick="copiarCodigo('packageJsonPreview')">📋 Copiar</button>
+                <button class="download-btn" onclick="baixarPackageJson()">⬇️ Baixar</button>
+            </div>
+
+            <div id="tab-config-arquivos" class="tab-content">
+                <div id="arquivosConfig"></div>
+            </div>
+
+            <div id="tab-config-scripts" class="tab-content">
+                <div id="scripts"></div>
+            </div>
+        </div>
+
+        <!-- FERRAMENTA 6: ESTRUTURA DO PROJETO -->
+        <div class="card">
+            <h2>🏗️ Passo 6: Estrutura do Projeto</h2>
+            
+            <div class="tabs">
+                <button class="tab-btn active" onclick="mudarTab('struct-arvore')">🌳 Árvore</button>
+                <button class="tab-btn" onclick="mudarTab('struct-grafico')">📈 Gráfico</button>
+                <button class="tab-btn" onclick="mudarTab('struct-analise')">📊 Análise</button>
+            </div>
+
+            <div id="tab-struct-arvore" class="tab-content active">
+                <div id="arvoreEstrutura"></div>
+            </div>
+
+            <div id="tab-struct-grafico" class="tab-content">
+                <div class="mermaid" id="graficoEstrutura"></div>
+            </div>
+
+            <div id="tab-struct-analise" class="tab-content">
+                <div id="analiseEstrutura"></div>
+            </div>
+        </div>
+
+        <!-- FERRAMENTA 7: RELATÓRIO COMPLETO -->
+        <div class="card">
+            <h2>📋 Passo 7: Relatório Completo</h2>
+            
+            <button class="btn" onclick="gerarRelatorio()">📋 Gerar Relatório</button>
+            <button class="download-btn" onclick="baixarRelatorio()">⬇️ Baixar Relatório</button>
+
+            <div id="relatorioCompleto"></div>
+        </div>
+
+        <div class="footer">
+            <p>© 2024 Analisador Universal de Projetos | Análise Completa e Inteligente</p>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // ESTADO GLOBAL
+        // ============================================
+
+        let projetoData = {
+            arquivos: {},
+            bugs: [],
+            dependencias: {
+                todas: {},
+                dev: {},
+                peer: {},
+                optional: {}
+            },
+            configuracoes: {},
+            packageJson: null,
+            estrutura: {},
+            scripts: {}
+        };
+
+        // ============================================
+        // UPLOAD E PROCESSAMENTO
+        // ============================================
+
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleFileSelect({ target: { files } });
+            }
+        }
+
+        function handleFileSelect(event) {
+            const files = event.target.files;
+            if (files.length > 0) {
+                processarProjeto(files[0]);
+            }
+        }
+
+        async function processarProjeto(file) {
+            const statusDiv = document.getElementById('importStatus');
+            statusDiv.innerHTML = '<div class="info-box">⏳ Processando projeto...</div>';
+
+            try {
+                const zip = new JSZip();
+                const conteudo = await zip.loadAsync(file);
+
+                projetoData = {
+                    arquivos: {},
+                    bugs: [],
+                    dependencias: {
+                        todas: {},
+                        dev: {},
+                        peer: {},
+                        optional: {}
+                    },
+                    configuracoes: {},
+                    packageJson: null,
+                    estrutura: {},
+                    scripts: {}
+                };
+
+                // Processar cada arquivo
+                for (const [caminho, item] of Object.entries(conteudo.files)) {
+                    if (!item.dir) {
+                        const conteudoArquivo = await item.async('string');
+                        const extensao = caminho.split('.').pop().toLowerCase();
+
+                        projetoData.arquivos[caminho] = {
+                            conteudo: conteudoArquivo,
+                            extensao: extensao,
+                            tamanho: item._data.uncompressedSize
+                        };
+
+                        // Analisar arquivo
+                        analisarArquivo(caminho, conteudoArquivo, extensao);
+                    }
+                }
+
+                // Atualizar UI
+                atualizarVisaoGeral();
+                exibirBugs();
+                exibirDependencias();
+                exibirConfiguracoes();
+                exibirEstrutura();
+
+                statusDiv.innerHTML = '<div class="success-box">✅ Projeto processado! ' + Object.keys(projetoData.arquivos).length + ' arquivos encontrados</div>';
+
+            } catch (error) {
+                statusDiv.innerHTML = '<div class="error-box">❌ Erro: ' + error.message + '</div>';
+            }
+        }
+
+        // ============================================
+        // ANÁLISE DE ARQUIVOS
+        // ============================================
+
+        function analisarArquivo(caminho, conteudo, extensao) {
+            // Analisar bugs/issues
+            analisarBugs(caminho, conteudo);
+
+            // Analisar package.json
+            if (caminho.endsWith('package.json')) {
+                try {
+                    projetoData.packageJson = JSON.parse(conteudo);
+                    const pkg = projetoData.packageJson;
+
+                    // Extrair dependências
+                    if (pkg.dependencies) {
+                        Object.assign(projetoData.dependencias.todas, pkg.dependencies);
+                    }
+                    if (pkg.devDependencies) {
+                        Object.assign(projetoData.dependencias.dev, pkg.devDependencies);
+                    }
+                    if (pkg.peerDependencies) {
+                        Object.assign(projetoData.dependencias.peer, pkg.peerDependencies);
+                    }
+                    if (pkg.optionalDependencies) {
+                        Object.assign(projetoData.dependencias.optional, pkg.optionalDependencies);
+                    }
+
+                    // Extrair scripts
+                    if (pkg.scripts) {
+                        projetoData.scripts = pkg.scripts;
+                    }
+                } catch (e) {
+                    console.error('Erro ao processar package.json:', e);
+                }
+            }
+
+            // Analisar arquivos de configuração
+            if (caminho.match(/\.(json|yaml|yml|toml|ini|env|config)$/i)) {
+                projetoData.configuracoes[caminho] = conteudo;
+            }
+        }
+
+        function analisarBugs(caminho, conteudo) {
+            const linhas = conteudo.split('\n');
+
+            linhas.forEach((linha, idx) => {
+                const lineNum = idx + 1;
+
+                // BUG
+                if (linha.match(/\bBUG\b|\bbug\b/i)) {
+                    projetoData.bugs.push({
+                        tipo: 'bug',
+                        arquivo: caminho,
+                        linha: lineNum,
+                        conteudo: linha.trim()
+                    });
+                }
+
+                // TODO
+                if (linha.match(/\bTODO\b|\btodo\b/i)) {
+                    projetoData.bugs.push({
+                        tipo: 'todo',
+                        arquivo: caminho,
+                        linha: lineNum,
+                        conteudo: linha.trim()
+                    });
+                }
+
+                // FIXME
+                if (linha.match(/\bFIXME\b|\bfixme\b/i)) {
+                    projetoData.bugs.push({
+                        tipo: 'fixme',
+                        arquivo: caminho,
+                        linha: lineNum,
+                        conteudo: linha.trim()
+                    });
+                }
+
+                // HACK
+                if (linha.match(/\bHACK\b|\bhack\b/i)) {
+                    projetoData.bugs.push({
+                        tipo: 'hack',
+                        arquivo: caminho,
+                        linha: lineNum,
+                        conteudo: linha.trim()
+                    });
+                }
+
+                // XXX
+                if (linha.match(/\bXXX\b/)) {
+                    projetoData.bugs.push({
+                        tipo: 'xxx',
+                        arquivo: caminho,
+                        linha: lineNum,
+                        conteudo: linha.trim()
+                    });
+                }
+            });
+        }
+
+        // ============================================
+        // ATUALIZAÇÃO DE UI
+        // ============================================
+
+        function atualizarVisaoGeral() {
+            document.getElementById('totalArquivos').textContent = Object.keys(projetoData.arquivos).length;
+            document.getElementById('totalBugs').textContent = projetoData.bugs.length;
+            document.getElementById('totalDependencias').textContent = 
+                Object.keys(projetoData.dependencias.todas).length +
+                Object.keys(projetoData.dependencias.dev).length;
+            document.getElementById('totalConfiguracao').textContent = Object.keys(projetoData.configuracoes).length;
+
+            exibirListaArquivos();
+            exibirTiposArquivos();
+            exibirTamanhoArquivos();
+        }
+
+        function exibirListaArquivos() {
+            const lista = document.getElementById('listaArquivos');
+            let html = '';
+
+            const arquivos = Object.entries(projetoData.arquivos).sort((a, b) => a[0].localeCompare(b[0]));
+
+            arquivos.forEach(([caminho, dados]) => {
+                const tamanhoKB = (dados.tamanho / 1024).toFixed(2);
+                const icon = obterIcone(dados.extensao);
+                html += `
+                    <div class="file-item">
+                        <strong>${icon} ${caminho}</strong>
+                        <p style="color: #999; font-size: 11px;">${tamanhoKB} KB</p>
+                    </div>
+                `;
+            });
+
+            lista.innerHTML = html || '<p style="color: #999;">Nenhum arquivo encontrado</p>';
+        }
+
+        function exibirTiposArquivos() {
+            const tipos = {};
+            for (const [caminho, dados] of Object.entries(projetoData.arquivos)) {
+                const ext = dados.extensao || 'unknown';
+                tipos[ext] = (tipos[ext] || 0) + 1;
+            }
+
+            let html = '';
+            for (const [tipo, count] of Object.entries(tipos).sort((a, b) => b[1] - a[1])) {
+                html += `
+                    <div class="stat-box">
+                        <h4>${count}</h4>
+                        <p>.${tipo}</p>
+                    </div>
+                `;
+            }
+
+            document.getElementById('tiposArquivos').innerHTML = `<div class="grid-4">${html}</div>`;
+        }
+
+        function exibirTamanhoArquivos() {
+            const tamanhos = {};
+            let totalSize = 0;
+
+            for (const [caminho, dados] of Object.entries(projetoData.arquivos)) {
+                const ext = dados.extensao || 'unknown';
+                tamanhos[ext] = (tamanhos[ext] || 0) + dados.tamanho;
+                totalSize += dados.tamanho;
+            }
+
+            let html = '<h3>📊 Tamanho por Tipo</h3>';
+            for (const [tipo, size] of Object.entries(tamanhos).sort((a, b) => b[1] - a[1])) {
+                const percent = ((size / totalSize) * 100).toFixed(1);
+                const sizeMB = (size / 1024 / 1024).toFixed(2);
+                html += `
+                    <div style="margin: 10px 0;">
+                        <p><strong>.${tipo}</strong> - ${sizeMB} MB (${percent}%)</p>
+                        <div style="background: #ddd; height: 20px; border-radius: 3px; overflow: hidden;">
+                            <div style="background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); height: 100%; width: ${percent}%;"></div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            document.getElementById('tamanhoArquivos').innerHTML = html;
+        }
+
+        function exibirBugs() {
+            const todosBugs = document.getElementById('todosBugs');
+            const apenasbugs = document.getElementById('apenasbugs');
+            const apenastodo = document.getElementById('apenastodo');
+            const apenastfixme = document.getElementById('apenastfixme');
+
+            // Todos
+            let html = '';
+            projetoData.bugs.forEach(bug => {
+                html += `
+                    <div class="issue-card">
+                        <strong>
+                            <span class="badge badge-${bug.tipo}">${bug.tipo.toUpperCase()}</span>
+                            ${bug.arquivo}:${bug.linha}
+                        </strong>
+                        <p>${bug.conteudo}</p>
+                    </div>
+                `;
+            });
+            todosBugs.innerHTML = html || '<p style="color: #999;">Nenhum issue encontrado</p>';
+
+            // Apenas bugs
+            html = '';
+            projetoData.bugs.filter(b => b.tipo === 'bug').forEach(bug => {
+                html += `
+                    <div class="issue-card">
+                        <strong>🐛 ${bug.arquivo}:${bug.linha}</strong>
+                        <p>${bug.conteudo}</p>
+                    </div>
+                `;
+            });
+            apenasbugs.innerHTML = html || '<p style="color: #999;">Nenhum bug encontrado</p>';
+
+            // Apenas TODOs
+            html = '';
+            projetoData.bugs.filter(b => b.tipo === 'todo').forEach(bug => {
+                html += `
+                    <div class="issue-card">
+                        <strong>📝 ${bug.arquivo}:${bug.linha}</strong>
+                        <p>${bug.conteudo}</p>
+                    </div>
+                `;
+            });
+            apenastodo.innerHTML = html || '<p style="color: #999;">Nenhum TODO encontrado</p>';
+
+            // Apenas FIXMEs
+            html = '';
+            projetoData.bugs.filter(b => b.tipo === 'fixme').forEach(bug => {
+                html += `
+                    <div class="issue-card">
+                        <strong>🔧 ${bug.arquivo}:${bug.linha}</strong>
+                        <p>${bug.conteudo}</p>
+                    </div>
+                `;
+            });
+            apenastfixme.innerHTML = html || '<p style="color: #999;">Nenhum FIXME encontrado</p>';
+        }
+
+        function exibirDependencias() {
+            // Todas
+            let html = '';
+            for (const [dep, versao] of Object.entries(projetoData.dependencias.todas)) {
+                html += `
+                    <div class="dependency-item">
+                        <strong>📦 ${dep}</strong>
+                        <p>Versão: ${versao}</p>
+                    </div>
+                `;
+            }
+            document.getElementById('todasDeps').innerHTML = html || '<p style="color: #999;">Nenhuma dependência</p>';
+
+            // Dev
+            html = '';
+            for (const [dep, versao] of Object.entries(projetoData.dependencias.dev)) {
+                html += `
+                    <div class="dependency-item dev">
+                        <strong>🛠️ ${dep}</strong>
+                        <p>Versão: ${versao}</p>
+                    </div>
+                `;
+            }
+            document.getElementById('devDeps').innerHTML = html || '<p style="color: #999;">Nenhuma dependência dev</p>';
+
+            // Peer
+            html = '';
+            for (const [dep, versao] of Object.entries(projetoData.dependencias.peer)) {
+                html += `
+                    <div class="dependency-item peer">
+                        <strong>🤝 ${dep}</strong>
+                        <p>Versão: ${versao}</p>
+                    </div>
+                `;
+            }
+            document.getElementById('peerDeps').innerHTML = html || '<p style="color: #999;">Nenhuma dependência peer</p>';
+
+            // Optional
+            html = '';
+            for (const [dep, versao] of Object.entries(projetoData.dependencias.optional)) {
+                html += `
+                    <div class="dependency-item optional">
+                        <strong>❓ ${dep}</strong>
+                        <p>Versão: ${versao}</p>
+                    </div>
+                `;
+            }
+            document.getElementById('optionalDeps').innerHTML = html || '<p style="color: #999;">Nenhuma dependência opcional</p>';
+        }
+
+        function exibirConfiguracoes() {
+            // Package.json
+            if (projetoData.packageJson) {
+                const json = JSON.stringify(projetoData.packageJson, null, 2);
+                document.getElementById('packageJsonPreview').textContent = json;
+            }
+
+            // Arquivos config
+            let html = '';
+            for (const [caminho, conteudo] of Object.entries(projetoData.configuracoes)) {
+                html += `
+                    <div class="file-item config">
+                        <strong>⚙️ ${caminho}</strong>
+                        <p style="color: #999; font-size: 11px;">${conteudo.substring(0, 100)}...</p>
+                    </div>
+                `;
+            }
+            document.getElementById('arquivosConfig').innerHTML = html || '<p style="color: #999;">Nenhum arquivo de configuração</p>';
+
+            // Scripts
+            html = '';
+            for (const [nome, comando] of Object.entries(projetoData.scripts)) {
+                html += `
+                    <div class="file-item">
+                        <strong>🔧 ${nome}</strong>
+                        <p style="color: #666; font-size: 11px;"><code>${comando}</code></p>
+                    </div>
+                `;
+            }
+            document.getElementById('scripts').innerHTML = html || '<p style="color: #999;">Nenhum script</p>';
+        }
+
+        function exibirEstrutura() {
+            // Árvore
+            let html = '<pre>';
+            const pastas = {};
+
+            for (const caminho of Object.keys(projetoData.arquivos)) {
+                const partes = caminho.split('/');
+                let atual = pastas;
+                for (const parte of partes) {
+                    if (!atual[parte]) atual[parte] = {};
+                    atual = atual[parte];
+                }
+            }
+
+            function renderArvore(obj, nivel = 0) {
+                let html = '';
+                for (const [chave, valor] of Object.entries(obj)) {
+                    const indent = '  '.repeat(nivel);
+                    if (Object.keys(valor).length > 0) {
+                        html += `${indent}📁 ${chave}/\n`;
+                        html += renderArvore(valor, nivel + 1);
+                    } else {
+                        html += `${indent}📄 ${chave}\n`;
+                    }
+                }
+                return html;
+            }
+
+            html += renderArvore(pastas);
+            html += '</pre>';
+
+            document.getElementById('arvoreEstrutura').innerHTML = html;
+
+            // Gráfico
+            let mermaidCode = 'graph TD\n';
+            const dirs = new Set();
+
+            for (const caminho of Object.keys(projetoData.arquivos)) {
+                const partes = caminho.split('/');
+                for (let i = 0; i < partes.length - 1; i++) {
+                    dirs.add(partes.slice(0, i + 1).join('/'));
+                }
+            }
+
+            for (const dir of dirs) {
+                const nome = dir.split('/').pop();
+                mermaidCode += `    ${nome}["📁 ${nome}"]\n`;
+            }
+
+            document.getElementById('graficoEstrutura').innerHTML = mermaidCode;
+            mermaid.contentLoaded();
+
+            // Análise
+            html = `
+                <div class="stat-box">
+                    <h4>${Object.keys(projetoData.arquivos).length}</h4>
+                    <p>Total de Arquivos</p>
+                </div>
+                <div class="stat-box">
+                    <h4>${new Set(Object.keys(projetoData.arquivos).map(f => f.split('/')[0])).size}</h4>
+                    <p>Diretórios Principais</p>
+                </div>
+                <div class="stat-box">
+                    <h4>${Object.keys(projetoData.dependencias.todas).length}</h4>
+                    <p>Dependências</p>
+                </div>
+                <div class="stat-box">
+                    <h4>${projetoData.bugs.length}</h4>
+                    <p>Issues/Bugs</p>
+                </div>
+            `;
+
+            document.getElementById('analiseEstrutura').innerHTML = `<div class="grid-4">${html}</div>`;
+        }
+
+        // ============================================
+        // RELATÓRIO
+        // ============================================
+
+        function gerarRelatorio() {
+            let relatorio = `
+# 📋 Relatório do Projeto
+
+## 📊 Resumo Geral
+- **Total de Arquivos**: ${Object.keys(projetoData.arquivos).length}
+- **Total de Bugs/Issues**: ${projetoData.bugs.length}
+- **Total de Dependências**: ${Object.keys(projetoData.dependencias.todas).length}
+- **Arquivos de Configuração**: ${Object.keys(projetoData.configuracoes).length}
+
+## 🐛 Issues Encontrados
+${projetoData.bugs.length > 0 ? projetoData.bugs.map(b => `- **${b.tipo.toUpperCase()}** em ${b.arquivo}:${b.linha}: ${b.conteudo}`).join('\n') : 'Nenhum issue encontrado'}
+
+## 📦 Dependências
+### Principais
+${Object.entries(projetoData.dependencias.todas).slice(0, 10).map(([dep, ver]) => `- ${dep}: ${ver}`).join('\n')}
+
+### Dev
+${Object.entries(projetoData.dependencias.dev).slice(0, 10).map(([dep, ver]) => `- ${dep}: ${ver}`).join('\n')}
+
+## 🔧 Scripts Disponíveis
+${Object.entries(projetoData.scripts).map(([nome, cmd]) => `- **${nome}**: \`${cmd}\``).join('\n')}
+
+## 📂 Estrutura
+${Object.keys(projetoData.arquivos).slice(0, 20).map(f => `- ${f}`).join('\n')}
+            `;
+
+            document.getElementById('relatorioCompleto').innerHTML = `<pre>${escapeHtml(relatorio)}</pre>`;
+        }
+
+        function baixarRelatorio() {
+            const relatorio = document.getElementById('relatorioCompleto').textContent;
+            const blob = new Blob([relatorio], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'projeto-relatorio.txt';
+            a.click();
+        }
+
+        // ============================================
+        // FUNÇÕES AUXILIARES
+        // ============================================
+
+        function obterIcone(extensao) {
+            const icones = {
+                'js': '📜',
+                'ts': '📘',
+                'tsx': '⚛️',
+                'jsx': '⚛️',
+                'py': '🐍',
+                'json': '📋',
+                'html': '🌐',
+                'css': '🎨',
+                'scss': '🎨',
+                'md': '📝',
+                'yml': '⚙️',
+                'yaml': '⚙️',
+                'env': '🔐',
+                'lock': '🔒'
+            };
+            return icones[extensao] || '📄';
+        }
+
+        function filtrarArquivos() {
+            const termo = document.getElementById('searchArquivos').value.toLowerCase();
+            document.querySelectorAll('#listaArquivos .file-item').forEach(item => {
+                const texto = item.textContent.toLowerCase();
+                item.style.display = texto.includes(termo) ? 'block' : 'none';
+            });
+        }
+
+        function mudarTab(tab) {
+            const btn = event.target;
+            const card = btn.closest('.card');
+
+            card.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            card.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+            btn.classList.add('active');
+            const tabId = `tab-${tab}`;
+            const tabContent = card.querySelector(`#${tabId}`);
+            if (tabContent) {
+                tabContent.classList.add('active');
+            }
+        }
+
+        function copiarCodigo(elementId) {
+            const elemento = document.getElementById(elementId);
+            const texto = elemento.textContent;
+            navigator.clipboard.writeText(texto).then(() => {
+                alert('✅ Copiado!');
+            });
+        }
+
+        function baixarPackageJson() {
+            if (projetoData.packageJson) {
+                const json = JSON.stringify(projetoData.packageJson, null, 2);
+                const blob = new Blob([json], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'package.json';
+                a.click();
+            }
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+    </script>
+</body>
+</html>
