@@ -1,0 +1,390 @@
+const SERVICE_WORKER_CODE = `
+// ============================================
+// SERVICE WORKER - CACHE E OFFLINE
+// ============================================
+
+const CACHE_NAME = 'chat-ia-v1.0.0';
+const URLS_CACHE = [
+    '/',
+    '/index.html',
+    '/app.js',
+    '/manifest.json',
+    '/icons/icon-192x192.png',
+    '/icons/icon-512x512.png'
+];
+
+// Instalar Service Worker
+self.addEventListener('install', (event) => {
+    console.log('Service Worker: Instalando...');
+    event.waitUntil(
+        caches.open(CACHE_NAME).then((cache) => {
+            console.log('Service Worker: Cache criado');
+            return cache.addAll(URLS_CACHE).catch((err) => {
+                console.warn('Alguns arquivos não puderam ser cacheados:', err);
+            });
+        })
+    );
+    self.skipWaiting();
+});
+
+// Ativar Service Worker
+self.addEventListener('activate', (event) => {
+    console.log('Service Worker: Ativando...');
+    event.waitUntil(
+        caches.keys().then((cacheNames) => {
+            return Promise.all(
+                cacheNames.map((cacheName) => {
+                    if (cacheName !== CACHE_NAME) {
+                        console.log('Service Worker: Deletando cache antigo:', cacheName);
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
+        })
+    );
+    self.clients.claim();
+});
+
+// Interceptar requisições
+self.addEventListener('fetch', (event) => {
+    const { request } = event;
+    const url = new URL(request.url);
+
+    // Ignorar requisições para APIs externas
+    if (url.origin !== location.origin) {
+        return;
+    }
+
+    // Estratégia: Cache first, fallback to network
+    event.respondWith(
+        caches.match(request).then((response) => {
+            if (response) {
+                console.log('Service Worker: Servindo do cache:', request.url);
+                return response;
+            }
+
+            return fetch(request).then((response) => {
+                // Não cachear respostas não-sucesso
+                if (!response || response.status !== 200 || response.type !== 'basic') {
+                    return response;
+                }
+
+                // Clonar a resposta
+                const responseToCache = response.clone();
+
+                caches.open(CACHE_NAME).then((cache) => {
+                    cache.put(request, responseToCache);
+                });
+
+                return response;
+            }).catch(() => {
+                console.log('Service Worker: Offline - retornando página de cache');
+                return caches.match('/index.html');
+            });
+        })
+    );
+});
+
+// Sincronização em background
+self.addEventListener('sync', (event) => {
+    if (event.tag === 'sync-chats') {
+        event.waitUntil(sincronizarChats());
+    }
+});
+
+async function sincronizarChats() {
+    console.log('Service Worker: Sincronizando chats...');
+    // Implementar sincronização com backend
+}
+
+// Notificações push
+self.addEventListener('push', (event) => {
+    const data = event.data.json();
+    const options = {
+        body: data.body,
+        icon: '/icons/icon-192x192.png',
+        badge: '/icons/icon-192x192.png',
+        tag: 'chat-ia-notification'
+    };
+
+    event.waitUntil(
+        self.registration.showNotification(data.title, options)
+    );
+});
+`;
+
+// ============================================
+// 3. CLASSE GERENCIADORA DE PWA
+// ============================================
+
+class GerenciadorPWA {
+    constructor() {
+        this.serviceWorkerRegistrado = false;
+        this.manifestCarregado = false;
+        this.podeInstalar = false;
+        this.deferredPrompt = null;
+    }
+
+    // ============================================
+    // Registrar Service Worker
+    // ============================================
+
+    async registrarServiceWorker() {
+        if (!('serviceWorker' in navigator)) {
+            console.warn('PWA: Service Worker não suportado neste navegador');
+            return false;
+        }
+
+        try {
+            const registration = await navigator.serviceWorker.register('/service-worker.js', {
+                scope: '/'
+            });
+
+            console.log('✓ Service Worker registrado:', registration);
+            this.serviceWorkerRegistrado = true;
+
+            // Verificar atualizações
+            registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        console.log('✓ Nova versão disponível');
+                        mostrarNotificacao('Nova versão disponível! Recarregue a página.', 'info');
+                    }
+                });
+            });
+
+            return true;
+        } catch (erro) {
+            console.error('✗ Erro ao registrar Service Worker:', erro);
+            return false;
+        }
+    }
+
+    // ============================================
+    // Carregar Manifest
+    // ============================================
+
+    async carregarManifest() {
+        try {
+            const link = document.createElement('link');
+            link.rel = 'manifest';
+            link.href = '/manifest.json';
+            document.head.appendChild(link);
+
+            console.log('✓ Manifest carregado');
+            this.manifestCarregado = true;
+            return true;
+        } catch (erro) {
+            console.error('✗ Erro ao carregar manifest:', erro);
+            return false;
+        }
+    }
+
+    // ============================================
+    // Detectar Possibilidade de Instalação
+    // ============================================
+
+    detectarInstalacao() {
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            this.deferredPrompt = e;
+            this.podeInstalar = true;
+
+            console.log('✓ Aplicativo pode ser instalado');
+            this.mostrarBotaoInstalar();
+        });
+
+        window.addEventListener('appinstalled', () => {
+            console.log('✓ Aplicativo instalado');
+            this.deferredPrompt = null;
+            mostrarNotificacao('App instalado com sucesso!', 'sucesso');
+        });
+    }
+
+    // ============================================
+    // Mostrar Botão de Instalação
+    // ============================================
+
+    mostrarBotaoInstalar() {
+        const footer = document.querySelector('.sidebar-footer');
+        if (!footer || document.getElementById('btnInstalar')) return;
+
+        const btn = document.createElement('button');
+        btn.id = 'btnInstalar';
+        btn.className = 'btn-sidebar';
+        btn.innerHTML = '📱 Instalar';
+        btn.title = 'Instalar como app';
+        btn.onclick = () => this.instalarApp();
+
+        footer.appendChild(btn);
+    }
+
+    // ============================================
+    // Instalar Aplicativo
+    // ============================================
+
+    async instalarApp() {
+        if (!this.deferredPrompt) {
+            mostrarNotificacao('Aplicativo já está instalado', 'info');
+            return;
+        }
+
+        this.deferredPrompt.prompt();
+        const { outcome } = await this.deferredPrompt.userChoice;
+
+        if (outcome === 'accepted') {
+            console.log('✓ Usuário aceitou instalação');
+            mostrarNotificacao('Instalando aplicativo...', 'sucesso');
+        } else {
+            console.log('✗ Usuário recusou instalação');
+        }
+
+        this.deferredPrompt = null;
+    }
+
+    // ============================================
+    // Verificar Status Online/Offline
+    // ============================================
+
+    monitorarConexao() {
+        window.addEventListener('online', () => {
+            console.log('✓ Online');
+            mostrarNotificacao('Conectado à internet', 'sucesso');
+            this.sincronizarDados();
+        });
+
+        window.addEventListener('offline', () => {
+            console.log('✗ Offline');
+            mostrarNotificacao('Sem conexão com internet', 'aviso');
+        });
+    }
+
+    // ============================================
+    // Sincronizar Dados
+    // ============================================
+
+    async sincronizarDados() {
+        if (!navigator.onLine) return;
+
+        try {
+            const config = configManager.config;
+            const memoria = configManager.memoria;
+            const chats = configManager.chats;
+
+            // Aqui você poderia sincronizar com um backend
+            console.log('✓ Dados sincronizados');
+        } catch (erro) {
+            console.error('✗ Erro ao sincronizar:', erro);
+        }
+    }
+
+    // ============================================
+    // Solicitar Permissões
+    // ============================================
+
+    async solicitarPermissoes() {
+        const permissoes = [
+            'notifications',
+            'microphone',
+            'camera'
+        ];
+
+        for (const permissao of permissoes) {
+            try {
+                const resultado = await navigator.permissions.query({ name: permissao });
+                console.log(`✓ Permissão ${permissao}: ${resultado.state}`);
+            } catch (erro) {
+                console.warn(`⚠️ Permissão ${permissao} não disponível`);
+            }
+        }
+    }
+
+    // ============================================
+    // Enviar Notificação
+    // ============================================
+
+    async enviarNotificacao(titulo, opcoes = {}) {
+        if (!('Notification' in window)) {
+            console.warn('Notificações não suportadas');
+            return;
+        }
+
+        if (Notification.permission === 'granted') {
+            new Notification(titulo, {
+                icon: '/icons/icon-192x192.png',
+                badge: '/icons/icon-192x192.png',
+                ...opcoes
+            });
+        } else if (Notification.permission !== 'denied') {
+            const permissao = await Notification.requestPermission();
+            if (permissao === 'granted') {
+                new Notification(titulo, opcoes);
+            }
+        }
+    }
+
+    // ============================================
+    // Gerar Ícones (Placeholder)
+    // ============================================
+
+    gerarIcones() {
+        const tamanhos = [192, 512];
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        tamanhos.forEach(tamanho => {
+            canvas.width = tamanho;
+            canvas.height = tamanho;
+
+            // Fundo gradiente
+            const gradient = ctx.createLinearGradient(0, 0, tamanho, tamanho);
+            gradient.addColorStop(0, '#2563eb');
+            gradient.addColorStop(1, '#1e40af');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, tamanho, tamanho);
+
+            // Texto
+            ctx.fillStyle = '#ffffff';
+            ctx.font = `bold ${tamanho / 2}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('IA', tamanho / 2, tamanho / 2);
+
+            // Salvar como data URL
+            console.log(`Ícone ${tamanho}x${tamanho}:`, canvas.toDataURL());
+        });
+    }
+
+    // ============================================
+    // Inicializar PWA
+    // ============================================
+
+    async inicializar() {
+        console.log('🚀 Inicializando PWA...');
+
+        await this.carregarManifest();
+        await this.registrarServiceWorker();
+        this.detectarInstalacao();
+        this.monitorarConexao();
+        await this.solicitarPermissoes();
+
+        console.log('✓ PWA inicializado');
+    }
+
+    // ============================================
+    // Gerar Relatório
+    // ============================================
+
+    gerarRelatorio() {
+        return {
+            serviceWorkerRegistrado: this.serviceWorkerRegistrado,
+            manifestCarregado: this.manifestCarregado,
+            podeInstalar: this.podeInstalar,
+            online: navigator.onLine,
+            notificacoesSuportadas: 'Notification' in window,
+            permissaoNotificacoes: Notification.permission,
+            status: this.serviceWorkerRegistrado && this.manifestCarregado ? 'PRONTO' : 'INCOMPLETO'
+        };
+    }
+}
