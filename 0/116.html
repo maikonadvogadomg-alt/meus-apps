@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Projeto de Teste - Iara Suite</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      padding: 40px;
+      max-width: 600px;
+      width: 100%;
+    }
+
+    h1 {
+      color: #667eea;
+      margin-bottom: 16px;
+      font-size: 32px;
+    }
+
+    .subtitle {
+      color: #999;
+      margin-bottom: 24px;
+      font-size: 14px;
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .feature {
+      background: #f5f5f5;
+      padding: 16px;
+      border-radius: 8px;
+      border-left: 4px solid #667eea;
+    }
+
+    .feature-icon {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .feature-title {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 4px;
+    }
+
+    .feature-desc {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s;
+      font-size: 14px;
+    }
+
+    .btn-primary {
+      background: #667eea;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #5568d3;
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: #f0f0f0;
+      color: #333;
+      border: 2px solid #667eea;
+    }
+
+    .btn-secondary:hover {
+      background: #667eea;
+      color: white;
+    }
+
+    .status {
+      background: #e8f5e9;
+      border: 1px solid #4caf50;
+      color: #2e7d32;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 16px;
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .status.error {
+      background: #ffebee;
+      border-color: #f44336;
+      color: #c62828;
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 24px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .features {
+        grid-template-columns: 1fr;
+      }
+
+      .buttons {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>⚡ Iara Suite PRO</h1>
+    <p class="subtitle">Teste interativo das funcionalidades</p>
+
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon">📝</div>
+        <div class="feature-title">Editor</div>
+        <div class="feature-desc">Edite código com números de linha</div>
+      </div>
+
+      <div class="feature">
+        <div class="feature-icon">👁️</div>
+        <div class="feature-title">Preview</div>
+        <div class="feature-desc">Veja mudanças em tempo real</div>
+      </div>
+
+      <div class="feature">
+        <div class="feature-icon">🤖</div>
+        <div class="feature-title">IA</div>
+        <div class="feature-desc">Integração com múltiplas IA</div>
+      </div>
+
+      <div class="feature">
+        <div class="feature-icon">🗺️</div>
+        <div class="feature-title">Mapper</div>
+        <div class="feature-desc">Analise projetos ZIP</div>
+      </div>
+
+      <div class="feature">
+        <div class="feature-icon">📱</div>
+        <div class="feature-title">Mobile</div>
+        <div class="feature-desc">Funciona em qualquer dispositivo</div>
+      </div>
+
+      <div class="feature">
+        <div class="feature-icon">💾</div>
+        <div class="feature-title">Storage</div>
+        <div class="feature-desc">Salva automaticamente</div>
+      </div>
+    </div>
+
+    <div class="buttons">
+      <button class="btn-primary" onclick="testarEditor()">Testar Editor</button>
+      <button class="btn-secondary" onclick="testarStorage()">Testar Storage</button>
+    </div>
+
+    <div id="status"></div>
+  </div>
+
+  <script>
+    function testarEditor() {
+      const status = document.getElementById('status');
+      try {
+        // Simular teste do editor
+        const ta = document.createElement('textarea');
+        ta.value = 'console.log("Teste");';
+        const lines = ta.value.split('\n').length;
+        
+        status.className = 'status';
+        status.textContent = `✅ Editor OK - ${lines} linha(s) detectada(s)`;
+      } catch (err) {
+        status.className = 'status error';
+        status.textContent = `❌ Erro: ${err.message}`;
+      }
+    }
+
+    function testarStorage() {
+      const status = document.getElementById('status');
+      try {
+        // Testar localStorage
+        localStorage.setItem('iara-test', 'ok');
+        const valor = localStorage.getItem('iara-test');
+        localStorage.removeItem('iara-test');
+        
+        if (valor === 'ok') {
+          status.className = 'status';
+          status.textContent = '✅ Storage OK - localStorage funcionando';
+        } else {
+          throw new Error('Valor não recuperado');
+        }
+      } catch (err) {
+        status.className = 'status error';
+        status.textContent = `❌ Storage erro: ${err.message}`;
+      }
+    }
+
+    // Teste automático ao carregar
+    window.addEventListener('load', () => {
+      console.log('✅ Página carregada');
+      console.log('Versão: 2.0.0');
+      console.log('Ambiente: Teste');
+    });
+  </script>
+
+</body>
+</html>
