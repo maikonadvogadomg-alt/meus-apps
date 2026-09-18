@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Code Playground</title>
+    <link rel="manifest" href="manifest.json"/>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        *{box-sizing:border-box;margin:0;padding:0;}
+        html,body{height:100%;width:100%;overflow:hidden;}
+        body{background:#0d1117;color:#e6edf3;font-family:system-ui,sans-serif;display:flex;flex-direction:column;}
+
+        /* ===== HEADER ===== */
+        nav{display:flex;align-items:center;gap:8px;padding:0 12px;height:44px;background:#161b22;border-bottom:1px solid #30363d;flex-shrink:0;flex-wrap:wrap;}
+        .nav-title{font-weight:700;font-size:14px;color:#58a6ff;}
+        .nav-right{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+        .btn{padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;border:none;cursor:pointer;}
+        .btn-blue{background:#1f6feb;color:#fff;}
+        .btn-gray{background:#21262d;color:#e6edf3;border:1px solid #30363d;}
+        .btn-green{background:#238636;color:#fff;}
+        .btn:hover{opacity:0.9;}
+        .btn:disabled{opacity:0.5;cursor:not-allowed;}
+        input[type=text]{background:#0a0e14;border:1px solid #30363d;color:#e6edf3;border-radius:6px;padding:5px 10px;font-size:12px;}
+        input[type=text]:focus{outline:none;border-color:#58a6ff;}
+
+        /* ===== TOOLBAR ===== */
+        .toolbar{display:flex;align-items:center;gap:6px;padding:6px 10px;background:#161b22;border-bottom:1px solid #30363d;flex-shrink:0;flex-wrap:wrap;}
+        .mode-tabs{display:flex;border-radius:6px;overflow:hidden;border:1px solid #30363d;}
+        .mode-tab{padding:4px 12px;font-size:11px;border:none;background:transparent;color:#8b949e;cursor:pointer;}
+        .mode-tab.active{background:#1f6feb;color:#fff;}
+
+        /* ===== MAIN LAYOUT ===== */
+        .main{flex:1;display:flex;overflow:hidden;gap:0;}
+        .editor-col{display:flex;flex-direction:column;flex:1;border-right:1px solid #30363d;min-width:0;transition:flex 0.3s;}
+        .editor-col.hidden{display:none;}
+        .editor-col.collapsed{flex:0;width:0;overflow:hidden;}
+        .preview-col{display:flex;flex-direction:column;flex:1;min-width:0;transition:flex 0.3s;}
+        .preview-col.hidden{display:none;}
+        .preview-col.collapsed{flex:0;width:0;overflow:hidden;}
+        .divider{width:4px;background:#161b22;border-left:1px solid #30363d;border-right:1px solid #30363d;cursor:col-resize;}
+        .divider:hover{background:#1f6feb;}
+
+        .editor-header{display:flex;align-items:center;justify-content:space-between;padding:4px 8px;font-size:11px;color:#8b949e;background:#0a0e14;border-bottom:1px solid #30363d;flex-shrink:0;gap:8px;flex-wrap:wrap;}
+        .editor-info{display:flex;align-items:center;gap:8px;}
+        .search-box{display:flex;align-items:center;gap:4px;background:rgba(255,255,255,0.05);border:1px solid #30363d;border-radius:6px;padding:3px 6px;}
+        .search-input{background:transparent;border:none;color:#e6edf3;font-size:11px;outline:none;width:100px;}
+        .search-input::placeholder{color:#8b949e;}
+
+        .editor-wrapper{display:flex;flex:1;overflow:hidden;position:relative;}
+        .line-numbers{display:flex;flex-direction:column;align-items:flex-end;padding:8px 6px;background:rgba(255,255,255,0.02);border-right:1px solid #30363d;user-select:none;pointer-events:none;min-width:35px;font-family:'Courier New',monospace;font-size:12px;line-height:1.5;color:rgba(139,148,158,0.5);overflow:hidden;}
+        .line-number{height:1.5rem;display:flex;align-items:center;justify-content:flex-end;padding-right:4px;}
+
+        textarea{flex:1;background:#0a0e14;color:#e6edf3;border:none;resize:none;padding:8px;font-family:'Courier New',monospace;font-size:13px;line-height:1.5;outline:none;tab-size:2;}
+
+        .preview-header{display:flex;align-items:center;justify-content:space-between;padding:4px 8px;font-size:11px;color:#8b949e;background:#0a0e14;border-bottom:1px solid #30363d;flex-shrink:0;}
+        .preview-controls{display:flex;gap:4px;align-items:center;}
+        .preview-controls .btn{padding:3px 8px;font-size:10px;}
+
+        iframe{flex:1;border:none;background:#fff;}
+
+        /* ===== MODAL ===== */
+        .modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;padding:12px;}
+        .modal.active{display:flex;}
+        .modal-content{background:#161b22;border:1px solid #30363d;border-radius:8px;max-width:500px;width:100%;max-height:80vh;overflow:auto;padding:16px;}
+        .modal-header{font-size:14px;font-weight:600;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;}
+        .modal-close{background:none;border:none;color:#8b949e;cursor:pointer;font-size:18px;}
+
+        .form-group{margin-bottom:12px;}
+        .form-group label{display:block;font-size:11px;color:#8b949e;margin-bottom:4px;}
+        .form-group input,.form-group textarea{width:100%;padding:6px 8px;background:#0a0e14;border:1px solid #30363d;color:#e6edf3;border-radius:6px;font-size:12px;font-family:inherit;}
+        .form-group input:focus,.form-group textarea:focus{outline:none;border-color:#58a6ff;}
+
+        .search-modal-box{display:flex;align-items:center;gap:4px;background:rgba(255,255,255,0.05);border:1px solid #30363d;border-radius:6px;padding:4px 8px;margin-bottom:12px;}
+        .search-modal-input{flex:1;background:transparent;border:none;color:#e6edf3;font-size:12px;outline:none;}
+
+        .snippet-list{display:flex;flex-direction:column;gap:6px;max-height:400px;overflow-y:auto;}
+        .snippet-item{display:flex;align-items:center;justify-content:space-between;padding:8px;background:rgba(255,255,255,0.02);border:1px solid #30363d;border-radius:6px;cursor:pointer;transition:all 0.2s;}
+        .snippet-item:hover{background:rgba(31,111,235,0.1);border-color:#1f6feb;}
+        .snippet-info{flex:1;min-width:0;}
+        .snippet-title{font-weight:600;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+        .snippet-meta{font-size:10px;color:#8b949e;margin-top:2px;}
+        .snippet-actions{display:flex;gap:4px;margin-left:8px;}
+        .snippet-actions .btn{padding:3px 8px;font-size:10px;}
+
+        #toast{position:fixed;bottom:20px;right:20px;padding:8px 16px;border-radius:6px;font-size:12px;color:#fff;display:none;z-index:99;background:#238636;animation:slideIn 0.3s;}
+        @keyframes slideIn{from{transform:translateX(400px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+
+        .user-status{font-size:11px;color:#8b949e;}
+        .user-status.logged{color:#3fb950;}
+
+        /* ===== MOBILE ===== */
+        @media (max-width:768px){
+            nav{padding:0 8px;height:40px;gap:4px;}
+            .nav-title{font-size:12px;}
+            .btn{padding:4px 8px;font-size:10px;}
+            .toolbar{padding:4px 6px;gap:4px;}
+            .mode-tab{padding:3px 8px;font-size:10px;}
+
+            .main{flex-direction:column;}
+            .editor-col{border-right:none;border-bottom:1px solid #30363d;}
+            .preview-col{border-bottom:none;}
+            .divider{display:none;}
+
+            .editor-col.hidden{display:none;}
+            .preview-col.hidden{display:none;}
+            .editor-col.full{flex:1;border-bottom:none;}
+            .preview-col.full{flex:1;}
+
+            .editor-header,.preview-header{padding:3px 6px;font-size:10px;}
+            .search-input{width:80px;font-size:10px;}
+            textarea{font-size:12px;padding:6px;}
+            .line-numbers{font-size:11px;min-width:30px;padding:6px 4px;}
+
+            .modal-content{max-width:90vw;max-height:70vh;}
+        }
+
+        ::-webkit-scrollbar{width:6px;height:6px;}
+        ::-webkit-scrollbar-track{background:rgba(255,255,255,0.02);}
+        ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:3px;}
+        ::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.2);}
+
+        .hidden{display:none!important;}
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <nav>
+        <span class="nav-title">💻 Playground</span>
+        <div class="nav-right">
+            <span class="user-status" id="userStatus">📴 Offline</span>
+            <button class="btn btn-gray" id="saveBtn" title="Salvar">💾</button>
+            <button class="btn btn-gray" id="openBtn" title="Abrir">📁</button>
+            <button class="btn btn-gray" id="importBtn" title="Importar">📥</button>
+            <button class="btn btn-gray" id="loginBtn" title="Login">🔐</button>
+            <button class="btn btn-gray" id="logoutBtn" style="display:none;" title="Sair">🚪</button>
+        </div>
+    </nav>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+        <div class="mode-tabs">
+            <button class="mode-tab active" data-mode="html">HTML</button>
+            <button class="mode-tab" data-mode="react">React</button>
+            <button class="mode-tab" data-mode="python">Python</button>
+        </div>
+        <input type="text" id="projectTitle" placeholder="Nome do projeto" style="width:120px;">
+        <button class="btn btn-gray" id="toggleEditorBtn" title="Ocultar editor">◀ Editor</button>
+        <button class="btn btn-gray" id="togglePreviewBtn" title="Ocultar preview">Preview ▶</button>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main">
+        <!-- EDITOR -->
+        <div class="editor-col" id="editorCol">
+            <div class="editor-header">
+                <div class="editor-info">
+                    <span id="lineCount">1 linhas</span>
+                </div>
+                <div class="search-box">
+                    <span style="font-size:10px;">🔍</span>
+                    <input type="text" class="search-input" placeholder="Buscar..." id="searchInput">
+                </div>
+            </div>
+            <div class="editor-wrapper">
+                <div class="line-numbers" id="lineNumbers"></div>
+                <textarea id="codeEditor" spellcheck="false"></textarea>
+            </div>
+        </div>
+
+        <!-- DIVIDER -->
+        <div class="divider" id="divider"></div>
+
+        <!-- PREVIEW -->
+        <div class="preview-col" id="previewCol">
+            <div class="preview-header">
+                <span style="font-size:11px;">👁️ Resultado</span>
+                <div class="preview-controls">
+                    <button class="btn btn-gray" id="fullscreenBtn" title="Tela cheia">⛶</button>
+                    <button class="btn btn-gray" id="refreshBtn" title="Atualizar">🔄</button>
+                </div>
+            </div>
+            <iframe id="previewFrame" sandbox="allow-scripts allow-modals allow-forms allow-popups"></iframe>
+        </div>
+    </div>
+
+    <!-- LOGIN MODAL -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>🔐 Login / Registrar</span>
+                <button class="modal-close" id="closeLoginModal">×</button>
+            </div>
+            <div class="form-group">
+                <label>Email:</label>
+                <input type="email" id="loginEmail" placeholder="seu@email.com">
+            </div>
+            <div class="form-group">
+                <label>Senha:</label>
+                <input type="password" id="loginPassword" placeholder="••••••••">
+            </div>
+            <button class="btn btn-blue" id="loginSubmitBtn" style="width:100%;margin-bottom:8px;">Entrar</button>
+            <button class="btn btn-gray" id="registerSubmitBtn" style="width:100%;">Registrar</button>
+        </div>
+    </div>
+
+    <!-- SNIPPETS MODAL -->
+    <div class="modal" id="snippetsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>Meus Códigos</span>
+                <button class="modal-close" id="closeModal">×</button>
+            </div>
+            <div class="search-modal-box">
+                <span style="font-size:10px;">🔍</span>
+                <input type="text" class="search-modal-input" placeholder="Buscar..." id="modalSearchInput">
+            </div>
+            <div class="snippet-list" id="snippetList"></div>
+        </div>
+    </div>
+
+    <!-- IMPORT MODAL -->
+    <div class="modal" id="importModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>Importar Código</span>
+                <button class="modal-close" id="closeImportModal">×</button>
+            </div>
+            <div class="form-group">
+                <label>Cole seu código aqui:</label>
+                <textarea id="importCode" style="min-height:200px;"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Tipo:</label>
+                <select id="importType" style="width:100%;padding:6px 8px;background:#0a0e14;border:1px solid #30363d;color:#e6edf3;border-radius:6px;font-size:12px;">
+                    <option value="html">HTML</option>
+                    <option value="react">React</option>
+                    <option value="python">Python</option>
+                </select>
+            </div>
+            <button class="btn btn-blue" id="confirmImportBtn" style="width:100%;">Importar</button>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast"></div>
+
+    <!-- FILE INPUT -->
+    <input type="file" id="fileInput" accept=".html,.jsx,.py,.txt" style="display:none;">
+
+    <script src="config-login.js"></script>
+    <script>
+        // ===== STATE =====
+        const state = {
+            user: null,
+            mode: 'html',
+            code: localStorage.getItem('pg_code') || '',
+            title: localStorage.getItem('pg_title') || 'Sem titulo',
+            currentSnippetId: null,
+            searchQuery: '',
+            editorVisible: true,
+            previewVisible: true
+        };
+
+        // ===== DOM ELEMENTS =====
+        const elements = {
+            projectTitle: document.getElementById('projectTitle'),
+            codeEditor: document.getElementById('codeEditor'),
+            previewFrame: document.getElementById('previewFrame'),
+            lineNumbers: document.getElementById('lineNumbers'),
+            lineCount: document.getElementById('lineCount'),
+            searchInput: document.getElementById('searchInput'),
+            userStatus: document.getElementById('userStatus'),
+            loginBtn: document.getElementById('loginBtn'),
+            logoutBtn: document.getElementById('logoutBtn'),
+            loginModal: document.getElementById('loginModal'),
+            snippetsModal: document.getElementById('snippetsModal'),
+            snippetList: document.getElementById('snippetList'),
+            modalSearchInput: document.getElementById('modalSearchInput'),
+            importModal: document.getElementById('importModal'),
+            importCode: document.getElementById('importCode'),
+            importType: document.getElementById('importType'),
+            editorCol: document.getElementById('editorCol'),
+            previewCol: document.getElementById('previewCol'),
+            divider: document.getElementById('divider'),
+            fileInput: document.getElementById('fileInput'),
+            toast: document.getElementById('toast')
+        };
+
+        // ===== INITIALIZATION =====
+        async function init() {
+            checkUserSession();
+            setupEventListeners();
+            updateLineNumbers();
+            updatePreview();
+            loadFromCache();
+        }
+
+        // ===== AUTHENTICATION =====
+        async function checkUserSession() {
+            const { data: { session } } = await supabase.auth.getSession();
+
+            if (session) {
+                state.user = session.user;
+                showLoggedInUI();
+            } else {
+                showLoggedOutUI();
+            }
+        }
+
+        function showLoggedInUI() {
+            elements.userStatus.textContent = `✅ ${state.user.email.split('@')[0]}`;
+            elements.userStatus.classList.add('logged');
+            elements.loginBtn.style.display = 'none';
+            elements.logoutBtn.style.display = 'flex';
+        }
+
+        function showLoggedOutUI() {
+            elements.userStatus.textContent = '📴 Offline';
+            elements.userStatus.classList.remove('logged');
+            elements.loginBtn.style.display = 'flex';
+            elements.logoutBtn.style.display = 'none';
+        }
+
+        async function handleLogin() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+
+            if (!email || !password) {
+                showMessage('⚠️ Preencha email e senha');
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+                if (error) throw error;
+
+                state.user = data.user;
+                showLoggedInUI();
+                elements.loginModal.classList.remove('active');
+                showMessage('✅ Login realizado!');
+            } catch (error) {
+                showMessage(`❌ ${error.message}`);
+            }
+        }
+
+        async function handleRegister() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+
+            if (!email || !password) {
+                showMessage('⚠️ Preencha email e senha');
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase.auth.signUp({ email, password });
+
+                if (error) throw error;
+
+                showMessage('✅ Conta criada! Verifique seu email.');
+                elements.loginModal.classList.remove('active');
+            } catch (error) {
+                showMessage(`❌ ${error.message}`);
+            }
+        }
+
+        async function handleLogout() {
+            await supabase.auth.signOut();
+            state.user = null;
+            showLoggedOutUI();
+            showMessage('✅ Desconectado!');
+        }
+
+        // ===== EDITOR FUNCTIONS =====
+        function updateLineNumbers() {
+            const lines = state.code.split('\n').length;
+            elements.lineCount.textContent = `${lines} linhas`;
+
+            let html = '';
+            for (let i = 1; i <= lines; i++) {
+                html += `<div class="line-number">${i}</div>`;
+            }
+            elements.lineNumbers.innerHTML = html;
+        }
+
+        function updatePreview() {
+            let html;
+
+            if (state.mode === 'html') {
+                html = state.code;
+            } else if (state.mode === 'react') {
+                html = `<!DOCTYPE html>
+<html>
+<head>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"><\/script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"><\/script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"><\/script>
+    <style>* { box-sizing: border-box; } body { margin: 0; font-family: sans-serif; }</style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        ${state.code}
+        try {
+            ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+        } catch(e) {
+            document.getElementById('root').innerHTML = '<div style="color:red;padding:20px;font-family:monospace">Erro: ' + e.message + '</div>';
+        }
+    <\/script>
+</body>
+</html>`;
+            } else if (state.mode === 'python') {
+                html = `<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { background: #0f172a; color: #e2e8f0; font-family: monospace; padding: 20px; }
+        pre { white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <pre>⚠️ Python não roda no navegador
+    
+Seu código:
+${state.code}</pre>
+</body>
+</html>`;
+            }
+
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            elements.previewFrame.src = url;
+        }
+
+        // ===== CACHE =====
+        function saveToCache() {
+            localStorage.setItem('pg_code', state.code);
+            localStorage.setItem('pg_title', state.title);
+        }
+
+        function loadFromCache() {
+            state.code = localStorage.getItem('pg_code') || '';
+            state.title = localStorage.getItem('pg_title') || 'Sem titulo';
+            elements.codeEditor.value = state.code;
+            elements.projectTitle.value = state.title;
+            updateLineNumbers();
+            updatePreview();
+        }
+
+        // ===== SNIPPETS =====
+        async function saveSnippet() {
+            if (!state.user) {
+                showMessage('⚠️ Faça login para salvar');
+                elements.loginModal.classList.add('active');
+                return;
+            }
+
+            if (!state.title || state.title === 'Sem titulo') {
+                showMessage('⚠️ Dê um nome');
+                return;
+            }
+
+            if (!state.code) {
+                showMessage('⚠️ Escreva código');
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase
+                    .from('snippets')
+                    .upsert({
+                        id: state.currentSnippetId,
+                        user_id: state.user.id,
+                        title: state.title,
+                        mode: state.mode,
+                        code: state.code
+                    })
+                    .select()
+                    .single();
+
+                if (error) throw error;
+
+                state.currentSnippetId = data.id;
+                saveToCache();
+                showMessage('✅ Salvo!');
+            } catch (error) {
+                showMessage(`❌ ${error.message}`);
+            }
+        }
+
+        async function loadUserSnippets() {
+            if (!state.user) {
+                showMessage('⚠️ Faça login para ver seus códigos');
+                elements.loginModal.classList.add('active');
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase
+                    .from('snippets')
+                    .select('*')
+                    .eq('user_id', state.user.id)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                renderSnippets(data);
+            } catch (error) {
+                showMessage(`❌ ${error.message}`);
+            }
+        }
+
+        function renderSnippets(snippets) {
+            const filtered = snippets.filter(s =>
+                s.title.toLowerCase().includes(state.searchQuery.toLowerCase())
+            );
+
+            elements.snippetList.innerHTML = filtered.length === 0
+                ? '<p style="text-align:center;color:#8b949e;padding:16px;font-size:12px;">Nenhum código</p>'
+                : filtered.map(s => `
+                    <div class="snippet-item" onclick="loadSnippet('${s.id}')">
+                        <div class="snippet-info">
+                            <div class="snippet-title">${escapeHtml(s.title)}</div>
+                            <div class="snippet-meta">${s.mode.toUpperCase()} • ${new Date(s.created_at).toLocaleDateString('pt-BR')}</div>
+                        </div>
+                        <div class="snippet-actions">
+                            <button class="btn btn-gray" onclick="deleteSnippet('${s.id}', event)" style="padding:3px 8px;font-size:10px;">🗑️</button>
+                        </div>
+                    </div>
+                `).join('');
+        }
+
+        async function loadSnippet(id) {
+            try {
+                const { data, error } = await supabase
+                    .from('snippets')
+                    .select('*')
+                    .eq('id', id)
+                    .single();
+
+                if (error) throw error;
+
+                state.currentSnippetId = id;
+                state.mode = data.mode;
+                state.code = data.code;
+                state.title = data.title;
+
+                elements.projectTitle.value = state.title;
+                document.querySelectorAll('[data-mode]').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.mode === state.mode);
+                });
+                elements.codeEditor.value = state.code;
+                updateLineNumbers();
+                updatePreview();
+                saveToCache();
+                elements.snippetsModal.classList.remove('active');
+                showMessage(`✅ "${data.title}" carregado!`);
+            } catch (error) {
+                showMessage(`❌ ${error.message}`);
+            }
+        }
+
+        async function deleteSnippet(id, event) {
+            event.stopPropagation();
+
+            if (!confirm('Tem certeza?')) return;
+
+            try {
+                const { error } = await supabase
+                    .from('snippets')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                loadUserSnippets();
+                showMessage('✅ Removido!');
+            } catch (error) {
+                showMessage(`❌ ${error.message}`);
+            }
+        }
+
+        // ===== IMPORT =====
+        function handleImport() {
+            const code = elements.importCode.value.trim();
+            const type = elements.importType.value;
+
+            if (!code) {
+                showMessage('⚠️ Cole um código');
+                return;
+            }
+
+            state.mode = type;
+            state.code = code;
+            elements.codeEditor.value = code;
+
+            document.querySelectorAll('[data-mode]').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === type);
+            });
+
+            updateLineNumbers();
+            updatePreview();
+            saveToCache();
+            elements.importModal.classList.remove('active');
+            showMessage('✅ Código importado!');
+        }
+
+        function handleFileImport(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const content = event.target.result;
+                const ext = file.name.split('.').pop().toLowerCase();
+
+                let type = 'html';
+                if (ext === 'jsx' || ext === 'tsx') type = 'react';
+                if (ext === 'py') type = 'python';
+
+                state.mode = type;
+                state.code = content;
+                state.title = file.name.replace(/\.[^.]+$/, '');
+
+                elements.projectTitle.value = state.title;
+                elements.codeEditor.value = content;
+
+                document.querySelectorAll('[data-mode]').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.mode === type);
+                });
+
+                updateLineNumbers();
+                updatePreview();
+                saveToCache();
+                showMessage(`✅ "${file.name}" importado!`);
+            };
+
+            reader.readAsText(file);
+            e.target.value = '';
+        }
+
+        // ===== RESPONSIVE CONTROLS =====
+        function toggleEditor() {
+            state.editorVisible = !state.editorVisible;
+            if (state.editorVisible) {
+                elements.editorCol.classList.remove('hidden', 'collapsed');
+                elements.divider.classList.remove('hidden');
+                document.getElementById('toggleEditorBtn').textContent = '◀ Editor';
+            } else {
+                elements.editorCol.classList.add('collapsed');
+                elements.divider.classList.add('hidden');
+                document.getElementById('toggleEditorBtn').textContent = '▶ Editor';
+            }
+        }
+
+        function togglePreview() {
+            state.previewVisible = !state.previewVisible;
+            if (state.previewVisible) {
+                elements.previewCol.classList.remove('hidden', 'collapsed');
+                elements.divider.classList.remove('hidden');
+                document.getElementById('togglePreviewBtn').textContent = 'Preview ▶';
+            } else {
+                elements.previewCol.classList.add('collapsed');
+                elements.divider.classList.add('hidden');
+                document.getElementById('togglePreviewBtn').textContent = '◀ Preview';
+            }
+        }
+
+        function openFullscreen() {
+            const html = state.code;
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            window.open(url, '_blank');
+        }
+
+        // ===== DIVIDER DRAG =====
+        let isDragging = false;
+        elements.divider.addEventListener('mousedown', () => {
+            isDragging = true;
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+
+            const main = document.querySelector('.main');
+            const rect = main.getBoundingClientRect();
+            const newPos = ((e.clientX - rect.left) / rect.width) * 100;
+
+            if (newPos > 20 && newPos < 80) {
+                elements.editorCol.style.flex = newPos;
+                elements.previewCol.style.flex = 100 - newPos;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        // ===== UTILITIES =====
+        function escapeHtml(text) {
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function showMessage(text) {
+            elements.toast.textContent = text;
+            elements.toast.style.display = 'block';
+            setTimeout(() => {
+                elements.toast.style.display = 'none';
+            }, 3000);
+        }
+
+        // ===== EVENT LISTENERS =====
+        function setupEventListeners() {
+            // Mode selector
+            document.querySelectorAll('[data-mode]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    state.mode = btn.dataset.mode;
+                    document.querySelectorAll('[data-mode]').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    updatePreview();
+                    saveToCache();
+                });
+            });
+
+            // Code editor
+            elements.codeEditor.addEventListener('input', (e) => {
+                state.code = e.target.value;
+                updateLineNumbers();
+                updatePreview();
+                saveToCache();
+            });
+
+            // Title
+            elements.projectTitle.addEventListener('change', (e) => {
+                state.title = e.target.value || 'Sem titulo';
+                saveToCache();
+            });
+
+            // Search
+            elements.searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase();
+                if (query) {
+                    const count = (state.code.match(new RegExp(query, 'gi')) || []).length;
+                    if (count > 0) showMessage(`🔍 ${count} resultado(s)`);
+                }
+            });
+
+            // Buttons
+            document.getElementById('saveBtn').addEventListener('click', saveSnippet);
+            document.getElementById('openBtn').addEventListener('click', () => {
+                elements.snippetsModal.classList.add('active');
+                loadUserSnippets();
+            });
+            document.getElementById('importBtn').addEventListener('click', () => {
+                elements.importModal.classList.add('active');
+            });
+            document.getElementById('loginBtn').addEventListener('click', () => {
+                elements.loginModal.classList.add('active');
+            });
+            document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+            document.getElementById('toggleEditorBtn').addEventListener('click', toggleEditor);
+            document.getElementById('togglePreviewBtn').addEventListener('click', togglePreview);
+            document.getElementById('fullscreenBtn').addEventListener('click', openFullscreen);
+            document.getElementById('refreshBtn').addEventListener('click', updatePreview);
+
+            // Login
+            document.getElementById('loginSubmitBtn').addEventListener('click', handleLogin);
+            document.getElementById('registerSubmitBtn').addEventListener('click', handleRegister);
+
+            // Modal
+            document.getElementById('closeLoginModal').addEventListener('click', () => {
+                elements.loginModal.classList.remove('active');
+            });
+
+            document.getElementById('closeModal').addEventListener('click', () => {
+                elements.snippetsModal.classList.remove('active');
+            });
+
+            document.getElementById('closeImportModal').addEventListener('click', () => {
+                elements.importModal.classList.remove('active');
+            });
+
+            document.getElementById('confirmImportBtn').addEventListener('click', handleImport);
+
+            elements.modalSearchInput.addEventListener('input', (e) => {
+                state.searchQuery = e.target.value;
+                loadUserSnippets();
+            });
+
+            // File import
+            elements.fileInput.addEventListener('change', handleFileImport);
+
+            // Modal close on outside click
+            elements.snippetsModal.addEventListener('click', (e) => {
+                if (e.target === elements.snippetsModal) {
+                    elements.snippetsModal.classList.remove('active');
+                }
+            });
+
+            elements.importModal.addEventListener('click', (e) => {
+                if (e.target === elements.importModal) {
+                    elements.importModal.classList.remove('active');
+                }
+            });
+
+            elements.loginModal.addEventListener('click', (e) => {
+                if (e.target === elements.loginModal) {
+                    elements.loginModal.classList.remove('active');
+                }
+            });
+        }
+
+        // Start
+        init();
+    </script>
+</body>
+</html>
