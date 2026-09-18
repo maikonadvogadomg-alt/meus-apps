@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Playground - HTML Puro + Supabase</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #0f1419;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --success: #10b981;
+            --error: #ef4444;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* ===== HEADER ===== */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-card);
+            flex-wrap: wrap;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 0.25rem;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.25rem;
+            border-radius: 0.375rem;
+            border: 1px solid var(--border);
+        }
+
+        .mode-btn {
+            padding: 0.375rem 0.75rem;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 0.25rem;
+            transition: all 0.2s;
+        }
+
+        .mode-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .title-input {
+            width: 150px;
+            padding: 0.375rem 0.75rem;
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            border-radius: 0.25rem;
+        }
+
+        .title-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.375rem 0.75rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn.ghost {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .btn.ghost:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        /* ===== MAIN LAYOUT ===== */
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .editor-section {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            border-right: 1px solid var(--border);
+        }
+
+        .editor-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .tab {
+            padding: 0.5rem 1rem;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .editor-wrapper {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .line-numbers {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            padding: 0.5rem 0.75rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-right: 1px solid var(--border);
+            user-select: none;
+            pointer-events: none;
+            min-width: 40px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            line-height: 1.625rem;
+            color: rgba(148, 163, 184, 0.3);
+            overflow: hidden;
+        }
+
+        .line-number {
+            height: 1.625rem;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 0.5rem;
+        }
+
+        .editor-textarea {
+            flex: 1;
+            padding: 0.5rem;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            line-height: 1.625rem;
+            resize: none;
+            outline: none;
+            overflow: auto;
+            tab-size: 2;
+        }
+
+        /* ===== PREVIEW ===== */
+        .preview-section {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .preview-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .preview-iframe {
+            flex: 1;
+            border: none;
+            background: white;
+        }
+
+        /* ===== MODAL ===== */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow: auto;
+            padding: 1.5rem;
+        }
+
+        .modal-header {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .snippet-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .snippet-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .snippet-item:hover {
+            background: rgba(37, 99, 235, 0.1);
+            border-color: var(--primary);
+        }
+
+        .snippet-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .snippet-title {
+            font-weight: 600;
+            font-size: 0.875rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .snippet-meta {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .snippet-actions {
+            display: flex;
+            gap: 0.25rem;
+            margin-left: 0.5rem;
+        }
+
+        .snippet-actions .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.7rem;
+        }
+
+        .status-message {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            padding: 0.75rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            animation: slideIn 0.3s ease-out;
+            z-index: 999;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .editor-section {
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .editor-section.hidden {
+                display: none;
+            }
+
+            .preview-section.hidden {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <header>
+            <div class="header-left">
+                <div class="logo">💻 Code Playground</div>
+                <div class="user-info hidden" id="userInfo">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <span id="userName">Usuário</span>
+                </div>
+                <div class="mode-selector">
+                    <button class="mode-btn active" data-mode="html">HTML</button>
+                    <button class="mode-btn" data-mode="react">React</button>
+                    <button class="mode-btn" data-mode="python">Python</button>
+                </div>
+                <input type="text" class="title-input" placeholder="Nome..." id="projectTitle">
+            </div>
+
+            <div class="header-right">
+                <button class="btn ghost" id="saveBtn">💾 Salvar</button>
+                <button class="btn ghost" id="openBtn">📁 Abrir</button>
+                <button class="btn ghost" id="shareBtn">🔗 Compartilhar</button>
+                <button class="btn ghost" id="logoutBtn" style="display: none;">🚪 Sair</button>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <!-- EDITOR -->
+            <div class="editor-section">
+                <div class="editor-header">
+                    <div class="tabs">
+                        <button class="tab active" data-tab="code">Código</button>
+                    </div>
+                    <span id="lineCount">1 linhas</span>
+                </div>
+
+                <div class="editor-wrapper">
+                    <div class="line-numbers" id="lineNumbers"></div>
+                    <textarea class="editor-textarea" id="codeEditor" spellcheck="false"></textarea>
+                </div>
+            </div>
+
+            <!-- PREVIEW -->
+            <div class="preview-section">
+                <div class="preview-header">
+                    <span>👁️ Resultado</span>
+                </div>
+                <iframe class="preview-iframe" id="previewFrame" sandbox="allow-scripts allow-modals allow-forms allow-popups"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- SNIPPETS MODAL -->
+    <div class="modal" id="snippetsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>Meus Códigos Salvos</span>
+                <button class="modal-close" id="closeModal">×</button>
+            </div>
+            <div class="snippet-list" id="snippetList"></div>
+        </div>
+    </div>
+
+    <!-- SHARE MODAL -->
+    <div class="modal" id="shareModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>Compartilhar Código</span>
+                <button class="modal-close" id="closeShareModal">×</button>
+            </div>
+            <div class="form-group">
+                <label>Link de Compartilhamento</label>
+                <input type="text" id="shareLink" readonly>
+            </div>
+            <button class="btn" id="generateShareBtn">Gerar Link</button>
+            <button class="btn ghost" id="copyShareBtn">Copiar Link</button>
+        </div>
+    </div>
+
+    <script>
+        // ===== CONFIGURAÇÃO SUPABASE =====
+        const SUPABASE_URL = 'https://seu-projeto.supabase.co';
+        const SUPABASE_ANON_KEY = 'sua-chave-anonima-aqui';
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // ===== STATE =====
+        const state = {
+            user: null,
+            mode: 'html',
+            code: '',
+            title: 'Sem titulo',
+            currentSnippetId: null
+        };
+
+        // ===== DOM ELEMENTS =====
+        const elements = {
+            projectTitle: document.getElementById('projectTitle'),
+            codeEditor: document.getElementById('codeEditor'),
+            previewFrame: document.getElementById('previewFrame'),
+            lineNumbers: document.getElementById('lineNumbers'),
+            lineCount: document.getElementById('lineCount'),
+            userInfo: document.getElementById('userInfo'),
+            userName: document.getElementById('userName'),
+            userAvatar: document.getElementById('userAvatar'),
+            logoutBtn: document.getElementById('logoutBtn'),
+            snippetsModal: document.getElementById('snippetsModal'),
+            snippetList: document.getElementById('snippetList'),
+            shareModal: document.getElementById('shareModal'),
+            shareLink: document.getElementById('shareLink')
+        };
+
+        // ===== INITIALIZATION =====
+        async function init() {
+            // Verificar se está logado
+            const { data: { session } } = await supabase.auth.getSession();
+
+            if (session) {
+                state.user = session.user;
+                showLoggedInUI();
+                loadUserSnippets();
+            } else {
+                showLoginForm();
+            }
+
+            setupEventListeners();
+        }
+
+        // ===== AUTHENTICATION =====
+        function showLoginForm() {
+            const email = prompt('📧 Email:');
+            if (!email) return;
+
+            const password = prompt('🔐 Senha:');
+            if (!password) return;
+
+            supabase.auth.signInWithPassword({ email, password })
+                .then(({ data, error }) => {
+                    if (error) {
+                        alert('❌ Erro: ' + error.message);
+                        showLoginForm();
+                    } else {
+                        state.user = data.user;
+                        showLoggedInUI();
+                        loadUserSnippets();
+                    }
+                });
+        }
+
+        function showLoggedInUI() {
+            elements.userInfo.classList.remove('hidden');
+            elements.logoutBtn.style.display = 'flex';
+            const username = state.user.email.split('@')[0];
+            elements.userName.textContent = username;
+            elements.userAvatar.textContent = username[0].toUpperCase();
+        }
+
+        async function handleLogout() {
+            await supabase.auth.signOut();
+            state.user = null;
+            location.reload();
+        }
+
+        // ===== EDITOR FUNCTIONS =====
+        function updateLineNumbers() {
+            const lines = state.code.split('\n').length;
+            elements.lineCount.textContent = `${lines} linhas`;
+
+            let html = '';
+            for (let i = 1; i <= lines; i++) {
+                html += `<div class="line-number">${i}</div>`;
+            }
+            elements.lineNumbers.innerHTML = html;
+        }
+
+        function updatePreview() {
+            let html;
+
+            if (state.mode === 'html') {
+                html = state.code;
+            } else if (state.mode === 'react') {
+                html = `<!DOCTYPE html>
+<html>
+<head>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"><\/script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"><\/script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"><\/script>
+    <style>* { box-sizing: border-box; } body { margin: 0; }</style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        ${state.code}
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    <\/script>
+</body>
+</html>`;
+            } else if (state.mode === 'python') {
+                html = `<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { background: #0f172a; color: #e2e8f0; font-family: monospace; padding: 20px; }
+        pre { white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <pre>⚠️ Python não pode rodar no navegador
+    
+Use uma API externa ou Pyodide:
+- JDoodle: https://www.jdoodle.com/api
+- Pyodide: https://pyodide.org
+
+Seu código:
+${state.code}</pre>
+</body>
+</html>`;
+            }
+
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            elements.previewFrame.src = url;
+        }
+
+        // ===== SNIPPETS =====
+        async function saveSnippet() {
+            if (!state.user) {
+                showMessage('⚠️ Faça login primeiro');
+                return;
+            }
+
+            if (!state.title || state.title === 'Sem titulo') {
+                showMessage('⚠️ Dê um nome ao projeto');
+                return;
+            }
+
+            if (!state.code) {
+                showMessage('⚠️ Escreva algum código');
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase
+                    .from('snippets')
+                    .upsert({
+                        id: state.currentSnippetId,
+                        user_id: state.user.id,
+                        title: state.title,
+                        mode: state.mode,
+                        code: state.code
+                    })
+                    .select()
+                    .single();
+
+                if (error) throw error;
+
+                state.currentSnippetId = data.id;
+                showMessage('✅ Código salvo!');
+            } catch (error) {
+                showMessage(`❌ Erro: ${error.message}`);
+            }
+        }
+
+        async function loadUserSnippets() {
+            if (!state.user) return;
+
+            try {
+                const { data, error } = await supabase
+                    .from('snippets')
+                    .select('*')
+                    .eq('user_id', state.user.id)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                renderSnippets(data);
+            } catch (error) {
+                showMessage(`❌ Erro: ${error.message}`);
+            }
+        }
+
+        function renderSnippets(snippets) {
+            elements.snippetList.innerHTML = snippets.length === 0
+                ? '<p style="text-align: center; color: var(--text-secondary); padding: 2rem;">Nenhum código salvo</p>'
+                : snippets.map(s => `
+                    <div class="snippet-item" onclick="loadSnippet('${s.id}')">
+                        <div class="snippet-info">
+                            <div class="snippet-title">${escapeHtml(s.title)}</div>
+                            <div class="snippet-meta">${s.mode.toUpperCase()} • ${new Date(s.created_at).toLocaleDateString('pt-BR')}</div>
+                        </div>
+                        <div class="snippet-actions">
+                            <button class="btn" onclick="deleteSnippet('${s.id}', event)">🗑️</button>
+                        </div>
+                    </div>
+                `).join('');
+        }
+
+        async function loadSnippet(id) {
+            try {
+                const { data, error } = await supabase
+                    .from('snippets')
+                    .select('*')
+                    .eq('id', id)
+                    .single();
+
+                if (error) throw error;
+
+                state.currentSnippetId = id;
+                state.mode = data.mode;
+                state.code = data.code;
+                state.title = data.title;
+
+                elements.projectTitle.value = state.title;
+                document.querySelectorAll('[data-mode]').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.mode === state.mode);
+                });
+                elements.codeEditor.value = state.code;
+                updateLineNumbers();
+                updatePreview();
+                elements.snippetsModal.classList.remove('active');
+                showMessage(`✅ "${data.title}" carregado!`);
+            } catch (error) {
+                showMessage(`❌ Erro: ${error.message}`);
+            }
+        }
+
+        async function deleteSnippet(id, event) {
+            event.stopPropagation();
+
+            if (!confirm('Tem certeza?')) return;
+
+            try {
+                const { error } = await supabase
+                    .from('snippets')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                loadUserSnippets();
+                showMessage('✅ Código removido!');
+            } catch (error) {
+                showMessage(`❌ Erro: ${error.message}`);
+            }
+        }
+
+        // ===== COMPARTILHAMENTO =====
+        async function generateShareLink() {
+            if (!state.currentSnippetId) {
+                showMessage('⚠️ Salve o código primeiro');
+                return;
+            }
+
+            try {
+                const shareToken = Math.random().toString(36).substring(2, 15);
+
+                const { error } = await supabase
+                    .from('shares')
+                    .insert({
+                        snippet_id: state.currentSnippetId,
+                        share_token: shareToken
+                    });
+
+                if (error) throw error;
+
+                const shareUrl = `${window.location.origin}?share=${shareToken}`;
+                elements.shareLink.value = shareUrl;
+                showMessage('✅ Link gerado!');
+            } catch (error) {
+                showMessage(`❌ Erro: ${error.message}`);
+            }
+        }
+
+        // ===== UTILITIES =====
+        function escapeHtml(text) {
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function showMessage(text) {
+            const msg = document.createElement('div');
+            msg.className = 'status-message';
+            msg.textContent = text;
+            document.body.appendChild(msg);
+            setTimeout(() => msg.remove(), 3000);
+        }
+
+        // ===== EVENT LISTENERS =====
+        function setupEventListeners() {
+            // Mode selector
+            document.querySelectorAll('[data-mode]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    state.mode = btn.dataset.mode;
+                    document.querySelectorAll('[data-mode]').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    updatePreview();
+                });
+            });
+
+            // Code editor
+            elements.codeEditor.addEventListener('input', (e) => {
+                state.code = e.target.value;
+                updateLineNumbers();
+                updatePreview();
+            });
+
+            // Title
+            elements.projectTitle.addEventListener('change', (e) => {
+                state.title = e.target.value || 'Sem titulo';
+            });
+
+            // Buttons
+            document.getElementById('saveBtn').addEventListener('click', saveSnippet);
+            document.getElementById('openBtn').addEventListener('click', () => {
+                elements.snippetsModal.classList.add('active');
+                loadUserSnippets();
+            });
+            document.getElementById('shareBtn').addEventListener('click', () => {
+                elements.shareModal.classList.add('active');
+            });
+            document.getElementById('generateShareBtn').addEventListener('click', generateShareLink);
+            document.getElementById('copyShareBtn').addEventListener('click', () => {
+                elements.shareLink.select();
+                document.execCommand('copy');
+                showMessage('✅ Link copiado!');
+            });
+            document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+
+            // Modal close
+            document.getElementById('closeModal').addEventListener('click', () => {
+                elements.snippetsModal.classList.remove('active');
+            });
+
+            document.getElementById('closeShareModal').addEventListener('click', () => {
+                elements.shareModal.classList.remove('active');
+            });
+
+            elements.snippetsModal.addEventListener('click', (e) => {
+                if (e.target === elements.snippetsModal) {
+                    elements.snippetsModal.classList.remove('active');
+                }
+            });
+
+            elements.shareModal.addEventListener('click', (e) => {
+                if (e.target === elements.shareModal) {
+                    elements.shareModal.classList.remove('active');
+                }
+            });
+        }
+
+        // Start
+        init();
+    </script>
+</body>
+</html>
