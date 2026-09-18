@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iara Suite PRO - Guia de Setup Windows</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Courier New', monospace;
+      background: #0d1117;
+      color: #e6edf3;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 40px 20px;
+      border-radius: 12px;
+      margin-bottom: 40px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      font-size: 18px;
+      opacity: 0.9;
+    }
+
+    section {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 30px;
+      margin-bottom: 30px;
+    }
+
+    h2 {
+      color: #58a6ff;
+      margin-bottom: 20px;
+      font-size: 28px;
+      border-bottom: 2px solid #30363d;
+      padding-bottom: 10px;
+    }
+
+    h3 {
+      color: #79c0ff;
+      margin-top: 20px;
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+
+    .step {
+      background: #0d1117;
+      border-left: 4px solid #58a6ff;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 6px;
+    }
+
+    .command {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      padding: 15px;
+      border-radius: 6px;
+      margin: 15px 0;
+      overflow-x: auto;
+      position: relative;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .command:hover {
+      border-color: #58a6ff;
+      background: #161b22;
+    }
+
+    .command::before {
+      content: '> ';
+      color: #58a6ff;
+      font-weight: bold;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #58a6ff;
+      color: #0d1117;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 12px;
+      transition: 0.3s;
+    }
+
+    .copy-btn:hover {
+      background: #79c0ff;
+    }
+
+    .folder-tree {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      padding: 20px;
+      border-radius: 6px;
+      margin: 15px 0;
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    .folder-tree code {
+      color: #79c0ff;
+    }
+
+    .file-list {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      padding: 20px;
+      border-radius: 6px;
+      margin: 15px 0;
+    }
+
+    .file-item {
+      padding: 10px;
+      margin: 5px 0;
+      background: #161b22;
+      border-left: 3px solid #58a6ff;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+
+    .file-item .name {
+      color: #58a6ff;
+      font-weight: bold;
+    }
+
+    .file-item .desc {
+      color: #8b949e;
+      font-size: 11px;
+      margin-top: 3px;
+    }
+
+    .warning {
+      background: rgba(248, 81, 73, 0.1);
+      border-left: 4px solid #f85149;
+      padding: 15px;
+      border-radius: 6px;
+      margin: 15px 0;
+    }
+
+    .warning::before {
+      content: '⚠️ ';
+      font-weight: bold;
+    }
+
+    .success {
+      background: rgba(63, 185, 80, 0.1);
+      border-left: 4px solid #3fb950;
+      padding: 15px;
+      border-radius: 6px;
+      margin: 15px 0;
+    }
+
+    .success::before {
+      content: '✅ ';
+      font-weight: bold;
+    }
+
+    .info {
+      background: rgba(88, 166, 255, 0.1);
+      border-left: 4px solid #58a6ff;
+      padding: 15px;
+      border-radius: 6px;
+      margin: 15px 0;
+    }
+
+    .info::before {
+      content: 'ℹ️ ';
+      font-weight: bold;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #30363d;
+    }
+
+    th {
+      background: #0d1117;
+      color: #58a6ff;
+      font-weight: bold;
+    }
+
+    tr:hover {
+      background: #0d1117;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      margin: 15px 0;
+    }
+
+    .card {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      padding: 15px;
+      border-radius: 6px;
+      border-left: 4px solid #58a6ff;
+    }
+
+    .card-title {
+      color: #58a6ff;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .card-desc {
+      color: #8b949e;
+      font-size: 12px;
+    }
+
+    .highlight {
+      background: rgba(88, 166, 255, 0.2);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: #79c0ff;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: #8b949e;
+      border-top: 1px solid #30363d;
+      margin-top: 40px;
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 32px;
+      }
+
+      h2 {
+        font-size: 22px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      section {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <header>
+    <h1>⚡ Iara Suite PRO - WINDOWS</h1>
+    <p class="subtitle">Guia Completo de Setup para Windows</p>
+  </header>
+
+  <!-- SEÇÃO 1: ESTRUTURA DE PASTAS -->
+  <section>
+    <h2>📁 Estrutura de Pastas (Windows)</h2>
+    
+    <h3>Crie exatamente estas pastas:</h3>
+    
+    <div class="folder-tree">
+      <code>
+C:\Users\SeuUsuario\Desktop\iara-pro\<br>
+├── core\<br>
+├── styles\<br>
+├── modules\<br>
+│   ├── sidebar\<br>
+│   ├── editor\<br>
+│   ├── preview\<br>
+│   ├── ai\<br>
+│   ├── mapper\<br>
+│   ├── context-menu\<br>
+│   ├── tabs\<br>
+│   ├── guide\<br>
+│   └── export\<br>
+└── index.html
+      </code>
+    </div>
+
+    <h3>Opção 1: Usando PowerShell (Recomendado)</h3>
+    <div class="command" onclick="copiar(this)">New-Item -ItemType Directory -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\core" -Force; New-Item -ItemType Directory -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\styles" -Force; New-Item -ItemType Directory -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\modules\sidebar" -Force; New-Item -ItemType Directory -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\modules\editor" -Force; New-Item -ItemType Directory -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\modules\preview" -Force; New-Item -ItemType Directory -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\modules\ai" -Force; New-Item -ItemType Directory -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\modules\mapper" -Force; New-Item -ItemType Directory -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\modules\context-menu" -Force; New-Item -ItemType Directory -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\modules\tabs" -Force; New-Item -ItemType Directory -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\modules\guide" -Force; New-Item -ItemType Directory -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\modules\export" -Force</div>
+
+    <h3>Opção 2: Manualmente (Passo a Passo)</h3>
+    <div class="step">
+      <strong>Passo 1:</strong> Abra o Explorador de Arquivos (Windows + E)
+    </div>
+    <div class="step">
+      <strong>Passo 2:</strong> Vá para Desktop (Área de Trabalho)
+    </div>
+    <div class="step">
+      <strong>Passo 3:</strong> Clique com botão direito → Nova Pasta → Digite: <span class="highlight">iara-pro</span>
+    </div>
+    <div class="step">
+      <strong>Passo 4:</strong> Abra a pasta <span class="highlight">iara-pro</span>
+    </div>
+    <div class="step">
+      <strong>Passo 5:</strong> Crie as pastas: <span class="highlight">core</span>, <span class="highlight">styles</span>, <span class="highlight">modules</span>
+    </div>
+    <div class="step">
+      <strong>Passo 6:</strong> Dentro de <span class="highlight">modules</span>, crie: <span class="highlight">sidebar</span>, <span class="highlight">editor</span>, <span class="highlight">preview</span>, <span class="highlight">ai</span>, <span class="highlight">mapper</span>, <span class="highlight">context-menu</span>, <span class="highlight">tabs</span>, <span class="highlight">guide</span>, <span class="highlight">export</span>
+    </div>
+
+    <div class="success">
+      Após criar as pastas, você terá a estrutura pronta!
+    </div>
+  </section>
+
+  <!-- SEÇÃO 2: CRIAR ARQUIVOS -->
+  <section>
+    <h2>📄 Criar Arquivos (Windows)</h2>
+    
+    <h3>Opção 1: Usando PowerShell</h3>
+    
+    <h4>Criar arquivos em core/</h4>
+    <div class="command" onclick="copiar(this)">New-Item -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\core\app.js" -ItemType File -Force; New-Item -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\core\state.js" -ItemType File -Force; New-Item -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\core\storage.js" -ItemType File -Force; New-Item -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\core\utils.js" -ItemType File -Force</div>
+
+    <h4>Criar arquivos em styles/</h4>
+    <div class="command" onclick="copiar(this)">New-Item -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\styles\theme.css" -ItemType File -Force; New-Item -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\styles\responsive.css" -ItemType File -Force</div>
+
+    <h4>Criar arquivos em modules/</h4>
+    <div class="command" onclick="copiar(this)">New-Item -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\modules\sidebar\sidebar.js" -ItemType File -Force; New-Item -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\modules\editor\editor.js" -ItemType File -Force; New-Item -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\modules\preview\preview.js" -ItemType File -Force; New-Item -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\modules\preview\preview-drag.js" -ItemType File -Force</div>
+
+    <h4>Criar arquivos AI</h4>
+    <div class="command" onclick="copiar(this)">New-Item -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\modules\ai\ai-detect.js" -ItemType File -Force; New-Item -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\modules\ai\ai-providers.js" -ItemType File -Force; New-Item -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\modules\ai\ai.js" -ItemType File -Force</div>
+
+    <h4>Criar arquivos Mapper</h4>
+    <div class="command" onclick="copiar(this)">New-Item -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\modules\mapper\mapper-analyze.js" -ItemType File -Force; New-Item -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\modules\mapper\mapper-deps.js" -ItemType File -Force; New-Item -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\modules\mapper\mapper-bugs.js" -ItemType File -Force; New-Item -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\modules\mapper\mapper-git.js" -ItemType File -Force; New-Item -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\modules\mapper\mapper-bate.js" -ItemType File -Force; New-Item -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\modules\mapper\mapper-report.js" -ItemType File -Force; New-Item -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\modules\mapper\mapper.js" -ItemType File -Force</div>
+
+    <h4>Criar últimos arquivos</h4>
+    <div class="command" onclick="copiar(this)">New-Item -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\modules\context-menu\context.js" -ItemType File -Force; New-Item -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\modules\tabs\tabs.js" -ItemType File -Force; New-Item -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\modules\guide\guide.js" -ItemType File -Force; New-Item -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\modules\export\export.js" -ItemType File -Force; New-Item -Path "C:\Users\$env:USERNAME\Desktop\iara-pro\index.html" -ItemType File -Force</div>
+
+    <h3>Opção 2: Manualmente (Clique Direito)</h3>
+    <div class="step">
+      <strong>Em cada pasta:</strong> Clique direito → Novo → Arquivo de Texto
+    </div>
+    <div class="step">
+      <strong>Renomeie para:</strong> <span class="highlight">nomedoarquivo.js</span> ou <span class="highlight">nomedoarquivo.css</span>
+    </div>
+    <div class="step">
+      <strong>Abra com:</strong> Bloco de Notas ou VS Code
+    </div>
+
+    <div class="success">
+      Total: 29 arquivos criados!
+    </div>
+  </section>
+
+  <!-- SEÇÃO 3: ABRIR NO VS CODE -->
+  <section>
+    <h2>💻 Abrir no VS Code (Recomendado)</h2>
+    
+    <h3>Opção 1: Pelo PowerShell</h3>
+    <div class="command" onclick="copiar(this)">cd C:\Users\$env:USERNAME\Desktop\iara-pro; code .</div>
+
+    <h3>Opção 2: Manualmente</h3>
+    <div class="step">
+      <strong>1.</strong> Abra o VS Code
+    </div>
+    <div class="step">
+      <strong>2.</strong> Clique em File → Open Folder
+    </div>
+    <div class="step">
+      <strong>3.</strong> Navegue até Desktop → iara-pro
+    </div>
+    <div class="step">
+      <strong>4.</strong> Clique em Select Folder
+    </div>
+
+    <div class="success">
+      Agora você pode editar todos os arquivos no VS Code!
+    </div>
+  </section>
+
+  <!-- SEÇÃO 4: ORDEM DE CARREGAMENTO -->
+  <section>
+    <h2>⚙️ Ordem de Carregamento (IMPORTANTE!)</h2>
+    
+    <div class="warning">
+      A ordem dos scripts no index.html é CRÍTICA! Siga exatamente esta sequência.
+    </div>
+
+    <h3>Ordem correta no index.html:</h3>
+    <div class="file-list">
+      <div class="file-item">
+        <div class="name">1º</div>
+        <div class="desc">core/utils.js</div>
+      </div>
+      <div class="file-item">
+        <div class="name">2º</div>
+        <div class="desc">core/state.js</div>
+      </div>
+      <div class="file-item">
+        <div class="name">3º</div>
+        <div class="desc">core/storage.js</div>
+      </div>
+      <div class="file-item">
+        <div class="name">4º</div>
+        <div class="desc">modules/sidebar/sidebar.js</div>
+      </div>
+      <div class="file-item">
+        <div class="name">5º</div>
+        <div class="desc">modules/editor/editor.js</div>
+      </div>
+      <div class="file-item">
+        <div class="name">6º</div>
+        <div class="desc">modules/preview/preview.js</div>
+      </div>
+      <div class="file-item">
+        <div class="name">7º</div>
+        <div class="desc">modules/preview/preview-drag.js</div>
+      </div>
+      <div class="file-item">
+        <div class="name">8º</div>
+        <div class="desc">modules/ai/ai-detect.js</div>
+      </div>
+      <div class="file-item">
+        <div class="name">9º</div>
+        <div class="desc">modules/ai/ai-providers.js</div>
+      </div>
+      <div class="file-item">
+        <div class="name">10º</div>
+        <div class="desc">modules/ai/ai.js</div>
+      </div>
+      <div class="file-item">
+        <div class="name">11º</div>
+        <div class="desc">modules/mapper/mapper-analyze.js</div>
+      </div>
+      <div class="file-item">
+        <div class="name">12º</div>
+        <div class="desc">modules/mapper/mapper-deps.js</div>
+      </div>
+      <div class="file-item">
+        <div class="name">13º</div>
+        <div class="desc">modules/mapper/mapper-bugs.js</div>
+      </div>
+      <div class="file-item">
+        <div class="name">14º</div>
+        <div class="desc">modules/mapper/mapper-git.js</div>
+      </div>
+      <div class="file-item">
+        <div class="name">15º</div>
+        <div class="desc">modules/mapper/mapper-bate.js</div>
+      </div>
+      <div class="file-item">
+        <div class="name">16º</div>
+        <div class="desc">modules/mapper/mapper-report.js</div>
+      </div>
+      <div class="file-item">
+        <div class="name">17º</div>
+        <div class="desc">modules/mapper/mapper.js</div>
+      </div>
+      <div class="file-item">
+        <div class="name">18º</div>
+        <div class="desc">modules/context-menu/context.js</div>
+      </div>
+      <div class="file-item">
+        <div class="name">19º</div>
+        <div class="desc">modules/tabs/tabs.js</div>
+      </div>
+      <div class="file-item">
+        <div class="name">20º</div>
+        <div class="desc">modules/guide/guide.js</div>
+      </div>
+      <div class="file-item">
+        <div class="name">21º</div>
+        <div class="desc">modules/export/export.js</div>
+      </div>
+      <div class="file-item">
+        <div class="name">22º</div>
+        <div class="desc">core/app.js</div>
+      </div>
+    </div>
+
+    <div class="success">
+      Respeite esta ordem! Se não funcionar, a ordem está errada.
+    </div>
+  </section>
+
+  <!-- SEÇÃO 5: INICIAR SERVIDOR -->
+  <section>
+    <h2>🚀 Iniciar Servidor (Windows)</h2>
+    
+    <h3>Opção 1: Python (Mais Fácil)</h3>
+    <div class="step">
+      <strong>1.</strong> Abra PowerShell na pasta do projeto
+    </div>
+    <div class="step">
+      <strong>2.</strong> Digite o comando abaixo
+    </div>
+    <div class="command" onclick="copiar(this)">python -m http.server 8000</div>
+    <div class="step">
+      <strong>3.</strong> Abra o navegador em: <span class="highlight">http://localhost:8000</span>
+    </div>
+
+    <h3>Opção 2: Node.js</h3>
+    <div class="command" onclick="copiar(this)">npx http-server</div>
+
+    <h3>Opção 3: PHP</h3>
+    <div class="command" onclick="copiar(this)">php -S localhost:8000</div>
+
+    <h3>Opção 4: VS Code Live Server</h3>
+    <div class="step">
+      <strong>1.</strong> Instale a extensão "Live Server" no VS Code
+    </div>
+    <div class="step">
+      <strong>2.</strong> Clique com botão direito no index.html
+    </div>
+    <div class="step">
+      <strong>3.</strong> Selecione "Open with Live Server"
+    </div>
+
+    <div class="info">
+      Clique em qualquer comando para copiar para a área de transferência!
+    </div>
+  </section>
+
+  <!-- SEÇÃO 6: PASSO A PASSO COMPLETO -->
+  <section>
+    <h2>📋 Passo a Passo Completo (Iniciante)</h2>
+    
+    <table>
+      <tr>
+        <th>Passo</th>
+        <th>Ação</th>
+        <th>Como Fazer</th>
+      </tr>
+      <tr>
+        <td>1</td>
+        <td>Criar pasta iara-pro</td>
+        <td>Desktop → Clique direito → Nova Pasta</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>Abrir a pasta</td>
+        <td>Duplo clique na pasta iara-pro</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>Criar subpastas</td>
+        <td>Clique direito → Nova Pasta (core, styles, modules)</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>Criar pastas em modules</td>
+        <td>Dentro de modules, criar 9 pastas</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>Criar arquivos .js</td>
+        <td>Clique direito → Novo → Arquivo de Texto → Renomear</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td>Abrir no VS Code</td>
+        <td>Clique direito na pasta → Abrir com Code</td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td>Copiar código</td>
+        <td>Copie o código para cada arquivo</td>
+      </tr>
+      <tr>
+        <td>8</td>
+        <td>Salvar arquivos</td>
+        <td>Ctrl + S em cada arquivo</td>
+      </tr>
+      <tr>
+        <td>9</td>
+        <td>Iniciar servidor</td>
+        <td>PowerShell → python -m http.server 8000</td>
+      </tr>
+      <tr>
+        <td>10</td>
+        <td>Abrir navegador</td>
+        <td>http://localhost:8000</td>
+      </tr>
+    </table>
+  </section>
+
+  <!-- SEÇÃO 7: ATALHOS WINDOWS -->
+  <section>
+    <h2>⌨️ Atalhos Úteis do Windows</h2>
+    
+    <table>
+      <tr>
+        <th>Atalho</th>
+        <th>O que faz</th>
+      </tr>
+      <tr>
+        <td>Windows + E</td>
+        <td>Abre Explorador de Arquivos</td>
+      </tr>
+      <tr>
+        <td>Windows + V</td>
+        <td>Abre histórico de cópia</td>
+      </tr>
+      <tr>
+        <td>Ctrl + C</td>
+        <td>Copiar</td>
+      </tr>
+      <tr>
+        <td>Ctrl + V</td>
+        <td>Colar</td>
+      </tr>
+      <tr>
+        <td>Ctrl + X</td>
+        <td>Cortar</td>
+      </tr>
+      <tr>
+        <td>Ctrl + Z</td>
+        <td>Desfazer</td>
+      </tr>
+      <tr>
+        <td>Ctrl + Shift + Esc</td>
+        <td>Abre Gerenciador de Tarefas</td>
+      </tr>
+      <tr>
+        <td>F5</td>
+        <td>Recarregar página (navegador)</td>
+      </tr>
+      <tr>
+        <td>F12</td>
+        <td>Abrir DevTools (navegador)</td>
+      </tr>
+    </table>
+  </section>
+
+  <!-- SEÇÃO 8: RESUMO -->
+  <section>
+    <h2>📊 Resumo do Projeto</h2>
+    
+    <table>
+      <tr>
+        <th>Métrica</th>
+        <th>Valor</th>
+      </tr>
+      <tr>
+        <td>Total de Pastas</td>
+        <td>10</td>
+      </tr>
+      <tr>
+        <td>Total de Arquivos</td>
+        <td>29</td>
+      </tr>
+      <tr>
+        <td>Arquivos JavaScript</td>
+        <td>26</td>
+      </tr>
+      <tr>
+        <td>Arquivos CSS</td>
+        <td>2</td>
+      </tr>
+      <tr>
+        <td>Arquivos HTML</td>
+        <td>1</td>
+      </tr>
+      <tr>
+        <td>Linhas de Código</td>
+        <td>~5000+</td>
+      </tr>
+      <tr>
+        <td>Funcionalidades</td>
+        <td>15+</td>
+      </tr>
+      <tr>
+        <td>Módulos</td>
+        <td>9</td>
+      </tr>
+    </table>
+  </section>
+
+  <footer>
+    <p>Iara Suite PRO v2.0.0 - Guia Windows | Dr. Maikon Caldeira OAB/MG 183712</p>
+    <p>Última atualização: 2026-09-18</p>
+  </footer>
+
+</div>
+
+<script>
+  function copiar(element) {
+    const text = element.textContent.replace('> ', '').trim();
+    navigator.clipboard.writeText(text).then(() => {
+      const original = element.textContent;
+      element.textContent = '✅ Copiado!';
+      element.style.background = '#3fb950';
+      setTimeout(() => {
+        element.textContent = original;
+        element.style.background = '';
+      }, 2000);
+    });
+  }
+</script>
+
+</body>
+</html>
