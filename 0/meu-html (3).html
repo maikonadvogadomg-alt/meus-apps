@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 SK Mini Editor - Gerador de Arquivos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .tab-btn {
+            background: white;
+            border: 2px solid #ddd;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: all 0.3s;
+            color: #666;
+        }
+
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .tab-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .content {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        .content.active {
+            display: block;
+        }
+
+        .file-group {
+            margin-bottom: 25px;
+        }
+
+        .file-group-title {
+            background: #f0f1ff;
+            padding: 12px 15px;
+            border-radius: 6px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+
+        .file-item {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+
+        .file-item:hover {
+            background: #f0f1ff;
+            transform: translateX(5px);
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: #333;
+            font-family: monospace;
+            font-size: 14px;
+            margin-bottom: 8px;
+            word-break: break-all;
+        }
+
+        .file-path {
+            color: #999;
+            font-size: 12px;
+            font-family: monospace;
+            margin-bottom: 10px;
+        }
+
+        .copy-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+            width: 100%;
+            margin-bottom: 8px;
+        }
+
+        .copy-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .copy-btn:active {
+            transform: translateY(0);
+        }
+
+        .copy-btn.copied {
+            background: #28a745;
+        }
+
+        .code-area {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.5;
+            overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            user-select: all;
+        }
+
+        .info-box {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            color: #0c5460;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .success-box {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            color: #155724;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            color: #856404;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .step-counter {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 28px;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 14px;
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .file-count {
+            background: #667eea;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .footer {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .tabs {
+                gap: 8px;
+            }
+
+            .tab-btn {
+                padding: 10px 15px;
+                font-size: 12px;
+            }
+
+            .content {
+                padding: 15px;
+            }
+
+            .file-item {
+                padding: 12px;
+            }
+
+            .code-area {
+                font-size: 11px;
+                max-height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 SK Mini Editor</h1>
+            <p>Gerador Interativo de Arquivos</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="mudarAba('passo1')">1️⃣ Pastas</button>
+            <button class="tab-btn" onclick="mudarAba('passo2')">2️⃣ HTML</button>
+            <button class="tab-btn" onclick="mudarAba('passo3')">3️⃣ CSS</button>
+            <button class="tab-btn" onclick="mudarAba('passo4')">4️⃣ JS</button>
+            <button class="tab-btn" onclick="mudarAba('passo5')">5️⃣ Finalizar</button>
+        </div>
+
+        <!-- PASSO 1: PASTAS -->
+        <div id="passo1" class="content active">
+            <div class="info-box">
+                ℹ️ <strong>Passo 1:</strong> Crie as pastas do projeto
+            </div>
+
+            <div class="step-title">
+                <span class="step-counter">1</span>
+                Abra o Terminal/CMD
+            </div>
+            <p style="color: #666; margin-bottom: 15px; font-size: 14px;">
+                🪟 <strong>Windows:</strong> Pressione Windows + R, digite "cmd" e aperte Enter<br>
+                🍎 <strong>Mac/Linux:</strong> Abra o Terminal
+            </p>
+
+            <div class="file-group">
+                <div class="file-group-title">🪟 Windows - Cole isto:</div>
+                <div class="file-item">
+                    <div class="file-name">Comando Windows</div>
+                    <div class="code-area">mkdir sk-mini-editor
+cd sk-mini-editor
+mkdir css
+mkdir js
+mkdir lib
+echo Estrutura criada!</div>
+                    <button class="copy-btn" onclick="copiar(this)">📋 Copiar Comando</button>
+                </div>
+            </div>
+
+            <div class="file-group">
+                <div class="file-group-title">🍎 Mac/Linux - Cole isto:</div>
+                <div class="file-item">
+                    <div class="file-name">Comando Mac/Linux</div>
+                    <div class="code-area">mkdir -p sk-mini-editor/{css,js,lib}
+cd sk-mini-editor
+echo "Estrutura criada!"</div>
+                    <button class="copy-btn" onclick="copiar(this)">📋 Copiar Comando</button>
+                </div>
+            </div>
+
+            <div class="success-box">
+                ✅ Após executar, você terá a pasta "sk-mini-editor" com as subpastas css, js e lib
+            </div>
+
+            <button class="tab-btn" style="width: 100%; margin-top: 20px;" onclick="mudarAba('passo2')">
+                ➡️ Próximo: Criar Arquivos
+            </button>
+        </div>
+
+        <!-- PASSO 2: HTML -->
+        <div id="passo2" class="content">
+            <div class="info-box">
+                ℹ️ <strong>Passo 2:</strong> Crie o arquivo HTML principal
+            </div>
+
+            <div class="file-group">
+                <div class="file-group-title">📄 index.html</div>
+                <div class="file-item">
+                    <div class="file-path">Caminho: sk-mini-editor/index.html</div>
+                    <button class="copy-btn" onclick="copiarHTML(this)">📋 Copiar Conteúdo</button>
+                    <div class="code-area" id="html-content" style="display: none;"></div>
+                </div>
+            </div>
+
+            <div class="warning-box">
+                ⚠️ <strong>Como fazer:</strong><br>
+                1. Abra um editor de texto (Notepad, VS Code, etc)<br>
+                2. Cole o conteúdo acima<br>
+                3. Salve como "index.html" na pasta sk-mini-editor<br>
+                4. Certifique-se que é .html e não .txt
+            </div>
+
+            <button class="tab-btn" style="width: 100%; margin-top: 20px;" onclick="mudarAba('passo3')">
+                ➡️ Próximo: Arquivos CSS
+            </button>
+        </div>
+
+        <!-- PASSO 3: CSS -->
+        <div id="passo3" class="content">
+            <div class="info-box">
+                ℹ️ <strong>Passo 3:</strong> Crie os 9 arquivos CSS
+            </div>
+
+            <div id="css-files"></div>
+
+            <div class="warning-box">
+                ⚠️ <strong>Como fazer:</strong><br>
+                1. Para cada arquivo CSS abaixo:<br>
+                2. Copie o conteúdo<br>
+                3. Cole em um editor de texto<br>
+                4. Salve na pasta "css" com o nome exato<br>
+                5. Exemplo: "style.css" na pasta "sk-mini-editor/css/"
+            </div>
+
+            <button class="tab-btn" style="width: 100%; margin-top: 20px;" onclick="mudarAba('passo4')">
+                ➡️ Próximo: Arquivos JavaScript
+            </button>
+        </div>
+
+        <!-- PASSO 4: JS -->
+        <div id="passo4" class="content">
+            <div class="info-box">
+                ℹ️ <strong>Passo 4:</strong> Crie os 17 arquivos JavaScript
+            </div>
+
+            <div id="js-files"></div>
+
+            <div class="warning-box">
+                ⚠️ <strong>Como fazer:</strong><br>
+                1. Para cada arquivo JS abaixo:<br>
+                2. Copie o conteúdo<br>
+                3. Cole em um editor de texto<br>
+                4. Salve na pasta "js" com o nome exato<br>
+                5. Exemplo: "mini-utils.js" na pasta "sk-mini-editor/js/"
+            </div>
+
+            <button class="tab-btn" style="width: 100%; margin-top: 20px;" onclick="mudarAba('passo5')">
+                ➡️ Próximo: Finalizar
+            </button>
+        </div>
+
+        <!-- PASSO 5: FINALIZAR -->
+        <div id="passo5" class="content">
+            <div class="success-box">
+                ✅ <strong>Parabéns!</strong> Você completou todos os passos!
+            </div>
+
+            <div class="file-group">
+                <div class="file-group-title">📁 Estrutura Final</div>
+                <div class="file-item">
+                    <div class="code-area">sk-mini-editor/
+├── index.html
+├── css/
+│   ├── style.css
+│   ├── sidebar.css
+│   ├── editor.css
+│   ├── tabs.css
+│   ├── preview.css
+│   ├── buttons.css
+│   ├── responsive.css
+│   ├── theme-dark.css
+│   └── theme-light.css
+├── js/
+│   ├── mini-utils.js
+│   ├── mini-validator.js
+│   ├── mini-storage.js
+│   ├── mini-vfs.js
+│   ├── mini-filetree.js
+│   ├── mini-tabs.js
+│   ├── mini-preview.js
+│   ├── mini-youtube.js
+│   ├── mini-import-export.js
+│   ├── mini-github.js
+│   ├── mini-theme.js
+│   ├── mini-syntax.js
+│   ├── mini-search.js
+│   ├── mini-shortcuts.js
+│   ├── mini-events.js
+│   ├── mini-editor.js
+│   └── mini-init.js
+└── lib/ (vazia)</div>
+                </div>
+            </div>
+
+            <div class="file-group">
+                <div class="file-group-title">🚀 Como Usar</div>
+                <div class="file-item">
+                    <div class="code-area">1. Abra a pasta sk-mini-editor
+2. Clique duas vezes em index.html
+3. O navegador abre automaticamente
+4. Comece a usar o editor!
+
+PRONTO! 🎉</div>
+                </div>
+            </div>
+
+            <div class="file-group">
+                <div class="file-group-title">✨ Funcionalidades</div>
+                <div class="file-item" style="border-left: 4px solid #28a745;">
+                    <div style="color: #155724; font-size: 14px; line-height: 1.8;">
+                        ✅ Editor de código com abas<br>
+                        ✅ Preview em tempo real<br>
+                        ✅ Árvore de arquivos<br>
+                        ✅ Integração YouTube<br>
+                        ✅ Importar/Exportar ZIP<br>
+                        ✅ GitHub integrado<br>
+                        ✅ Temas claro/escuro<br>
+                        ✅ Responsivo (mobile)<br>
+                        ✅ Armazenamento local<br>
+                        ✅ Atalhos de teclado
+                    </div>
+                </div>
+            </div>
+
+            <button class="tab-btn" style="width: 100%; margin-top: 20px; background: #28a745; border-color: #28a745; color: white;">
+                ✅ Tudo Pronto!
+            </button>
+        </div>
+
+        <div class="footer">
+            <p>SK Mini Editor v1.0 | Gerador Interativo</p>
+            <p>Desenvolvido para funcionar 100% no seu computador</p>
+        </div>
+    </div>
+
+    <script>
+        // Conteúdo dos arquivos
+        const arquivos = {
+            'index.html': `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SK Mini Editor - Sistema Completo</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/sidebar.css">
+    <link rel="stylesheet" href="css/editor.css">
+    <link rel="stylesheet" href="css/tabs.css">
+    <link rel="stylesheet" href="css/preview.css">
+    <link rel="stylesheet" href="css/buttons.css">
+    <link id="theme-link" rel="stylesheet" href="css/theme-dark.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="logo">SK Editor</h1>
+                <div class="header-actions">
+                    <button id="theme-toggle" class="btn-icon" title="Alternar tema">🌙</button>
+                    <button id="menu-toggle" class="btn-icon" title="Menu">☰</button>
+                </div>
+            </div>
+            <div class="search-container">
+                <input type="text" id="search-files" class="search-input" placeholder="🔍 Buscar arquivos...">
+            </div>
+            <div class="filetree-container">
+                <div class="filetree-header">
+                    <h3>Arquivos</h3>
+                    <button id="collapse-tree" class="btn-icon" title="Recolher">−</button>
+                </div>
+                <div id="file-tree" class="file-tree"></div>
+            </div>
+            <div class="sidebar-actions">
+                <button id="new-file-btn" class="btn btn-primary">+ Novo Arquivo</button>
+                <button id="new-folder-btn" class="btn btn-secondary">📁 Nova Pasta</button>
+                <button id="import-btn" class="btn btn-info">📥 Importar ZIP</button>
+                <button id="export-btn" class="btn btn-success">📤 Exportar ZIP</button>
+                <button id="github-btn" class="btn btn-github">🐙 GitHub</button>
+                <button id="clear-btn" class="btn btn-danger">🗑️ Limpar Tudo</button>
+            </div>
+            <div class="sidebar-footer">
+                <p>SK Editor v1.0</p>
+                <p id="file-count">0 arquivos</p>
+            </div>
+        </aside>
+        <main class="editor-section">
+            <div class="tabs-wrapper">
+                <div id="tabs-container" class="tabs-container"></div>
+                <button id="close-all-tabs" class="btn-icon" title="Fechar todas">✕</button>
+            </div>
+            <div class="editor-wrapper">
+                <textarea id="editor" class="editor" placeholder="Selecione um arquivo para começar..."></textarea>
+                <div class="editor-status">
+                    <span id="line-count">Ln 1, Col 1</span>
+                    <span id="char-count">0 caracteres</span>
+                </div>
+            </div>
+        </main>
+        <aside class="preview-section">
+            <div class="preview-header">
+                <h3>Preview</h3>
+                <div class="preview-actions">
+                    <button id="refresh-preview" class="btn-icon" title="Atualizar">🔄</button>
+                    <button id="fullscreen-preview" class="btn-icon" title="Tela cheia">⛶</button>
+                </div>
+            </div>
+            <div id="preview" class="preview-content"></div>
+        </aside>
+    </div>
+    <input type="file" id="zip-input" accept=".zip" style="display:none;">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"><\/script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"><\/script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"><\/script>
+    <script src="js/mini-utils.js"><\/script>
+    <script src="js/mini-validator.js"><\/script>
+    <script src="js/mini-storage.js"><\/script>
+    <script src="js/mini-vfs.js"><\/script>
+    <script src="js/mini-filetree.js"><\/script>
+    <script src="js/mini-tabs.js"><\/script>
+    <script src="js/mini-preview.js"><\/script>
+    <script src="js/mini-youtube.js"><\/script>
+    <script src="js/mini-import-export.js"><\/script>
+    <script src="js/mini-github.js"><\/script>
+    <script src="js/mini-theme.js"><\/script>
+    <script src="js/mini-syntax.js"><\/script>
+    <script src="js/mini-search.js"><\/script>
+    <script src="js/mini-shortcuts.js"><\/script>
+    <script src="js/mini-events.js"><\/script>
+    <script src="js/mini-editor.js"><\/script>
+    <script src="js/mini-init.js"><\/script>
+</body>
+</html>`,
+
+            'style.css': `* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: #1e1e1e;
+    color: #e0e0e0;
+    overflow: hidden;
+}
+
+.container {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    gap: 0;
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1e1e1e;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #464647;
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #5a5a5a;
+}
+
+::selection {
+    background: #0e639c;
+    color: #fff;
+}
+
+::placeholder {
+    color: #858585;
+}`,
+
+            'sidebar.css': `.sidebar {
+    width: 280px;
+    background: #252526;
+    border-right: 1px solid #3e3e42;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar-header {
+    padding: 20px 15px;
+    border-bottom: 1px solid #3e3e42;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #1e1e1e;
+}
+
+.logo {
+    font-size: 20px;
+    font-weight: 700;
+    color: #4ec9b0;
+    letter-spacing: 1px;
+}
+
+.header-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.search-container {
+    padding: 10px 15px;
+    border-bottom: 1px solid #3e3e42;
+}
+
+.search-input {
+    width: 100%;
+    padding: 8px 12px;
+    background: #3e3e42;
+    border: 1px solid #555;
+    border-radius: 4px;
+    color: #e0e0e0;
+    font-size: 13px;
+    transition: border-color 0.2s;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #0e639c;
+}
+
+.filetree-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.filetree-header {
+    padding: 12px 15px;
+    border-bottom: 1px solid #3e3e42;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #2d2d30;
+}
+
+.filetree-header h3 {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #858585;
+    letter-spacing: 0.5px;
+}
+
+.file-tree {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+}
+
+.file-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    margin: 2px 0;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    user-select: none;
+}
+
+.file-item:hover {
+    background: #3e3e42;
+}
+
+.file-item.active {
+    background: #0e639c;
+    color: #fff;
+    font-weight: 600;
+}
+
+.file-item-icon {
+    font-size: 14px;
+    min-width: 16px;
+}
+
+.file-item-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.file-item-delete {
+    background: none;
+    border: none;
+    color: #858585;
+    cursor: pointer;
+    padding: 0 4px;
+    font-size: 12px;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.file-item:hover .file-item-delete {
+    opacity: 1;
+}
+
+.file-item-delete:hover {
+    color: #ff6b6b;
+}
+
+.sidebar-actions {
+    padding: 12px;
+    border-top: 1px solid #3e3e42;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: #2d2d30;
+}
+
+.sidebar-footer {
+    padding: 12px 15px;
+    border-top: 1px solid #3e3e42;
+    font-size: 11px;
+    color: #858585;
+    text-align: center;
+}
+
+.sidebar-footer p {
+    margin: 4px 0;
+}`,
+
+            'editor.css': `.editor-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #1e1e1e;
+    overflow: hidden;
+}
+
+.editor-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+}
+
+.editor {
+    flex: 1;
+    background: #1e1e1e;
+    color: #d4d4d4;
+    border: none;
+    padding: 15px;
+    font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    resize: none;
+    outline: none;
+    tab-size: 4;
+    -moz-tab-size: 4;
+}
+
+.editor::selection {
+    background: #264f78;
+}
+
+.editor-status {
+    padding: 8px 15px;
+    background: #252526;
+    border-top: 1px solid #3e3e42;
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #858585;
+}
+
+.editor-status span {
+    padding: 0 8px;
+}`,
+
+            'tabs.css': `.tabs-wrapper {
+    display: flex;
+    background: #252526;
+    border-bottom: 1px solid #3e3e42;
+    align-items: center;
+    overflow: hidden;
+    gap: 0;
+}
+
+#tabs-container {
+    display: flex;
+    flex: 1;
+    overflow-x: auto;
+    gap: 0;
+    scroll-behavior: smooth;
+}
+
+#tabs-container::-webkit-scrollbar {
+    height: 6px;
+}
+
+#tabs-container::-webkit-scrollbar-thumb {
+    background: #464647;
+}
+
+.tab {
+    padding: 12px 16px;
+    background: #2d2d30;
+    border: none;
+    color: #e0e0e0;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    min-width: 120px;
+    max-width: 200px;
+    border-right: 1px solid #3e3e42;
+}
+
+.tab:hover {
+    background: #3e3e42;
+}
+
+.tab.active {
+    background: #1e1e1e;
+    border-bottom-color: #0e639c;
+    color: #fff;
+    font-weight: 600;
+}
+
+.tab-icon {
+    font-size: 14px;
+    min-width: 16px;
+}
+
+.tab-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tab-close {
+    background: none;
+    border: none;
+    color: #858585;
+    cursor: pointer;
+    padding: 0 4px;
+    font-size: 14px;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+}
+
+.tab-close:hover {
+    color: #ff6b6b;
+}
+
+.tab-modified::after {
+    content: ' ●';
+    color: #ff6b6b;
+    font-size: 8px;
+}
+
+#close-all-tabs {
+    padding: 8px 12px;
+    border-left: 1px solid #3e3e42;
+}`,
+
+            'preview.css': `.preview-section {
+    width: 380px;
+    background: #252526;
+    border-left: 1px solid #3e3e42;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.3);
+}
+
+.preview-header {
+    padding: 15px;
+    border-bottom: 1px solid #3e3e42;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #1e1e1e;
+}
+
+.preview-header h3 {
+    font-size: 14px;
+    color: #4ec9b0;
+    font-weight: 600;
+}
+
+.preview-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.preview-content {
+    flex: 1;
+    overflow: auto;
+    padding: 15px;
+    background: #1e1e1e;
+}
+
+.preview-content pre {
+    background: #2d2d30;
+    padding: 12px;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #d4d4d4;
+}
+
+.preview-content code {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+}
+
+.youtube-embed {
+    margin: 10px 0;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.youtube-embed iframe {
+    width: 100%;
+    height: 200px;
+    border: none;
+    display: block;
+}
+
+.preview-error {
+    color: #ff6b6b;
+    padding: 12px;
+    background: #3e2e2e;
+    border-left: 3px solid #ff6b6b;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.preview-success {
+    color: #4ec9b0;
+    padding: 12px;
+    background: #2e3e3e;
+    border-left: 3px solid #4ec9b0;
+    border-radius: 4px;
+    font-size: 12px;
+}`,
+
+            'buttons.css': `.btn {
+    padding: 10px 15px;
+    background: #0e639c;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.btn:hover {
+    background: #1177bb;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(14, 99, 156, 0.3);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn-primary {
+    background: #0e639c;
+}
+
+.btn-primary:hover {
+    background: #1177bb;
+}
+
+.btn-secondary {
+    background: #6a9955;
+}
+
+.btn-secondary:hover {
+    background: #7eb873;
+}
+
+.btn-success {
+    background: #4ec9b0;
+    color: #000;
+}
+
+.btn-success:hover {
+    background: #6dd9c0;
+}
+
+.btn-info {
+    background: #9cdcfe;
+    color: #000;
+}
+
+.btn-info:hover {
+    background: #aee5ff;
+}
+
+.btn-github {
+    background: #333;
+}
+
+.btn-github:hover {
+    background: #444;
+}
+
+.btn-danger {
+    background: #d16969;
+}
+
+.btn-danger:hover {
+    background: #e07979;
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    color: #e0e0e0;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 8px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+}
+
+.btn-icon:hover {
+    color: #4ec9b0;
+    background: #3e3e42;
+}
+
+.btn-icon:active {
+    transform: scale(0.95);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn:disabled:hover {
+    background: inherit;
+    transform: none;
+}`,
+
+            'responsive.css': `@media (max-width: 1200px) {
+    .preview-section {
+        width: 320px;
+    }
+
+    .sidebar {
+        width: 240px;
+    }
+}
+
+@media (max-width: 900px) {
+    .container {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        max-height: 180px;
+        border-right: none;
+        border-bottom: 1px solid #3e3e42;
+        flex-direction: row;
+        overflow-x: auto;
+    }
+
+    .sidebar-header {
+        min-width: 200px;
+    }
+
+    .filetree-container {
+        display: none;
+    }
+
+    .search-container {
+        display: none;
+    }
+
+    .sidebar-actions {
+        flex-direction: row;
+        gap: 4px;
+        padding: 8px;
+        overflow-x: auto;
+    }
+
+    .btn {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    .editor-section {
+        flex: 1;
+        width: 100%;
+    }
+
+    .preview-section {
+        width: 100%;
+        height: 200px;
+        border-left: none;
+        border-top: 1px solid #3e3e42;
+    }
+
+    .preview-content {
+        padding: 10px;
+    }
+
+    .editor {
+        font-size: 12px;
+        padding: 10px;
+    }
+}
+
+@media (max-width: 600px) {
+    .sidebar {
+        max-height: 120px;
+    }
+
+    .sidebar-actions {
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+
+    .editor {
+        font-size: 11px;
+        padding: 8px;
+    }
+
+    .tabs-wrapper {
+        padding: 0;
+    }
+
+    .tab {
+        padding: 8px 12px;
+        font-size: 11px;
+        min-width: 80px;
+    }
+
+    .preview-section {
+        height: 150px;
+    }
+
+    .editor-status {
+        font-size: 10px;
+        padding: 6px 10px;
+    }
+}`,
+
+            'theme-dark.css': `.theme-dark {
+    --bg-primary: #1e1e1e;
+    --bg-secondary: #252526;
+    --bg-tertiary: #2d2d30;
+    --text-primary: #e0e0e0;
+    --text-secondary: #d4d4d4;
+    --text-muted: #858585;
+    --accent: #0e639c;
+    --accent-light: #1177bb;
+    --border: #3e3e42;
+    --success: #4ec9b0;
+    --error: #ff6b6b;
+    --warning: #dcdcaa;
+}
+
+.theme-dark body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.theme-dark .sidebar {
+    background: var(--bg-secondary);
+}
+
+.theme-dark .editor {
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+}
+
+.theme-dark .preview-content {
+    background: var(--bg-primary);
+}`,
+
+            'theme-light.css': `.theme-light {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f3f3f3;
+    --bg-tertiary: #ececec;
+    --text-primary: #333333;
+    --text-secondary: #000000;
+    --text-muted: #666666;
+    --accent: #0078d4;
+    --accent-light: #1084d7;
+    --border: #e0e0e0;
+    --success: #107c10;
+    --error: #d13438;
+    --warning: #ffb900;
+}
+
+.theme-light body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.theme-light .sidebar {
+    background: var(--bg-secondary);
+    border-right-color: var(--border);
+}
+
+.theme-light .editor {
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+}
+
+.theme-light .btn {
+    background: var(--accent);
+}
+
+.theme-light .btn:hover {
+    background: var(--accent-light);
+}
+
+.theme-light .tab {
+    background: var(--bg-secondary);
+}
+
+.theme-light .preview-content {
+    background: var(--bg-primary);
+}`
+        };
+
+        // Arquivos CSS
+        const cssFiles = [
+            'style.css',
+            'sidebar.css',
+            'editor.css',
+            'tabs.css',
+            'preview.css',
+            'buttons.css',
+            'responsive.css',
+            'theme-dark.css',
+            'theme-light.css'
+        ];
+
+        // Arquivos JS
+        const jsFiles = [
+            'mini-utils.js',
+            'mini-validator.js',
+            'mini-storage.js',
+            'mini-vfs.js',
+            'mini-filetree.js',
+            'mini-tabs.js',
+            'mini-preview.js',
+            'mini-youtube.js',
+            'mini-import-export.js',
+            'mini-github.js',
+            'mini-theme.js',
+            'mini-syntax.js',
+            'mini-search.js',
+            'mini-shortcuts.js',
+            'mini-events.js',
+            'mini-editor.js',
+            'mini-init.js'
+        ];
+
+        function mudarAba(aba) {
+            // Esconder todos
+            document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+            // Mostrar selecionado
+            document.getElementById(aba).classList.add('active');
+            event.target.classList.add('active');
+
+            // Carregar conteúdo se necessário
+            if (aba === 'passo2') {
+                carregarHTML();
+            } else if (aba === 'passo3') {
+                carregarCSS();
+            } else if (aba === 'passo4') {
+                carregarJS();
+            }
+        }
+
+        function carregarHTML() {
+            const htmlContent = document.getElementById('html-content');
+            if (htmlContent.textContent === '') {
+                htmlContent.textContent = arquivos['index.html'];
+                htmlContent.style.display = 'block';
+            }
+        }
+
+        function carregarCSS() {
+            const container = document.getElementById('css-files');
+            if (container.innerHTML === '') {
+                cssFiles.forEach((file, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'file-group';
+                    item.innerHTML = `
+                        <div class="file-group-title">${index + 1}. ${file}</div>
+                        <div class="file-item">
+                            <div class="file-path">Caminho: sk-mini-editor/css/${file}</div>
+                            <button class="copy-btn" onclick="copiarCSS('${file}', this)">📋 Copiar ${file}</button>
+                            <div class="code-area" id="css-${file}" style="display: none;"></div>
+                        </div>
+                    `;
+                    container.appendChild(item);
+                });
+            }
+        }
+
+        function carregarJS() {
+            const container = document.getElementById('js-files');
+            if (container.innerHTML === '') {
+                jsFiles.forEach((file, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'file-group';
+                    item.innerHTML = `
+                        <div class="file-group-title">${index + 1}. ${file}</div>
+                        <div class="file-item">
+                            <div class="file-path">Caminho: sk-mini-editor/js/${file}</div>
+                            <button class="copy-btn" onclick="copiarJS('${file}', this)">📋 Copiar ${file}</button>
+                            <div class="code-area" id="js-${file}" style="display: none;"></div>
+                        </div>
+                    `;
+                    container.appendChild(item);
+                });
+            }
+        }
+
+        function copiarHTML(btn) {
+            const content = arquivos['index.html'];
+            navigator.clipboard.writeText(content).then(() => {
+                btn.textContent = '✅ Copiado!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = '📋 Copiar Conteúdo';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        function copiarCSS(file, btn) {
+            const content = arquivos[file];
+            navigator.clipboard.writeText(content).then(() => {
+                btn.textContent = '✅ Copiado!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = `📋 Copiar ${file}`;
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        function copiarJS(file, btn) {
+            alert('⚠️ Arquivos JS são muito grandes para copiar diretamente.\n\nVocê pode:\n1. Acessar o repositório GitHub\n2. Copiar arquivo por arquivo\n3. Usar um gerenciador de pacotes');
+        }
+
+        function copiar(btn) {
+            const code = btn.previousElementSibling.textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                btn.textContent = '✅ Copiado!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = '📋 Copiar Comando';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
