@@ -1,0 +1,9 @@
+Scanner de Dependencias
+
+1. Extraia o ZIP
+2. Abra scanner.html no navegador (Chrome, Firefox, qualquer um)
+3. Arraste o APK ou ZIP para a area indicada
+4. Veja o relatorio
+
+Funciona 100% offline. Nenhum dado e enviado a servidores.
+Detecta: replit.com, repl.it, .replit.dev, REPL_ID, REPLIT_*, e mais.
