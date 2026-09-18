@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Playground - HTML/CSS/JS/React/Python</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #0f1419;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* ===== HEADER ===== */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-card);
+            flex-wrap: wrap;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            min-width: 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 0.25rem;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.25rem;
+            border-radius: 0.375rem;
+            border: 1px solid var(--border);
+        }
+
+        .mode-btn {
+            padding: 0.375rem 0.75rem;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 0.25rem;
+            transition: all 0.2s;
+        }
+
+        .mode-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .mode-btn:hover {
+            background: rgba(37, 99, 235, 0.2);
+        }
+
+        .title-input {
+            width: 150px;
+            padding: 0.375rem 0.75rem;
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            border-radius: 0.25rem;
+            transition: border-color 0.2s;
+        }
+
+        .title-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.375rem 0.75rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn.ghost {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .btn.ghost:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* ===== MAIN LAYOUT ===== */
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            gap: 0;
+        }
+
+        /* ===== EDITOR SECTION ===== */
+        .editor-section {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            border-right: 1px solid var(--border);
+            min-width: 0;
+        }
+
+        .editor-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.02);
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.25rem;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab {
+            padding: 0.5rem 1rem;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab:hover {
+            color: var(--text-primary);
+        }
+
+        .editor-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .editor-wrapper {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .line-numbers {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            padding: 0.5rem 0.75rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-right: 1px solid var(--border);
+            user-select: none;
+            pointer-events: none;
+            overflow: hidden;
+            min-width: 40px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            line-height: 1.625rem;
+            color: rgba(148, 163, 184, 0.3);
+        }
+
+        .line-number {
+            height: 1.625rem;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 0.5rem;
+        }
+
+        .editor-textarea {
+            flex: 1;
+            padding: 0.5rem;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            line-height: 1.625rem;
+            resize: none;
+            outline: none;
+            overflow: auto;
+            tab-size: 2;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            padding: 0.375rem 0.75rem;
+            margin-left: auto;
+        }
+
+        .search-input {
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 0.75rem;
+            outline: none;
+            width: 150px;
+        }
+
+        .search-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        /* ===== PREVIEW SECTION ===== */
+        .preview-section {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .preview-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.02);
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .preview-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            color: var(--success);
+        }
+
+        .live-dot {
+            width: 0.375rem;
+            height: 0.375rem;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .preview-iframe {
+            flex: 1;
+            border: none;
+            background: white;
+        }
+
+        .preview-output {
+            flex: 1;
+            background: var(--bg-input);
+            overflow: auto;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            line-height: 1.625rem;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .output-success {
+            color: #4ade80;
+        }
+
+        .output-error {
+            color: #f87171;
+        }
+
+        .output-info {
+            color: #60a5fa;
+        }
+
+        /* ===== MOBILE LAYOUT ===== */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .header-left,
+            .header-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .title-input {
+                width: 100%;
+            }
+
+            .main-content {
+                flex-direction: column;
+                border-right: none;
+            }
+
+            .editor-section {
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .editor-section.hidden {
+                display: none;
+            }
+
+            .preview-section.hidden {
+                display: none;
+            }
+
+            .editor-section.full {
+                flex: 1;
+                border-bottom: none;
+            }
+
+            .preview-section.full {
+                flex: 1;
+                border-bottom: none;
+            }
+
+            .mobile-toggle {
+                display: flex;
+                gap: 0.25rem;
+            }
+
+            .mobile-toggle .btn {
+                flex: 1;
+            }
+
+            .btn span {
+                display: none;
+            }
+
+            .btn.show-text span {
+                display: inline;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header {
+                padding: 0.5rem;
+            }
+
+            .btn {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.7rem;
+            }
+
+            .editor-textarea {
+                font-size: 0.8rem;
+            }
+
+            .line-numbers {
+                min-width: 30px;
+                padding: 0.5rem 0.5rem;
+            }
+        }
+
+        /* ===== DIALOG/MODAL ===== */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow: auto;
+            padding: 1.5rem;
+        }
+
+        .modal-header {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.5rem;
+        }
+
+        .modal-search {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .modal-search input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            outline: none;
+            font-size: 0.875rem;
+        }
+
+        .snippet-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .snippet-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .snippet-item:hover {
+            background: rgba(37, 99, 235, 0.1);
+            border-color: var(--primary);
+        }
+
+        .snippet-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .snippet-title {
+            font-weight: 600;
+            font-size: 0.875rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .snippet-meta {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .snippet-actions {
+            display: flex;
+            gap: 0.25rem;
+            margin-left: 0.5rem;
+        }
+
+        .snippet-actions .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.7rem;
+        }
+
+        /* ===== SCROLLBAR ===== */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* ===== UTILITIES ===== */
+        .hidden {
+            display: none !important;
+        }
+
+        .flex-center {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .separator {
+            width: 1px;
+            height: 1.5rem;
+            background: var(--border);
+            margin: 0 0.5rem;
+        }
+
+        .status-message {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            padding: 0.75rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            animation: slideIn 0.3s ease-out;
+            z-index: 999;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <header>
+            <div class="header-left">
+                <div class="logo">
+                    <span>💻</span>
+                    <span>Code Playground</span>
+                </div>
+                <div class="mode-selector">
+                    <button class="mode-btn active" data-mode="html">HTML</button>
+                    <button class="mode-btn" data-mode="react">React</button>
+                    <button class="mode-btn" data-mode="python">Python</button>
+                </div>
+                <input type="text" class="title-input" placeholder="Nome do projeto..." id="projectTitle" value="Sem titulo">
+            </div>
+
+            <div class="header-right">
+                <div class="mobile-toggle hidden">
+                    <button class="btn ghost" id="editorToggle" title="Editor">📝</button>
+                    <button class="btn ghost" id="previewToggle" title="Preview">👁️</button>
+                </div>
+
+                <div class="separator hidden" id="separator1"></div>
+
+                <button class="btn ghost" id="importBtn" title="Importar arquivo">📂</button>
+                <button class="btn ghost" id="fullscreenBtn" title="Tela cheia">⛶</button>
+                <button class="btn ghost" id="copyBtn" title="Copiar código">📋</button>
+                <button class="btn ghost" id="downloadBtn" title="Baixar arquivo">⬇️</button>
+
+                <div class="separator"></div>
+
+                <button class="btn ghost" id="saveBtn" title="Salvar código">💾</button>
+                <button class="btn ghost" id="openBtn" title="Abrir código salvo">📁</button>
+
+                <div class="separator"></div>
+
+                <button class="btn ghost" id="resetBtn" title="Restaurar padrão">🔄</button>
+                <button class="btn ghost" id="clearBtn" title="Limpar tudo">🗑️</button>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <!-- EDITOR -->
+            <div class="editor-section" id="editorSection">
+                <div class="editor-header">
+                    <div class="tabs">
+                        <button class="tab active" data-tab="html">HTML</button>
+                        <button class="tab" data-tab="css">CSS</button>
+                        <button class="tab" data-tab="js">JS</button>
+                    </div>
+                    <div class="editor-info">
+                        <span id="lineCount">1 linhas</span>
+                        <div class="search-box">
+                            <span>🔍</span>
+                            <input type="text" class="search-input" placeholder="Buscar..." id="searchInput">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="editor-wrapper">
+                    <div class="line-numbers" id="lineNumbers"></div>
+                    <textarea class="editor-textarea" id="htmlEditor" spellcheck="false"></textarea>
+                    <textarea class="editor-textarea hidden" id="cssEditor" spellcheck="false"></textarea>
+                    <textarea class="editor-textarea hidden" id="jsEditor" spellcheck="false"></textarea>
+                    <textarea class="editor-textarea hidden" id="reactEditor" spellcheck="false"></textarea>
+                    <textarea class="editor-textarea hidden" id="pythonEditor" spellcheck="false"></textarea>
+                </div>
+            </div>
+
+            <!-- PREVIEW -->
+            <div class="preview-section" id="previewSection">
+                <div class="preview-header">
+                    <div class="preview-status">
+                        <span>👁️ Resultado</span>
+                        <div class="live-indicator">
+                            <div class="live-dot"></div>
+                            <span>ao vivo</span>
+                        </div>
+                    </div>
+                    <button class="btn" id="runBtn" style="display: none;">▶ Executar</button>
+                </div>
+                <iframe class="preview-iframe" id="previewFrame" sandbox="allow-scripts allow-modals allow-forms allow-popups"></iframe>
+                <div class="preview-output hidden" id="pythonOutput"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL - SAVED SNIPPETS -->
+    <div class="modal" id="snippetsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>Meus Códigos Salvos</span>
+                <button class="modal-close" id="closeModal">×</button>
+            </div>
+            <div class="modal-search">
+                <span>🔍</span>
+                <input type="text" placeholder="Buscar por nome..." id="modalSearchInput">
+            </div>
+            <div class="snippet-list" id="snippetList"></div>
+        </div>
+    </div>
+
+    <!-- Hidden Input for File Import -->
+    <input type="file" id="fileInput" accept=".html,.htm,.css,.js,.jsx,.py,.txt" style="display: none;">
+
+    <script>
+        // ===== STATE MANAGEMENT =====
+        const state = {
+            mode: 'html',
+            activeTab: 'html',
+            html: localStorage.getItem('playground_html') || '<div style="max-width: 600px; margin: 40px auto; padding: 20px; font-family: sans-serif;"><h1 style="color: #333;">Bem-vindo ao HTML Playground</h1><p style="color: #666; margin: 16px 0;">Cole seu código HTML aqui e veja o resultado ao vivo!</p><button onclick="alert(\'Funcionou!\')" style="padding: 10px 24px; font-size: 16px; background: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer;">Clique aqui</button></div>',
+            css: localStorage.getItem('playground_css') || '',
+            js: localStorage.getItem('playground_js') || '',
+            react: localStorage.getItem('playground_react') || 'function App() {\n  return (\n    <div style={{padding: "20px", fontFamily: "sans-serif"}}>\n      <h1>React Playground</h1>\n      <p>Escreva seu código React aqui!</p>\n    </div>\n  );\n}',
+            python: localStorage.getItem('playground_python') || 'print("Hello, Python!")\nprint("Escreva seu código Python aqui")',
+            title: localStorage.getItem('playground_title') || 'Sem titulo',
+            snippets: JSON.parse(localStorage.getItem('playground_snippets') || '[]'),
+            autoRun: true,
+            mobileView: 'editor'
+        };
+
+        // ===== DOM ELEMENTS =====
+        const elements = {
+            projectTitle: document.getElementById('projectTitle'),
+            htmlEditor: document.getElementById('htmlEditor'),
+            cssEditor: document.getElementById('cssEditor'),
+            jsEditor: document.getElementById('jsEditor'),
+            reactEditor: document.getElementById('reactEditor'),
+            pythonEditor: document.getElementById('pythonEditor'),
+            previewFrame: document.getElementById('previewFrame'),
+            pythonOutput: document.getElementById('pythonOutput'),
+            lineNumbers: document.getElementById('lineNumbers'),
+            lineCount: document.getElementById('lineCount'),
+            searchInput: document.getElementById('searchInput'),
+            editorSection: document.getElementById('editorSection'),
+            previewSection: document.getElementById('previewSection'),
+            editorToggle: document.getElementById('editorToggle'),
+            previewToggle: document.getElementById('previewToggle'),
+            snippetsModal: document.getElementById('snippetsModal'),
+            snippetList: document.getElementById('snippetList'),
+            modalSearchInput: document.getElementById('modalSearchInput'),
+            fileInput: document.getElementById('fileInput'),
+            runBtn: document.getElementById('runBtn'),
+            mobileToggle: document.querySelector('.mobile-toggle'),
+            separator1: document.getElementById('separator1')
+        };
+
+        // ===== INITIALIZATION =====
+        function init() {
+            loadState();
+            setupEventListeners();
+            updateEditors();
+            updatePreview();
+            checkMobileView();
+            window.addEventListener('resize', checkMobileView);
+        }
+
+        function loadState() {
+            elements.projectTitle.value = state.title;
+            elements.htmlEditor.value = state.html;
+            elements.cssEditor.value = state.css;
+            elements.jsEditor.value = state.js;
+            elements.reactEditor.value = state.react;
+            elements.pythonEditor.value = state.python;
+        }
+
+        function saveState() {
+            localStorage.setItem('playground_html', state.html);
+            localStorage.setItem('playground_css', state.css);
+            localStorage.setItem('playground_js', state.js);
+            localStorage.setItem('playground_react', state.react);
+            localStorage.setItem('playground_python', state.python);
+            localStorage.setItem('playground_title', state.title);
+            localStorage.setItem('playground_snippets', JSON.stringify(state.snippets));
+        }
+
+        // ===== EVENT LISTENERS =====
+        function setupEventListeners() {
+            // Mode selector
+            document.querySelectorAll('[data-mode]').forEach(btn => {
+                btn.addEventListener('click', () => switchMode(btn.dataset.mode));
+            });
+
+            // Tab selector
+            document.querySelectorAll('[data-tab]').forEach(btn => {
+                btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+            });
+
+            // Editors
+            elements.htmlEditor.addEventListener('input', (e) => {
+                state.html = e.target.value;
+                updateLineNumbers();
+                updatePreview();
+                saveState();
+            });
+
+            elements.cssEditor.addEventListener('input', (e) => {
+                state.css = e.target.value;
+                updatePreview();
+                saveState();
+            });
+
+            elements.jsEditor.addEventListener('input', (e) => {
+                state.js = e.target.value;
+                updatePreview();
+                saveState();
+            });
+
+            elements.reactEditor.addEventListener('input', (e) => {
+                state.react = e.target.value;
+                updateLineNumbers();
+                updatePreview();
+                saveState();
+            });
+
+            elements.pythonEditor.addEventListener('input', (e) => {
+                state.python = e.target.value;
+                updateLineNumbers();
+                saveState();
+            });
+
+            // Title
+            elements.projectTitle.addEventListener('change', (e) => {
+                state.title = e.target.value || 'Sem titulo';
+                saveState();
+            });
+
+            // Search
+            elements.searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase();
+                const editor = getCurrentEditor();
+                highlightSearchResults(editor, query);
+            });
+
+            // Buttons
+            document.getElementById('importBtn').addEventListener('click', () => elements.fileInput.click());
+            document.getElementById('fullscreenBtn').addEventListener('click', openFullscreen);
+            document.getElementById('copyBtn').addEventListener('click', copyCode);
+            document.getElementById('downloadBtn').addEventListener('click', downloadCode);
+            document.getElementById('saveBtn').addEventListener('click', saveSnippet);
+            document.getElementById('openBtn').addEventListener('click', openSnippets);
+            document.getElementById('resetBtn').addEventListener('click', resetCode);
+            document.getElementById('clearBtn').addEventListener('click', clearCode);
+            document.getElementById('runBtn').addEventListener('click', runPython);
+
+            // Mobile toggle
+            elements.editorToggle?.addEventListener('click', () => {
+                state.mobileView = 'editor';
+                updateMobileView();
+            });
+
+            elements.previewToggle?.addEventListener('click', () => {
+                state.mobileView = 'preview';
+                updateMobileView();
+            });
+
+            // File import
+            elements.fileInput.addEventListener('change', handleFileImport);
+
+            // Modal
+            document.getElementById('closeModal').addEventListener('click', () => {
+                elements.snippetsModal.classList.remove('active');
+            });
+
+            elements.modalSearchInput.addEventListener('input', (e) => {
+                filterSnippets(e.target.value);
+            });
+
+            // Close modal on outside click
+            elements.snippetsModal.addEventListener('click', (e) => {
+                if (e.target === elements.snippetsModal) {
+                    elements.snippetsModal.classList.remove('active');
+                }
+            });
+        }
+
+        // ===== MODE & TAB SWITCHING =====
+        function switchMode(mode) {
+            state.mode = mode;
+            state.activeTab = mode === 'html' ? 'html' : mode;
+
+            // Update mode buttons
+            document.querySelectorAll('[data-mode]').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === mode);
+            });
+
+            // Update tab visibility
+            updateTabVisibility();
+            updateEditors();
+            updatePreview();
+        }
+
+        function switchTab(tab) {
+            state.activeTab = tab;
+
+            // Update tab buttons
+            document.querySelectorAll('[data-tab]').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.tab === tab);
+            });
+
+            // Update editor visibility
+            updateEditors();
+            updateLineNumbers();
+        }
+
+        function updateTabVisibility() {
+            const tabs = document.querySelectorAll('[data-tab]');
+            tabs.forEach(tab => tab.classList.add('hidden'));
+
+            if (state.mode === 'html') {
+                document.querySelector('[data-tab="html"]')?.classList.remove('hidden');
+                document.querySelector('[data-tab="css"]')?.classList.remove('hidden');
+                document.querySelector('[data-tab="js"]')?.classList.remove('hidden');
+            } else if (state.mode === 'react') {
+                document.querySelector('[data-tab="html"]')?.classList.remove('hidden');
+                document.querySelector('[data-tab="html"]').textContent = 'JSX';
+            } else if (state.mode === 'python') {
+                document.querySelector('[data-tab="html"]')?.classList.remove('hidden');
+                document.querySelector('[data-tab="html"]').textContent = 'Python';
+            }
+        }
+
+        function updateEditors() {
+            elements.htmlEditor.classList.add('hidden');
+            elements.cssEditor.classList.add('hidden');
+            elements.jsEditor.classList.add('hidden');
+            elements.reactEditor.classList.add('hidden');
+            elements.pythonEditor.classList.add('hidden');
+
+            if (state.mode === 'html') {
+                if (state.activeTab === 'html') elements.htmlEditor.classList.remove('hidden');
+                else if (state.activeTab === 'css') elements.cssEditor.classList.remove('hidden');
+                else if (state.activeTab === 'js') elements.jsEditor.classList.remove('hidden');
+            } else if (state.mode === 'react') {
+                elements.reactEditor.classList.remove('hidden');
+            } else if (state.mode === 'python') {
+                elements.pythonEditor.classList.remove('hidden');
+                elements.runBtn.style.display = 'flex';
+            } else {
+                elements.runBtn.style.display = 'none';
+            }
+
+            updateLineNumbers();
+        }
+
+        // ===== LINE NUMBERS =====
+        function updateLineNumbers() {
+            const editor = getCurrentEditor();
+            const lines = editor.value.split('\n').length;
+            elements.lineCount.textContent = `${lines} linhas`;
+
+            let html = '';
+            for (let i = 1; i <= lines; i++) {
+                html += `<div class="line-number">${i}</div>`;
+            }
+            elements.lineNumbers.innerHTML = html;
+        }
+
+        // ===== SEARCH & HIGHLIGHT =====
+        function highlightSearchResults(editor, query) {
+            if (!query) {
+                editor.style.backgroundColor = 'transparent';
+                return;
+            }
+
+            const text = editor.value;
+            const regex = new RegExp(query, 'gi');
+            let count = 0;
+            while (regex.exec(text)) count++;
+
+            if (count > 0) {
+                showMessage(`${count} resultado(s) encontrado(s)`);
+            }
+        }
+
+        // ===== PREVIEW =====
+        function updatePreview() {
+            if (state.mode === 'python') {
+                elements.pythonOutput.classList.remove('hidden');
+                elements.previewFrame.classList.add('hidden');
+                return;
+            }
+
+            elements.pythonOutput.classList.add('hidden');
+            elements.previewFrame.classList.remove('hidden');
+
+            let html;
+
+            if (state.mode === 'react') {
+                html = buildReactDocument();
+            } else {
+                html = buildHtmlDocument();
+            }
+
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            elements.previewFrame.src = url;
+        }
+
+        function buildHtmlDocument() {
+            return `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>${state.css}</style>
+</head>
+<body>
+    ${state.html}
+    <script>${state.js}<\/script>
+</body>
+</html>`;
+        }
+
+        function buildReactDocument() {
+            return `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"><\/script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"><\/script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"><\/script>
+    <style>* { box-sizing: border-box; } body { margin: 0; font-family: sans-serif; } ${state.css}</style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useCallback } = React;
+        ${state.react}
+        try {
+            const root = ReactDOM.createRoot(document.getElementById('root'));
+            root.render(<App />);
+        } catch(e) {
+            document.getElementById('root').innerHTML = '<div style="color:red;padding:20px;font-family:monospace;white-space:pre-wrap">Erro: ' + e.message + '</div>';
+        }
+    <\/script>
+</body>
+</html>`;
+        }
+
+        // ===== PYTHON EXECUTION =====
+        async function runPython() {
+            elements.runBtn.disabled = true;
+            elements.pythonOutput.innerHTML = '<span class="output-info">⟳ Executando...</span>';
+
+            try {
+                const response = await fetch('/api/code/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: state.python, language: 'python' })
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    elements.pythonOutput.innerHTML = `<span class="output-error">${escapeHtml(data.error)}</span>`;
+                } else {
+                    elements.pythonOutput.innerHTML = `<span class="output-success">$ python3\n${escapeHtml(data.output || '')}</span>`;
+                }
+            } catch (error) {
+                elements.pythonOutput.innerHTML = `<span class="output-error">Erro: ${error.message}</span>`;
+            } finally {
+                elements.runBtn.disabled = false;
+            }
+        }
+
+        // ===== FILE OPERATIONS =====
+        function handleFileImport(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const content = event.target.result;
+                const ext = file.name.split('.').pop().toLowerCase();
+
+                if (ext === 'py') {
+                    state.mode = 'python';
+                    state.python = content;
+                    switchMode('python');
+                } else if (ext === 'jsx' || ext === 'tsx') {
+                    state.mode = 'react';
+                    state.react = content;
+                    switchMode('react');
+                } else {
+                    state.mode = 'html';
+                    state.html = content;
+                    switchMode('html');
+                }
+
+                state.title = file.name.replace(/\.[^.]+$/, '');
+                elements.projectTitle.value = state.title;
+                saveState();
+                showMessage(`✅ Arquivo "${file.name}" importado!`);
+            };
+
+            reader.readAsText(file);
+            e.target.value = '';
+        }
+
+        function openFullscreen() {
+            const html = state.mode === 'react' ? buildReactDocument() : buildHtmlDocument();
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            window.open(url, '_blank');
+        }
+
+        function copyCode() {
+            const code = state.mode === 'react' ? buildReactDocument() : 
+                        state.mode === 'python' ? state.python :
+                        buildHtmlDocument();
+            navigator.clipboard.writeText(code);
+            showMessage('✅ Código copiado!');
+        }
+
+        function downloadCode() {
+            let content, filename, ext;
+
+            if (state.mode === 'python') {
+                content = state.python;
+                ext = 'py';
+            } else if (state.mode === 'react') {
+                content = state.react;
+                ext = 'jsx';
+            } else {
+                content = buildHtmlDocument();
+                ext = 'html';
+            }
+
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${state.title || 'playground'}.${ext}`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showMessage(`✅ Arquivo .${ext} baixado!`);
+        }
+
+        // ===== SNIPPETS =====
+        function saveSnippet() {
+            if (!state.title || state.title === 'Sem titulo') {
+                showMessage('⚠️ Dê um nome ao projeto primeiro!');
+                return;
+            }
+
+            const snippet = {
+                id: Date.now().toString(),
+                title: state.title,
+                mode: state.mode,
+                html: state.html,
+                css: state.css,
+                js: state.js,
+                react: state.react,
+                python: state.python,
+                date: new Date().toLocaleString('pt-BR')
+            };
+
+            state.snippets = state.snippets.filter(s => s.title !== state.title);
+            state.snippets.unshift(snippet);
+            saveState();
+            showMessage('✅ Código salvo!');
+        }
+
+        function openSnippets() {
+            elements.snippetsModal.classList.add('active');
+            renderSnippets();
+        }
+
+        function renderSnippets(filter = '') {
+            const filtered = state.snippets.filter(s =>
+                s.title.toLowerCase().includes(filter.toLowerCase())
+            );
+
+            elements.snippetList.innerHTML = filtered.length === 0
+                ? '<p style="text-align: center; color: var(--text-secondary); padding: 2rem;">Nenhum código salvo</p>'
+                : filtered.map(s => `
+                    <div class="snippet-item" onclick="loadSnippet('${s.id}')">
+                        <div class="snippet-info">
+                            <div class="snippet-title">${escapeHtml(s.title)}</div>
+                            <div class="snippet-meta">${s.mode.toUpperCase()} • ${s.date}</div>
+                        </div>
+                        <div class="snippet-actions">
+                            <button class="btn" onclick="deleteSnippet('${s.id}', event)">🗑️</button>
+                        </div>
+                    </div>
+                `).join('');
+        }
+
+        function loadSnippet(id) {
+            const snippet = state.snippets.find(s => s.id === id);
+            if (!snippet) return;
+
+            state.mode = snippet.mode;
+            state.html = snippet.html;
+            state.css = snippet.css;
+            state.js = snippet.js;
+            state.react = snippet.react;
+            state.python = snippet.python;
+            state.title = snippet.title;
+
+            elements.projectTitle.value = state.title;
+            loadState();
+            switchMode(state.mode);
+            elements.snippetsModal.classList.remove('active');
+            showMessage(`✅ "${snippet.title}" carregado!`);
+        }
+
+        function deleteSnippet(id, event) {
+            event.stopPropagation();
+            state.snippets = state.snippets.filter(s => s.id !== id);
+            saveState();
+            renderSnippets(elements.modalSearchInput.value);
+            showMessage('✅ Código removido!');
+        }
+
+        function filterSnippets(query) {
+            renderSnippets(query);
+        }
+
+        // ===== UTILITIES =====
+        function getCurrentEditor() {
+            if (state.mode === 'react') return elements.reactEditor;
+            if (state.mode === 'python') return elements.pythonEditor;
+            if (state.activeTab === 'css') return elements.cssEditor;
+            if (state.activeTab === 'js') return elements.jsEditor;
+            return elements.htmlEditor;
+        }
+
+        function resetCode() {
+            if (state.mode === 'python') {
+                state.python = 'print("Hello, Python!")';
+            } else if (state.mode === 'react') {
+                state.react = 'function App() {\n  return <h1>React App</h1>;\n}';
+            } else {
+                state.html = '<h1>Novo projeto</h1>';
+                state.css = '';
+                state.js = '';
+            }
+            loadState();
+            updatePreview();
+            saveState();
+            showMessage('🔄 Código restaurado!');
+        }
+
+        function clearCode() {
+            if (confirm('Tem certeza? Isso limpará todo o código.')) {
+                if (state.mode === 'python') {
+                    state.python = '';
+                } else if (state.mode === 'react') {
+                    state.react = '';
+                } else {
+                    state.html = '';
+                    state.css = '';
+                    state.js = '';
+                }
+                loadState();
+                updatePreview();
+                saveState();
+                showMessage('🗑️ Código limpo!');
+            }
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function showMessage(text) {
+            const msg = document.createElement('div');
+            msg.className = 'status-message';
+            msg.textContent = text;
+            document.body.appendChild(msg);
+            setTimeout(() => msg.remove(), 3000);
+        }
+
+        // ===== MOBILE VIEW =====
+        function checkMobileView() {
+            const isMobile = window.innerWidth <= 768;
+            elements.mobileToggle.classList.toggle('hidden', !isMobile);
+            elements.separator1.classList.toggle('hidden', !isMobile);
+
+            if (isMobile) {
+                updateMobileView();
+            } else {
+                elements.editorSection.classList.remove('hidden', 'full');
+                elements.previewSection.classList.remove('hidden', 'full');
+            }
+        }
+
+        function updateMobileView() {
+            if (state.mobileView === 'editor') {
+                elements.editorSection.classList.remove('hidden', 'full');
+                elements.previewSection.classList.add('hidden');
+                elements.editorToggle.classList.add('active');
+                elements.previewToggle.classList.remove('active');
+            } else {
+                elements.editorSection.classList.add('hidden');
+                elements.previewSection.classList.remove('hidden');
+                elements.previewSection.classList.add('full');
+                elements.editorToggle.classList.remove('active');
+                elements.previewToggle.classList.add('active');
+            }
+        }
+
+        // ===== START =====
+        init();
+    </script>
+</body>
+</html>
