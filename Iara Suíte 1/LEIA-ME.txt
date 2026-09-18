@@ -1,0 +1,83 @@
+╔══════════════════════════════════════════════════════════════╗
+║              ⚡  IARA SUITE  — Versão Standalone            ║
+║        Code Editor · APK Builder · Site Extractor           ║
+║                                                              ║
+║  Advogado Maikon Caldeira — OAB/MG 183712                   ║
+╚══════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+COMO USAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Windows:  Clique duas vezes em  iniciar.bat
+  Mac/Linux: Execute  ./iniciar.sh  no terminal
+  Direto:   Arraste o  index.html  para qualquer navegador
+
+  ✅ NÃO precisa instalar nada
+  ✅ NÃO precisa de servidor
+  ✅ NÃO precisa de internet para o editor/APK Builder
+  ✅ Funciona 100% offline (exceto Site Extractor e IA)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OS 3 APPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💻 CODE EDITOR
+  Editor de código com IA integrada.
+  Importe/exporte ZIPs. Suporte a HTML, CSS, JS, Python, etc.
+
+📦 APK BUILDER
+  Cole seu ZIP de projeto web e gere:
+    → APK Android (via Android Studio ou GitHub Actions)
+    → Executável de PC (via Electron — Windows/Mac/Linux)
+  Orientação: retrato, paisagem ou ambos.
+
+🔍 SITE EXTRACTOR
+  Extraia scripts de cálculo de sites jurídicos.
+  Usa proxies públicos — sem servidor Replit.
+  Detecta: fórmulas, fetch/ajax, cálculos previdenciários.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONFIGURAR IA (botão 🔑 Chaves no Code Editor)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Auto-detecção por prefixo da chave:
+
+  gsk_...    → Groq (GRÁTIS — console.groq.com)
+  AIza...    → Google Gemini (GRÁTIS — aistudio.google.com)
+  sk-...     → OpenAI (pago)
+  sk-ant-... → Anthropic Claude (pago)
+  sk-or-...  → OpenRouter (vários modelos)
+  xai-...    → xAI Grok
+  ap-...     → Mistral AI
+
+  Cole a chave no Slot 1, clique "Ativar" e salve.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GERAR APK PARA O CELULAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  1. Aba "APK Builder"
+  2. Arraste o ZIP do seu site/app
+  3. Preencha Nome, Package ID (ex: br.adv.maikoncaldeira.app)
+  4. Escolha destino:
+     → APK Android = abre no Android Studio → Build APK
+     → GitHub Actions = suba no GitHub, APK gerado na nuvem
+     → Electron PC = npm install && npm start
+
+  Orientação: escolha Retrato, Paisagem ou Ambos.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GERAR APK DO PRÓPRIO IARA SUITE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  1. Compacte este index.html em um ZIP
+  2. Abra o APK Builder, importe esse ZIP
+  3. Configure: br.adv.maikoncaldeira.iarasuite
+  4. Orientação: Ambos (retrato + paisagem)
+  5. Gere → abra no Android Studio → Build APK
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+VERSÃO: 2.0 — Standalone sem servidor Replit
+Contato: OAB/MG 183712 — Maikon Caldeira
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
