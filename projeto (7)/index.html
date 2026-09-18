@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal + Preview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0d1117;
+            color: #c9d1d9;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        /* Terminal */
+        .terminal-panel {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            background: #0d1117;
+            border: 1px solid #30363d;
+        }
+
+        .terminal-header {
+            height: 36px;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            border-bottom: 1px solid #30363d;
+            background: #161b22;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #8b949e;
+            gap: 8px;
+        }
+
+        .terminal-icon {
+            font-size: 14px;
+            color: #3fb950;
+        }
+
+        .terminal-title {
+            flex: 1;
+        }
+
+        .terminal-status {
+            font-size: 10px;
+            color: #fbbf24;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .spinner {
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(88, 166, 255, 0.2);
+            border-top-color: #fbbf24;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .terminal-buttons {
+            display: flex;
+            gap: 4px;
+        }
+
+        .terminal-btn {
+            width: 24px;
+            height: 24px;
+            border: none;
+            background: transparent;
+            color: #8b949e;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .terminal-btn:hover {
+            background: #30363d;
+            color: #c9d1d9;
+        }
+
+        /* Output */
+        .terminal-output {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            font-size: 11px;
+            line-height: 1.4;
+        }
+
+        .terminal-empty {
+            color: #8b949e;
+            font-size: 11px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .terminal-entry {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .terminal-command-line {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+        }
+
+        .terminal-prompt {
+            color: #3fb950;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .terminal-command-text {
+            color: #e6edf3;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .terminal-copy-btn {
+            width: 16px;
+            height: 16px;
+            border: none;
+            background: transparent;
+            color: #8b949e;
+            cursor: pointer;
+            font-size: 10px;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .terminal-copy-btn:hover {
+            color: #c9d1d9;
+        }
+
+        .terminal-badge {
+            font-size: 9px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
+        .terminal-badge.running {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .terminal-badge.success {
+            background: rgba(63, 185, 80, 0.2);
+            color: #3fb950;
+        }
+
+        .terminal-badge.error {
+            background: rgba(248, 81, 73, 0.2);
+            color: #f85149;
+        }
+
+        .terminal-duration {
+            color: #8b949e;
+            font-size: 9px;
+            flex-shrink: 0;
+        }
+
+        .terminal-output-content {
+            padding-left: 16px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            font-size: 11px;
+            line-height: 1.4;
+        }
+
+        .terminal-output-line {
+            margin-bottom: 2px;
+        }
+
+        .terminal-output-line.stdout {
+            color: #c9d1d9;
+        }
+
+        .terminal-output-line.stderr {
+            color: #f85149;
+        }
+
+        .terminal-output-line.warn {
+            color: #fbbf24;
+        }
+
+        .terminal-missing-package {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 4px;
+            font-size: 11px;
+            color: #fbbf24;
+        }
+
+        .terminal-missing-icon {
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .terminal-missing-text {
+            flex: 1;
+        }
+
+        .terminal-missing-btn {
+            padding: 4px 8px;
+            background: rgba(251, 191, 36, 0.2);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            color: #fbbf24;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 10px;
+            font-weight: 500;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+
+        .terminal-missing-btn:hover {
+            background: rgba(251, 191, 36, 0.3);
+        }
+
+        /* Input */
+        .terminal-input-area {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-top: 1px solid #30363d;
+            background: #0d1117;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .terminal-input-prompt {
+            color: #3fb950;
+            font-weight: bold;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        .terminal-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #c9d1d9;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            outline: none;
+        }
+
+        .terminal-input::placeholder {
+            color: #8b949e;
+        }
+
+        .terminal-voice-btn {
+            width: 24px;
+            height: 24px;
+            border: none;
+            background: transparent;
+            color: #8b949e;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .terminal-voice-btn:hover {
+            color: #c9d1d9;
+        }
+
+        .terminal-voice-btn.listening {
+            background: rgba(248, 81, 73, 0.2);
+            color: #f85149;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #30363d;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #484f58;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Terminal Panel -->
+        <div class="terminal-panel">
+            <!-- Header -->
+            <div class="terminal-header">
+                <span class="terminal-icon">⚙️</span>
+                <span class="terminal-title">Terminal</span>
+                <span class="terminal-status" id="terminalStatus" style="display: none;">
+                    <span class="spinner"></span>
+                    <span>rodando…</span>
+                </span>
+                <div class="terminal-buttons">
+                    <button class="terminal-btn" id="clearBtn" title="Limpar terminal">🗑️</button>
+                    <button class="terminal-btn" id="closeBtn" title="Fechar terminal">✕</button>
+                </div>
+            </div>
+
+            <!-- Output -->
+            <div class="terminal-output" id="terminalOutput">
+                <div class="terminal-empty">
+                    <p>Terminal pronto. Digite ou fale um comando abaixo.</p>
+                    <p style="font-size: 10px; opacity: 0.6;">↑ ↓ para histórico · Ctrl+C para cancelar</p>
+                </div>
+            </div>
+
+            <!-- Input -->
+            <div class="terminal-input-area">
+                <span class="terminal-input-prompt">$</span>
+                <input 
+                    type="text" 
+                    class="terminal-input" 
+                    id="terminalInput" 
+                    placeholder="npm install, git status, node server.js…"
+                    autocomplete="off"
+                    spellcheck="false"
+                >
+                <button class="terminal-voice-btn" id="voiceBtn" title="Falar comando">🎤</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="terminal.js"></script>
+</body>
+</html>
