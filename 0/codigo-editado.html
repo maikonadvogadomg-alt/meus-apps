@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SK-CSS/HTML Interactive Guide</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #1a1a1a;
+      color: #e0e0e0;
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ═══ SIDEBAR ═══ */
+    .sidebar {
+      width: 280px;
+      background: #222;
+      border-right: 1px solid #333;
+      overflow-y: auto;
+      padding: 12px;
+    }
+
+    .sidebar-title {
+      font-size: 14px;
+      font-weight: bold;
+      margin: 16px 0 8px 0;
+      color: #0088ff;
+    }
+
+    .menu-item {
+      padding: 10px 12px;
+      background: #333;
+      margin: 4px 0;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+    }
+
+    .menu-item:hover {
+      background: #444;
+    }
+
+    .menu-item.active {
+      background: #0066cc;
+      border-left-color: #0088ff;
+    }
+
+    /* ═══ MAIN ═══ */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .header {
+      padding: 16px;
+      background: #222;
+      border-bottom: 1px solid #333;
+    }
+
+    .header-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    .header-desc {
+      font-size: 12px;
+      color: #999;
+    }
+
+    .content {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+      gap: 12px;
+      padding: 12px;
+    }
+
+    /* ═══ EXPLANATION ═══ */
+    .explanation {
+      flex: 1;
+      background: #222;
+      border-radius: 6px;
+      padding: 16px;
+      overflow-y: auto;
+      border: 1px solid #333;
+    }
+
+    .explanation h3 {
+      color: #0088ff;
+      margin: 12px 0 8px 0;
+      font-size: 14px;
+    }
+
+    .explanation p {
+      font-size: 12px;
+      line-height: 1.6;
+      color: #ccc;
+      margin-bottom: 8px;
+    }
+
+    .explanation code {
+      background: #1a1a1a;
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: #88ff88;
+      font-family: monospace;
+      font-size: 11px;
+    }
+
+    .explanation pre {
+      background: #1a1a1a;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+      margin: 8px 0;
+      border-left: 3px solid #0088ff;
+      font-size: 11px;
+      color: #88ff88;
+    }
+
+    /* ═══ PREVIEW ═══ */
+    .preview-section {
+      width: 400px;
+      display: flex;
+      flex-direction: column;
+      background: #222;
+      border-radius: 6px;
+      border: 1px solid #333;
+      overflow: hidden;
+    }
+
+    .preview-header {
+      padding: 12px;
+      background: #333;
+      border-bottom: 1px solid #444;
+      font-weight: bold;
+      font-size: 12px;
+    }
+
+    .preview-content {
+      flex: 1;
+      padding: 16px;
+      background: #1a1a1a;
+      overflow: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .preview-box {
+      background: #0066cc;
+      width: 100px;
+      height: 100px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    /* ═══ CONTROLS ═══ */
+    .controls {
+      width: 300px;
+      display: flex;
+      flex-direction: column;
+      background: #222;
+      border-radius: 6px;
+      padding: 12px;
+      border: 1px solid #333;
+      overflow-y: auto;
+    }
+
+    .control-group {
+      margin-bottom: 12px;
+    }
+
+    .control-label {
+      font-size: 11px;
+      font-weight: bold;
+      color: #0088ff;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .control-options {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .option-btn {
+      padding: 8px 10px;
+      background: #333;
+      border: 1px solid #555;
+      color: #e0e0e0;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 11px;
+      transition: all 0.2s;
+    }
+
+    .option-btn:hover {
+      background: #444;
+    }
+
+    .option-btn.active {
+      background: #0066cc;
+      border-color: #0088ff;
+    }
+
+    .slider-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .slider-group input[type="range"] {
+      flex: 1;
+    }
+
+    .slider-value {
+      min-width: 40px;
+      text-align: right;
+      font-size: 11px;
+      color: #0088ff;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      cursor: pointer;
+    }
+
+    input[type="color"] {
+      width: 100%;
+      height: 30px;
+      border: 1px solid #555;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 6px 8px;
+      background: #333;
+      border: 1px solid #555;
+      color: #e0e0e0;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+
+    .rgb-inputs {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 6px;
+    }
+
+    .rgb-input {
+      padding: 6px;
+      background: #333;
+      border: 1px solid #555;
+      color: #e0e0e0;
+      border-radius: 4px;
+      font-size: 11px;
+      text-align: center;
+    }
+
+    .code-display {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 10px;
+      font-family: monospace;
+      font-size: 10px;
+      color: #88ff88;
+      max-height: 150px;
+      overflow-y: auto;
+      margin-top: 8px;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #222;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #444;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- SIDEBAR -->
+    <div class="sidebar" style="font-weight: normal; font-size: 1px; text-align: left;">
+      <div class="sidebar-title" style="display: inline;">📚 Tópicos</div>
+      
+      <div class="sidebar-title" style="margin-top: 20px;">Display</div>
+      <div class="menu-item active" onclick="loadTopic('display-block')">Block</div>
+      <div class="menu-item" onclick="loadTopic('display-inline')" style="font-weight: bold;">Inline</div>
+      <div class="menu-item" onclick="loadTopic('display-flex')">Flex</div>
+      <div class="menu-item" onclick="loadTopic('display-grid')">Grid</div>
+
+      <div class="sidebar-title" style="margin-top: 20px;">Tamanho</div>
+      <div class="menu-item" onclick="loadTopic('width-height')">Width &amp; Height</div>
+      <div class="menu-item" onclick="loadTopic('padding-margin')">Padding &amp; Margin</div>
+      <div class="menu-item" onclick="loadTopic('border')">Border</div>
+
+      <div class="sidebar-title" style="margin-top: 20px;">Cores</div>
+      <div class="menu-item" onclick="loadTopic('color-hex')">Hex Colors</div>
+      <div class="menu-item" onclick="loadTopic('color-rgb')">RGB Colors</div>
+      <div class="menu-item" onclick="loadTopic('color-opacity')">Opacity</div>
+
+      <div class="sidebar-title" style="margin-top: 20px;">Avançado</div>
+      <div class="menu-item" onclick="loadTopic('transform')">Transform</div>
+      <div class="menu-item" onclick="loadTopic('clip-path')">Clip-Path</div>
+      <div class="menu-item" onclick="loadTopic('shadow')">Shadow</div>
+      <div class="menu-item" onclick="loadTopic('border-radius')">Border Radius</div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+      <div class="header">
+        <div class="header-title" id="topicTitle" style="display: flex; font-size: 1px;">Display: Block</div>
+        <div class="header-desc" id="topicDesc" style="display: grid; opacity: 0.9;">Entenda como o display funciona</div>
+      </div>
+
+      <div class="content" style="display: grid; font-weight: bold;">
+        <!-- EXPLANATION -->
+        <div class="explanation" id="explanation" style="display: grid;"></div>
+
+        <!-- PREVIEW -->
+        <div class="preview-section">
+          <div class="preview-header">👁️ Preview</div>
+          <div class="preview-content" id="previewContent" style="font-weight: bold; opacity: 0.85;">
+            <div class="preview-box">Box</div>
+          </div>
+        </div>
+
+        <!-- CONTROLS -->
+        <div class="controls" id="controls" style="display: grid;"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ═══════════════════════════════════════════════════════════════
+    // TOPICS DATABASE
+    // ═══════════════════════════════════════════════════════════════
+
+    const topics = {
+      'display-block': {
+        title: 'Display: Block',
+        desc: 'Elemento ocupa toda a largura disponível',
+        explanation: `
+          <h3>O que é Display Block?</h3>
+          <p>Um elemento com <code>display: block</code> ocupa <strong>toda a largura</strong> disponível e começa em uma <strong>nova linha</strong>.</p>
+          
+          <h3>Características:</h3>
+          <p>✓ Ocupa 100% da largura do container</p>
+          <p>✓ Começa em nova linha</p>
+          <p>✓ Respeita margin, padding e border</p>
+          <p>✓ Exemplos: &lt;div&gt;, &lt;p&gt;, &lt;h1&gt;</p>
+
+          <h3>Exemplo:</h3>
+          <pre>div {
+  display: block;
+  width: 200px;
+  height: 100px;
+  background: blue;
+}</pre>
+        `,
+        controls: [
+          { type: 'slider', label: 'Width', min: 50, max: 300, value: 100, prop: 'width' },
+          { type: 'slider', label: 'Height', min: 50, max: 300, value: 100, prop: 'height' },
+          { type: 'color', label: 'Cor', value: '#0066cc', prop: 'background' },
+          { type: 'slider', label: 'Border Radius', min: 0, max: 50, value: 4, prop: 'borderRadius' }
+        ],
+        defaultStyle: { display: 'block', width: '100px', height: '100px', background: '#0066cc', borderRadius: '4px' }
+      },
+
+      'display-inline': {
+        title: 'Display: Inline',
+        desc: 'Elemento fica na mesma linha',
+        explanation: `
+          <h3>O que é Display Inline?</h3>
+          <p>Um elemento com <code>display: inline</code> fica <strong>na mesma linha</strong> que outros elementos.</p>
+          
+          <h3>Características:</h3>
+          <p>✓ Fica na mesma linha</p>
+          <p>✓ Ocupa apenas o espaço necessário</p>
+          <p>✗ NÃO respeita width e height</p>
+          <p>✗ NÃO respeita margin (apenas horizontal)</p>
+          <p>✓ Exemplos: &lt;span&gt;, &lt;a&gt;, &lt;strong&gt;</p>
+
+          <h3>Exemplo:</h3>
+          <pre>span {
+  display: inline;
+  background: blue;
+  padding: 5px 10px;
+}</pre>
+        `,
+        controls: [
+          { type: 'color', label: 'Cor', value: '#0066cc', prop: 'background' },
+          { type: 'slider', label: 'Padding', min: 0, max: 20, value: 5, prop: 'padding' }
+        ],
+        defaultStyle: { display: 'inline', background: '#0066cc', padding: '5px 10px' }
+      },
+
+      'display-flex': {
+        title: 'Display: Flex',
+        desc: 'Layout flexível e responsivo',
+        explanation: `
+          <h3>O que é Flexbox?</h3>
+          <p><code>display: flex</code> cria um <strong>layout flexível</strong> que se adapta ao tamanho da tela.</p>
+          
+          <h3>Propriedades principais:</h3>
+          <p><code>flex-direction</code>: row (horizontal) ou column (vertical)</p>
+          <p><code>justify-content</code>: alinha no eixo principal</p>
+          <p><code>align-items</code>: alinha no eixo transversal</p>
+          <p><code>gap</code>: espaço entre itens</p>
+
+          <h3>Exemplo:</h3>
+          <pre>.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}</pre>
+        `,
+        controls: [
+          { type: 'buttons', label: 'Direção', options: ['row', 'column'], prop: 'flexDirection' },
+          { type: 'buttons', label: 'Alinhamento', options: ['flex-start', 'center', 'flex-end'], prop: 'justifyContent' },
+          { type: 'slider', label: 'Gap', min: 0, max: 50, value: 10, prop: 'gap' },
+          { type: 'color', label: 'Cor', value: '#0066cc', prop: 'background' }
+        ],
+        defaultStyle: { display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', background: '#0066cc', width: '200px', height: '200px', borderRadius: '4px' }
+      },
+
+      'display-grid': {
+        title: 'Display: Grid',
+        desc: 'Layout em grade (linhas e colunas)',
+        explanation: `
+          <h3>O que é CSS Grid?</h3>
+          <p><code>display: grid</code> cria um layout em <strong>grade</strong> com linhas e colunas.</p>
+          
+          <h3>Propriedades principais:</h3>
+          <p><code>grid-template-columns</code>: define as colunas</p>
+          <p><code>grid-template-rows</code>: define as linhas</p>
+          <p><code>gap</code>: espaço entre células</p>
+
+          <h3>Exemplo:</h3>
+          <pre>.container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}</pre>
+        `,
+        controls: [
+          { type: 'slider', label: 'Colunas', min: 1, max: 5, value: 3, prop: 'gridColumns' },
+          { type: 'slider', label: 'Gap', min: 0, max: 30, value: 10, prop: 'gap' },
+          { type: 'color', label: 'Cor', value: '#0066cc', prop: 'background' }
+        ],
+        defaultStyle: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', background: '#0066cc', width: '200px', height: '200px', borderRadius: '4px' }
+      },
+
+      'width-height': {
+        title: 'Width & Height',
+        desc: 'Controle o tamanho dos elementos',
+        explanation: `
+          <h3>Width (Largura)</h3>
+          <p>Define a <strong>largura</strong> do elemento.</p>
+          <p>Valores: px, %, em, rem, vw, etc</p>
+
+          <h3>Height (Altura)</h3>
+          <p>Define a <strong>altura</strong> do elemento.</p>
+
+          <h3>Min/Max Width/Height</h3>
+          <p><code>min-width</code>: largura mínima</p>
+          <p><code>max-width</code>: largura máxima</p>
+
+          <h3>Exemplo:</h3>
+          <pre>.box {
+  width: 200px;
+  height: 100px;
+  max-width: 100%;
+}</pre>
+        `,
+        controls: [
+          { type: 'slider', label: 'Width', min: 50, max: 300, value: 100, prop: 'width' },
+          { type: 'slider', label: 'Height', min: 50, max: 300, value: 100, prop: 'height' },
+          { type: 'color', label: 'Cor', value: '#0066cc', prop: 'background' }
+        ],
+        defaultStyle: { width: '100px', height: '100px', background: '#0066cc', borderRadius: '4px' }
+      },
+
+      'padding-margin': {
+        title: 'Padding & Margin',
+        desc: 'Espaço dentro e fora do elemento',
+        explanation: `
+          <h3>Padding (Preenchimento)</h3>
+          <p>Espaço <strong>dentro</strong> do elemento, entre o conteúdo e a borda.</p>
+
+          <h3>Margin (Margem)</h3>
+          <p>Espaço <strong>fora</strong> do elemento, entre ele e outros elementos.</p>
+
+          <h3>Ordem das propriedades:</h3>
+          <p><code>padding: 10px;</code> - todos os lados</p>
+          <p><code>padding: 10px 20px;</code> - vertical horizontal</p>
+          <p><code>padding: 10px 20px 30px 40px;</code> - top right bottom left</p>
+
+          <h3>Exemplo:</h3>
+          <pre>.box {
+  padding: 20px;
+  margin: 10px;
+  background: blue;
+}</pre>
+        `,
+        controls: [
+          { type: 'slider', label: 'Padding', min: 0, max: 40, value: 10, prop: 'padding' },
+          { type: 'slider', label: 'Margin', min: 0, max: 40, value: 10, prop: 'margin' },
+          { type: 'color', label: 'Cor', value: '#0066cc', prop: 'background' }
+        ],
+        defaultStyle: { padding: '10px', margin: '10px', background: '#0066cc', borderRadius: '4px', width: '80px', height: '80px' }
+      },
+
+      'border': {
+        title: 'Border',
+        desc: 'Borda ao redor do elemento',
+        explanation: `
+          <h3>Border (Borda)</h3>
+          <p>Desenha uma linha ao redor do elemento.</p>
+
+          <h3>Propriedades:</h3>
+          <p><code>border-width</code>: espessura (px)</p>
+          <p><code>border-style</code>: solid, dashed, dotted, etc</p>
+          <p><code>border-color</code>: cor da borda</p>
+
+          <h3>Exemplo:</h3>
+          <pre>.box {
+  border: 3px solid red;
+  border-radius: 8px;
+}</pre>
+        `,
+        controls: [
+          { type: 'slider', label: 'Espessura', min: 1, max: 10, value: 3, prop: 'borderWidth' },
+          { type: 'buttons', label: 'Estilo', options: ['solid', 'dashed', 'dotted'], prop: 'borderStyle' },
+          { type: 'color', label: 'Cor', value: '#ff0000', prop: 'borderColor' },
+          { type: 'slider', label: 'Radius', min: 0, max: 50, value: 4, prop: 'borderRadius' }
+        ],
+        defaultStyle: { border: '3px solid #ff0000', borderRadius: '4px', width: '100px', height: '100px', background: '#0066cc' }
+      },
+
+      'color-hex': {
+        title: 'Cores Hexadecimais',
+        desc: 'Use códigos HEX para cores',
+        explanation: `
+          <h3>Cores Hexadecimais</h3>
+          <p>Formato: <code>#RRGGBB</code></p>
+          <p>Cada par representa: Vermelho, Verde, Azul</p>
+
+          <h3>Exemplos:</h3>
+          <p><code>#FF0000</code> = Vermelho puro</p>
+          <p><code>#00FF00</code> = Verde puro</p>
+          <p><code>#0000FF</code> = Azul puro</p>
+          <p><code>#FFFFFF</code> = Branco</p>
+          <p><code>#000000</code> = Preto</p>
+
+          <h3>Valores de 0-F:</h3>
+          <p>0, 1, 2, 3, 4, 5, 6, 7, 8, 9, A, B, C, D, E, F</p>
+
+          <h3>Exemplo:</h3>
+          <pre>.box {
+  background: #0066cc;
+  color: #ffffff;
+}</pre>
+        `,
+        controls: [
+          { type: 'color', label: 'Cor', value: '#0066cc', prop: 'background' },
+          { type: 'text', label: 'Código HEX', value: '#0066cc', prop: 'hexValue' }
+        ],
+        defaultStyle: { background: '#0066cc', width: '100px', height: '100px', borderRadius: '4px' }
+      },
+
+      'color-rgb': {
+        title: 'Cores RGB',
+        desc: 'Use RGB para cores',
+        explanation: `
+          <h3>Cores RGB</h3>
+          <p>Formato: <code>rgb(R, G, B)</code></p>
+          <p>Cada valor vai de 0 a 255</p>
+
+          <h3>Exemplos:</h3>
+          <p><code>rgb(255, 0, 0)</code> = Vermelho</p>
+          <p><code>rgb(0, 255, 0)</code> = Verde</p>
+          <p><code>rgb(0, 0, 255)</code> = Azul</p>
+          <p><code>rgb(128, 128, 128)</code> = Cinza</p>
+
+          <h3>RGBA (com transparência):</h3>
+          <p><code>rgba(255, 0, 0, 0.5)</code> = Vermelho 50% transparente</p>
+
+          <h3>Exemplo:</h3>
+          <pre>.box {
+  background: rgb(0, 102, 204);
+  color: rgb(255, 255, 255);
+}</pre>
+        `,
+        controls: [
+          { type: 'slider', label: 'Vermelho', min: 0, max: 255, value: 0, prop: 'r' },
+          { type: 'slider', label: 'Verde', min: 0, max: 255, value: 102, prop: 'g' },
+          { type: 'slider', label: 'Azul', min: 0, max: 255, value: 204, prop: 'b' },
+          { type: 'text', label: 'RGB', value: 'rgb(0, 102, 204)', prop: 'rgbValue' }
+        ],
+        defaultStyle: { background: 'rgb(0, 102, 204)', width: '100px', height: '100px', borderRadius: '4px' }
+      },
+
+      'color-opacity': {
+        title: 'Opacity (Transparência)',
+        desc: 'Controle a transparência',
+        explanation: `
+          <h3>Opacity</h3>
+          <p>Controla a <strong>transparência</strong> do elemento.</p>
+          <p>Valores: 0 (invisível) a 1 (opaco)</p>
+
+          <h3>Exemplos:</h3>
+          <p><code>opacity: 0;</code> = Invisível</p>
+          <p><code>opacity: 0.5;</code> = 50% transparente</p>
+          <p><code>opacity: 1;</code> = Totalmente visível</p>
+
+          <h3>RGBA alternativa:</h3>
+          <p><code>rgba(0, 102, 204, 0.5)</code> = Apenas a cor fica transparente</p>
+
+          <h3>Exemplo:</h3>
+          <pre>.box {
+  background: blue;
+  opacity: 0.5;
+}</pre>
+        `,
+        controls: [
+          { type: 'slider', label: 'Opacity', min: 0, max: 1, step: 0.1, value: 1, prop: 'opacity' },
+          { type: 'color', label: 'Cor', value: '#0066cc', prop: 'background' }
+        ],
+        defaultStyle: { background: '#0066cc', opacity: '1', width: '100px', height: '100px', borderRadius: '4px' }
+      },
+
+      'transform': {
+        title: 'Transform',
+        desc: 'Rotacione, escale e mova elementos',
+        explanation: `
+          <h3>Transform</h3>
+          <p>Aplica transformações ao elemento.</p>
+
+          <h3>Funções principais:</h3>
+          <p><code>rotate(45deg)</code> = Rotaciona</p>
+          <p><code>scale(1.5)</code> = Aumenta o tamanho</p>
+          <p><code>translateX(50px)</code> = Move horizontalmente</p>
+          <p><code>translateY(50px)</code> = Move verticalmente</p>
+          <p><code>skew(10deg)</code> = Inclina</p>
+
+          <h3>Exemplo:</h3>
+          <pre>.box {
+  transform: rotate(45deg) scale(1.2);
+}</pre>
+        `,
+        controls: [
+          { type: 'slider', label: 'Rotação', min: 0, max: 360, value: 0, prop: 'rotate' },
+          { type: 'slider', label: 'Escala', min: 0.5, max: 2, step: 0.1, value: 1, prop: 'scale' },
+          { type: 'slider', label: 'TranslateX', min: -50, max: 50, value: 0, prop: 'translateX' },
+          { type: 'color', label: 'Cor', value: '#0066cc', prop: 'background' }
+        ],
+        defaultStyle: { background: '#0066cc', width: '100px', height: '100px', borderRadius: '4px', transform: 'rotate(0deg) scale(1)' }
+      },
+
+      'clip-path': {
+        title: 'Clip-Path',
+        desc: 'Corte o elemento em formas',
+        explanation: `
+          <h3>Clip-Path</h3>
+          <p>Corta o elemento em uma forma específica.</p>
+
+          <h3>Formas principais:</h3>
+          <p><code>circle(50%)</code> = Círculo</p>
+          <p><code>polygon(0% 0%, 100% 0%, 100% 100%)</code> = Polígono</p>
+          <p><code>inset(10px 20px 30px 40px)</code> = Retângulo com recortes</p>
+
+          <h3>Exemplos:</h3>
+          <p><code>clip-path: circle(50%);</code> = Círculo perfeito</p>
+          <p><code>clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);</code> = Losango</p>
+
+          <h3>Exemplo:</h3>
+          <pre>.box {
+  clip-path: circle(50%);
+  background: blue;
+}</pre>
+        `,
+        controls: [
+          { type: 'buttons', label: 'Forma', options: ['circle', 'polygon-star', 'polygon-triangle'], prop: 'clipShape' },
+          { type: 'color', label: 'Cor', value: '#0066cc', prop: 'background' }
+        ],
+        defaultStyle: { background: '#0066cc', width: '100px', height: '100px', clipPath: 'circle(50%)' }
+      },
+
+      'shadow': {
+        title: 'Box-Shadow',
+        desc: 'Adicione sombras aos elementos',
+        explanation: `
+          <h3>Box-Shadow</h3>
+          <p>Adiciona uma sombra ao redor do elemento.</p>
+
+          <h3>Sintaxe:</h3>
+          <p><code>box-shadow: X Y BLUR SPREAD COLOR;</code></p>
+          <p>X = deslocamento horizontal</p>
+          <p>Y = deslocamento vertical</p>
+          <p>BLUR = desfoque</p>
+          <p>SPREAD = expansão</p>
+
+          <h3>Exemplo:</h3>
+          <pre>.box {
+  box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
+}</pre>
+        `,
+        controls: [
+          { type: 'slider', label: 'X', min: -20, max: 20, value: 5, prop: 'shadowX' },
+          { type: 'slider', label: 'Y', min: -20, max: 20, value: 5, prop: 'shadowY' },
+          { type: 'slider', label: 'Blur', min: 0, max: 30, value: 15, prop: 'shadowBlur' },
+          { type: 'color', label: 'Cor', value: '#0066cc', prop: 'background' }
+        ],
+        defaultStyle: { background: '#0066cc', width: '100px', height: '100px', borderRadius: '4px', boxShadow: '5px 5px 15px rgba(0,0,0,0.3)' }
+      },
+
+      'border-radius': {
+        title: 'Border-Radius',
+        desc: 'Cantos arredondados',
+        explanation: `
+          <h3>Border-Radius</h3>
+          <p>Arredonda os cantos do elemento.</p>
+
+          <h3>Valores:</h3>
+          <p><code>border-radius: 10px;</code> = Todos os cantos</p>
+          <p><code>border-radius: 10px 20px;</code> = Canto superior/inferior</p>
+          <p><code>border-radius: 50%;</code> = Círculo perfeito</p>
+
+          <h3>Cantos individuais:</h3>
+          <p><code>border-top-left-radius</code></p>
+          <p><code>border-top-right-radius</code></p>
+          <p><code>border-bottom-left-radius</code></p>
+          <p><code>border-bottom-right-radius</code></p>
+
+          <h3>Exemplo:</h3>
+          <pre>.box {
+  border-radius: 20px;
+  background: blue;
+}</pre>
+        `,
+        controls: [
+          { type: 'slider', label: 'Border Radius', min: 0, max: 50, value: 4, prop: 'borderRadius' },
+          { type: 'color', label: 'Cor', value: '#0066cc', prop: 'background' }
+        ],
+        defaultStyle: { background: '#0066cc', width: '100px', height: '100px', borderRadius: '4px' }
+      }
+    };
+
+    // ═══════════════════════════════════════════════════════════════
+    // FUNCTIONS
+    // ═══════════════════════════════════════════════════════════════
+
+    let currentTopic = 'display-block';
+    let currentStyle = {};
+
+    function loadTopic(topicId) {
+      currentTopic = topicId;
+      const topic = topics[topicId];
+
+      // Update sidebar
+      document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+      event.target.classList.add('active');
+
+      // Update header
+      document.getElementById('topicTitle').textContent = topic.title;
+      document.getElementById('topicDesc').textContent = topic.desc;
+
+      // Update explanation
+      document.getElementById('explanation').innerHTML = topic.explanation;
+
+      // Reset style
+      currentStyle = { ...topic.defaultStyle };
+
+      // Render controls
+      renderControls(topic.controls);
+
+      // Update preview
+      updatePreview();
+    }
+
+    function renderControls(controls) {
+      const controlsDiv = document.getElementById('controls');
+      let html = '';
+
+      controls.forEach(control => {
+        if (control.type === 'slider') {
+          html += `
+            <div class="control-group">
+              <div class="control-label">${control.label}</div>
+              <div class="slider-group">
+                <input type="range" min="${control.min}" max="${control.max}" step="${control.step || 1}" value="${control.value}" 
+                  onchange="updateProperty('${control.prop}', this.value, '${control.prop}')">
+                <span class="slider-value" id="value-${control.prop}">${control.value}</span>
+              </div>
+            </div>
+          `;
+        } else if (control.type === 'color') {
+          html += `
+            <div class="control-group">
+              <div class="control-label">${control.label}</div>
+              <input type="color" value="${control.value}" onchange="updateProperty('${control.prop}', this.value, 'color')">
+            </div>
+          `;
+        } else if (control.type === 'buttons') {
+          html += `
+            <div class="control-group">
+              <div class="control-label">${control.label}</div>
+              <div class="control-options">
+                ${control.options.map(opt => `
+                  <button class="option-btn ${currentStyle[control.prop] === opt ? 'active' : ''}" 
+                    onclick="updateProperty('${control.prop}', '${opt}', 'button')">${opt}</button>
+                `).join('')}
+              </div>
+            </div>
+          `;
+        } else if (control.type === 'text') {
+          html += `
+            <div class="control-group">
+              <div class="control-label">${control.label}</div>
+              <input type="text" value="${control.value}" onchange="updateProperty('${control.prop}', this.value, 'text')">
+            </div>
+          `;
+        }
+      });
+
+      // Add code display
+      html += `
+        <div class="control-group">
+          <div class="control-label">Código CSS</div>
+          <div class="code-display" id="codeDisplay"></div>
+        </div>
+      `;
+
+      controlsDiv.innerHTML = html;
+      updateCodeDisplay();
+    }
+
+    function updateProperty(prop, value, type) {
+      if (type === 'slider') {
+        currentStyle[prop] = value + (prop.includes('Radius') || prop.includes('Width') || prop.includes('Height') ? 'px' : '');
+        document.getElementById(`value-${prop}`).textContent = value;
+      } else if (type === 'color') {
+        currentStyle[prop] = value;
+      } else if (type === 'button') {
+        currentStyle[prop] = value;
+        // Update button states
+        document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+      } else if (type === 'text') {
+        currentStyle[prop] = value;
+      }
+
+      updatePreview();
+      updateCodeDisplay();
+    }
+
+    function updatePreview() {
+      const preview = document.getElementById('previewContent');
+      const box = preview.querySelector('.preview-box') || document.createElement('div');
+      box.className = 'preview-box';
+      box.textContent = 'Box';
+
+      // Apply styles
+      Object.keys(currentStyle).forEach(key => {
+        const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
+        box.style[key] = currentStyle[key];
+      });
+
+      if (!preview.querySelector('.preview-box')) {
+        preview.innerHTML = '';
+        preview.appendChild(box);
+      }
+    }
+
+    function updateCodeDisplay() {
+      const codeDisplay = document.getElementById('codeDisplay');
+      let css = '.box {\n';
+
+      Object.keys(currentStyle).forEach(key => {
+        const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
+        css += `  ${cssKey}: ${currentStyle[key]};\n`;
+      });
+
+      css += '}';
+      codeDisplay.textContent = css;
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════════════════════════════════
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadTopic('display-block');
+    });
+  </script>
+
+</body></html>
