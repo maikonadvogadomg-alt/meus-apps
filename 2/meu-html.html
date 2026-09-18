@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Meu App</title>
+<link rel="manifest" href="data:application/json,{&quot;name&quot;:&quot;Meu App&quot;,&quot;short_name&quot;:&quot;MeuApp&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;#0d1117&quot;}">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+:root{--bg:#0d1117;--surface:#161b22;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--blue:#58a6ff;--green:#3fb950;--red:#f85149;--yellow:#d29922;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;height:100dvh;display:flex;flex-direction:column;overflow:hidden;}
+input,textarea,select{background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;font-family:inherit;}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--blue);}
+button{cursor:pointer;font-family:inherit;border:none;border-radius:6px;transition:opacity .15s;}
+button:hover{opacity:.85;}
+button:active{opacity:.7;}
+.btn-primary{background:var(--blue);color:#000;font-weight:600;}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);}
+.btn-ghost:hover{color:var(--text);border-color:var(--text);}
+.btn-danger{background:transparent;color:var(--red);border:1px solid var(--border);}
+/* Tabs */
+.tab-bar{display:flex;background:var(--surface);border-bottom:1px solid var(--border);shrink:0;}
+.tab{padding:10px 18px;font-size:13px;font-weight:500;color:var(--muted);background:transparent;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:color .15s,border-color .15s;}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue);}
+/* Chat */
+#chat-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;}
+.msg{padding:10px 12px;border-radius:8px;font-size:14px;line-height:1.6;max-width:100%;}
+.msg-user{background:#1c2128;border-left:3px solid var(--blue);align-self:flex-end;max-width:85%;}
+.msg-ai{background:var(--surface);border-left:3px solid var(--green);}
+.msg-ai pre{background:#0a0e14;border-radius:6px;padding:10px;overflow-x:auto;margin:8px 0;font-size:12px;}
+.msg-ai code{font-family:'Courier New',monospace;font-size:13px;}
+.msg-ai p{margin:4px 0;}
+.msg-ai ul,.msg-ai ol{margin:4px 0 4px 18px;}
+.dot-anim span{animation:blink 1.2s infinite;display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);margin:0 2px;}
+.dot-anim span:nth-child(2){animation-delay:.2s;}
+.dot-anim span:nth-child(3){animation-delay:.4s;}
+@keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
+/* Playground */
+#pg-editor{font-family:'Courier New',monospace;font-size:12px;line-height:1.6;tab-size:2;background:#0a0e14;color:var(--text);resize:none;border:none;border-radius:0;padding:10px;width:100%;}
+#preview-frame{background:#fff;border:none;width:100%;height:100%;}
+/* Settings */
+.setting-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:12px;}
+.setting-card h3{font-size:14px;font-weight:600;margin-bottom:4px;}
+.setting-card p{font-size:12px;color:var(--muted);margin-bottom:10px;}
+/* Scrollbar */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+/* TTS bar */
+#tts-bar{display:flex;align-items:center;gap:8px;padding:6px 12px;background:#0a0e14;border-top:1px solid var(--border);font-size:12px;}
+</style>
+</head>
+<body>
+
+<!-- TAB BAR -->
+<div class="tab-bar" style="height:44px;align-items:center;padding:0 4px;gap:2px;">
+  <div style="display:flex;align-items:center;gap:6px;padding:0 8px;margin-right:8px;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+    <span style="font-size:13px;font-weight:700;color:var(--text);">MeuApp</span>
+  </div>
+  <button class="tab active" onclick="showTab('chat')" id="t-chat">💬 Chat</button>
+  <button class="tab" onclick="showTab('playground')" id="t-playground">🎨 Playground</button>
+  <button class="tab" onclick="showTab('config')" id="t-config">⚙️ Config</button>
+</div>
+
+<!-- ═══════════════════════════════ CHAT ═══════════════════════════════ -->
+<div id="panel-chat" style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+
+  <!-- Chat toolbar -->
+  <div style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:var(--surface);border-bottom:1px solid var(--border);flex-wrap:wrap;">
+    <select id="ai-provider" onchange="refreshModels()" style="font-size:12px;height:28px;padding:0 6px;">
+      <option value="gemini">Gemini</option>
+      <option value="groq">Groq</option>
+      <option value="openai">OpenAI</option>
+    </select>
+    <select id="ai-model" style="font-size:12px;height:28px;padding:0 6px;min-width:140px;"></select>
+    <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);">
+      <input type="checkbox" id="use-search" style="accent-color:var(--blue);"> 🔍 Web
+    </label>
+    <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);">
+      <input type="checkbox" id="use-tts" style="accent-color:var(--blue);" onchange="toggleTTSBar()"> 🔊 Voz
+    </label>
+    <div style="margin-left:auto;display:flex;gap:4px;">
+      <button onclick="saveConv()" style="font-size:11px;padding:4px 8px;background:var(--surface);color:var(--muted);border:1px solid var(--border);">💾</button>
+      <button onclick="clearChat()" style="font-size:11px;padding:4px 8px;" class="btn-danger">🗑</button>
+    </div>
+  </div>
+
+  <!-- Contexto slider -->
+  <div style="display:flex;align-items:center;gap:6px;padding:4px 10px;background:#0a0e14;border-bottom:1px solid var(--border);font-size:11px;color:var(--muted);">
+    <span>🧠 Contexto:</span>
+    <input type="range" id="ctx-size" min="1000" max="32000" step="500" value="8000" oninput="document.getElementById('ctx-lbl').textContent=this.value" style="width:80px;height:3px;accent-color:var(--blue);">
+    <span id="ctx-lbl" style="color:var(--blue);min-width:36px;">8000</span>
+    <span>tokens</span>
+    <span style="margin-left:8px;color:var(--muted);">| Mem: <span id="mem-lbl">0</span> msgs</span>
+  </div>
+
+  <!-- Mensagens -->
+  <div id="chat-msgs"></div>
+
+  <!-- TTS bar (oculta por padrão) -->
+  <div id="tts-bar" style="display:none;">
+    <span style="color:var(--muted);">Velocidade:</span>
+    <input type="range" id="tts-speed" min="0.5" max="2" step="0.05" value="1.1" oninput="document.getElementById('tts-lbl').textContent=parseFloat(this.value).toFixed(2)+'x'" style="width:80px;height:3px;accent-color:var(--blue);">
+    <span id="tts-lbl" style="color:var(--blue);min-width:34px;">1.10x</span>
+    <button onclick="stopTTS()" style="font-size:11px;padding:3px 7px;background:var(--red);color:#fff;margin-left:auto;">⏹ Parar</button>
+  </div>
+
+  <!-- Input -->
+  <div style="padding:8px;background:var(--surface);border-top:1px solid var(--border);">
+    <div style="display:flex;gap:6px;align-items:flex-end;">
+      <textarea id="msg-input" rows="3" placeholder="Mensagem... (Ctrl+Enter envia)" style="flex:1;padding:8px;font-size:13px;border-radius:6px;" onkeydown="if(event.ctrlKey&&event.key==='Enter')sendMsg();"></textarea>
+      <button onclick="sendMsg()" id="send-btn" class="btn-primary" style="padding:8px 14px;align-self:flex-end;font-size:13px;">▶</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ PLAYGROUND ═══════════════════════════════ -->
+<div id="panel-playground" style="flex:1;display:none;flex-direction:column;overflow:hidden;">
+
+  <!-- Toolbar -->
+  <div style="display:flex;align-items:center;gap:4px;padding:6px 10px;background:var(--surface);border-bottom:1px solid var(--border);flex-wrap:wrap;">
+    <div style="display:flex;border-radius:6px;overflow:hidden;border:1px solid var(--border);">
+      <button onclick="setPgTab('html')" id="pgt-html" style="font-size:11px;padding:4px 10px;background:var(--blue);color:#000;">HTML</button>
+      <button onclick="setPgTab('css')" id="pgt-css" style="font-size:11px;padding:4px 10px;background:transparent;color:var(--muted);">CSS</button>
+      <button onclick="setPgTab('js')" id="pgt-js" style="font-size:11px;padding:4px 10px;background:transparent;color:var(--muted);">JS</button>
+    </div>
+    <input id="pg-title" type="text" placeholder="Nome..." style="font-size:12px;height:28px;padding:0 8px;width:120px;">
+    <div style="margin-left:auto;display:flex;gap:4px;">
+      <button onclick="runPg()" class="btn-primary" style="font-size:11px;padding:4px 10px;">▶ Run</button>
+      <label style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:3px;">
+        <input type="checkbox" id="pg-auto" checked style="accent-color:var(--blue);"> Auto
+      </label>
+      <button onclick="savePg()" style="font-size:11px;padding:4px 8px;background:var(--surface);color:var(--text);border:1px solid var(--border);">💾</button>
+      <button onclick="dlPg()" style="font-size:11px;padding:4px 8px;background:var(--surface);color:var(--text);border:1px solid var(--border);">⬇ .html</button>
+      <button onclick="toggleSnippets()" style="font-size:11px;padding:4px 8px;background:var(--surface);color:var(--text);border:1px solid var(--border);">📂</button>
+    </div>
+  </div>
+
+  <!-- Editor + Preview -->
+  <div style="flex:1;display:flex;overflow:hidden;position:relative;">
+    <div style="width:50%;display:flex;flex-direction:column;border-right:1px solid var(--border);">
+      <div style="padding:3px 8px;font-size:10px;color:var(--muted);background:#0a0e14;border-bottom:1px solid var(--border);" id="pg-lbl">Editando: HTML</div>
+      <textarea id="pg-editor" oninput="onPgChange()" onkeydown="pgTab(event)" style="flex:1;"></textarea>
+    </div>
+    <div style="width:50%;display:flex;flex-direction:column;">
+      <div style="padding:3px 8px;font-size:10px;color:var(--muted);background:#0a0e14;border-bottom:1px solid var(--border);">👁 Preview</div>
+      <iframe id="preview-frame" sandbox="allow-scripts allow-modals allow-forms"></iframe>
+    </div>
+
+    <!-- Snippets panel -->
+    <div id="snippets-panel" style="display:none;position:absolute;right:0;top:0;bottom:0;width:200px;background:var(--surface);border-left:1px solid var(--border);flex-direction:column;z-index:10;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;border-bottom:1px solid var(--border);">
+        <span style="font-size:12px;font-weight:600;">Salvos</span>
+        <button onclick="toggleSnippets()" style="background:none;color:var(--muted);font-size:16px;padding:0 4px;">×</button>
+      </div>
+      <div id="snippets-list" style="flex:1;overflow-y:auto;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ CONFIG ═══════════════════════════════ -->
+<div id="panel-config" style="flex:1;display:none;overflow-y:auto;padding:16px;">
+  <div style="max-width:500px;margin:0 auto;">
+    <h2 style="font-size:16px;font-weight:700;color:var(--blue);margin-bottom:16px;">⚙️ Configurações</h2>
+
+    <div class="setting-card">
+      <h3>🤖 Gemini <span style="font-size:11px;color:var(--green);background:#0d2e16;padding:2px 6px;border-radius:4px;">Gratuito</span></h3>
+      <p>Pesquisa web nativa. Chave em: <a href="https://aistudio.google.com/apikey" target="_blank" style="color:var(--blue);">aistudio.google.com</a></p>
+      <div style="display:flex;gap:6px;">
+        <input type="password" id="key-gemini" placeholder="AIza..." style="flex:1;padding:6px 8px;font-size:12px;">
+        <button onclick="saveKey('gemini')" class="btn-primary" style="padding:6px 12px;font-size:12px;">Salvar</button>
+      </div>
+    </div>
+
+    <div class="setting-card">
+      <h3>⚡ Groq <span style="font-size:11px;color:var(--green);background:#0d2e16;padding:2px 6px;border-radius:4px;">Gratuito</span></h3>
+      <p>Ultra rápido. Chave em: <a href="https://console.groq.com/keys" target="_blank" style="color:var(--blue);">console.groq.com</a></p>
+      <div style="display:flex;gap:6px;">
+        <input type="password" id="key-groq" placeholder="gsk_..." style="flex:1;padding:6px 8px;font-size:12px;">
+        <button onclick="saveKey('groq')" class="btn-primary" style="padding:6px 12px;font-size:12px;">Salvar</button>
+      </div>
+    </div>
+
+    <div class="setting-card">
+      <h3>🌐 OpenAI (GPT)</h3>
+      <p>GPT-4o. Chave em: <a href="https://platform.openai.com/api-keys" target="_blank" style="color:var(--blue);">platform.openai.com</a></p>
+      <div style="display:flex;gap:6px;">
+        <input type="password" id="key-openai" placeholder="sk-..." style="flex:1;padding:6px 8px;font-size:12px;">
+        <button onclick="saveKey('openai')" class="btn-primary" style="padding:6px 12px;font-size:12px;">Salvar</button>
+      </div>
+    </div>
+
+    <div class="setting-card" style="border-color:var(--yellow);">
+      <h3 style="color:var(--yellow);">⚠️ Claude (Anthropic)</h3>
+      <p>Claude não permite chamadas diretas do browser por segurança. Para Claude use o claude.ai diretamente.</p>
+    </div>
+
+    <div class="setting-card">
+      <h3>🗄️ Banco de dados (Supabase)</h3>
+      <p>Para salvar dados online e acessar de qualquer lugar. Crie grátis em: <a href="https://supabase.com" target="_blank" style="color:var(--blue);">supabase.com</a></p>
+      <div style="margin-bottom:8px;">
+        <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">URL do projeto:</label>
+        <input type="text" id="sb-url" placeholder="https://xxx.supabase.co" style="width:100%;padding:6px 8px;font-size:12px;margin-bottom:6px;">
+        <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">Anon Key:</label>
+        <input type="password" id="sb-key" placeholder="eyJ..." style="width:100%;padding:6px 8px;font-size:12px;">
+      </div>
+      <button onclick="saveSupabase()" class="btn-primary" style="padding:6px 14px;font-size:12px;width:100%;">Salvar e Conectar</button>
+      <div id="sb-status" style="font-size:11px;margin-top:6px;color:var(--muted);"></div>
+    </div>
+
+    <div style="display:flex;gap:6px;margin-top:8px;">
+      <button onclick="exportData()" class="btn-ghost" style="flex:1;padding:8px;font-size:12px;">⬇ Exportar dados</button>
+      <button onclick="importData()" class="btn-ghost" style="flex:1;padding:8px;font-size:12px;">⬆ Importar dados</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// STORAGE
+// ══════════════════════════════════════════════════════
+const STORE_KEY = 'meuapp-v2';
+let db = (() => { try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch { return {}; } })();
+if (!db.keys) db.keys = {};
+if (!db.snippets) db.snippets = [];
+if (!db.chatHistory) db.chatHistory = [];
+if (!db.savedChats) db.savedChats = [];
+
+function persist() { try { localStorage.setItem(STORE_KEY, JSON.stringify(db)); } catch {} }
+
+// Supabase (opcional - salva na nuvem)
+let sbClient = null;
+async function initSupabase(url, key) {
+  if (!url || !key) return;
+  try {
+    const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+    sbClient = createClient(url, key);
+    await ensureSupabaseTables();
+    document.getElementById('sb-status').textContent = '✅ Conectado ao Supabase!';
+    document.getElementById('sb-status').style.color = 'var(--green)';
+  } catch(e) {
+    document.getElementById('sb-status').textContent = '❌ Erro: ' + e.message;
+    document.getElementById('sb-status').style.color = 'var(--red)';
+  }
+}
+
+async function ensureSupabaseTables() {
+  if (!sbClient) return;
+  // Cria tabelas via RPC se não existirem
+  await sbClient.rpc('exec_sql', { sql: `
+    CREATE TABLE IF NOT EXISTS snippets (
+      id BIGSERIAL PRIMARY KEY,
+      title TEXT NOT NULL DEFAULT 'Sem título',
+      html TEXT DEFAULT '',
+      css TEXT DEFAULT '',
+      js TEXT DEFAULT '',
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    );
+    CREATE TABLE IF NOT EXISTS chat_saves (
+      id BIGSERIAL PRIMARY KEY,
+      title TEXT NOT NULL,
+      messages JSONB NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    );
+  ` }).catch(() => {}); // ignora se rpc não existir
+}
+
+async function sbSaveSnippet(s) {
+  if (!sbClient) return null;
+  const { data } = await sbClient.from('snippets').insert(s).select().single();
+  return data;
+}
+
+async function sbLoadSnippets() {
+  if (!sbClient) return null;
+  const { data } = await sbClient.from('snippets').select('*').order('created_at', { ascending: false });
+  return data;
+}
+
+// ══════════════════════════════════════════════════════
+// TABS
+// ══════════════════════════════════════════════════════
+function showTab(t) {
+  ['chat','playground','config'].forEach(x => {
+    const p = document.getElementById('panel-'+x);
+    p.style.display = x === t ? 'flex' : 'none';
+    p.style.flexDirection = 'column';
+    document.getElementById('t-'+x).classList.toggle('active', x === t);
+  });
+  if (t === 'playground') setTimeout(runPg, 100);
+  if (t === 'config') loadKeysUI();
+}
+
+// ══════════════════════════════════════════════════════
+// CHAT
+// ══════════════════════════════════════════════════════
+const MODELS = {
+  gemini: ['gemini-2.0-flash','gemini-2.5-flash','gemini-1.5-pro'],
+  groq: ['llama-3.3-70b-versatile','llama-3.1-8b-instant','mixtral-8x7b-32768'],
+  openai: ['gpt-4o','gpt-4o-mini','gpt-3.5-turbo']
+};
+
+function refreshModels() {
+  const p = document.getElementById('ai-provider').value;
+  const s = document.getElementById('ai-model');
+  s.innerHTML = MODELS[p].map(m=>`<option>${m}</option>`).join('');
+}
+refreshModels();
+
+let msgs = [...db.chatHistory];
+let busy = false;
+let pgTimer = null;
+
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function addMsg(role, content, id) {
+  const div = document.createElement('div');
+  div.className = 'msg ' + (role==='user'?'msg-user':'msg-ai');
+  if (id) div.id = id;
+  div.innerHTML = role === 'user'
+    ? `<div style="font-size:11px;color:var(--blue);margin-bottom:4px;">👤 Você</div><div>${esc(content)}</div>`
+    : `<div style="font-size:11px;color:var(--green);margin-bottom:4px;">🤖 IA</div><div class="ai-body">${marked.parse(content)}</div>`;
+  document.getElementById('chat-msgs').appendChild(div);
+  document.getElementById('chat-msgs').scrollTop = 99999;
+  return div;
+}
+
+async function sendMsg() {
+  if (busy) return;
+  const inp = document.getElementById('msg-input');
+  const text = inp.value.trim();
+  if (!text) return;
+  const provider = document.getElementById('ai-provider').value;
+  const key = db.keys[provider];
+  if (!key) { alert('Configure a chave de API nas Configurações!'); showTab('config'); return; }
+
+  inp.value = '';
+  msgs.push({ role: 'user', content: text });
+  addMsg('user', text);
+  document.getElementById('mem-lbl').textContent = msgs.length;
+
+  busy = true;
+  document.getElementById('send-btn').disabled = true;
+  document.getElementById('send-btn').textContent = '…';
+
+  const thinking = addMsg('assistant', '', 'thinking');
+  thinking.querySelector('.ai-body').innerHTML = '<span class="dot-anim"><span></span><span></span><span></span></span>';
+
+  try {
+    const model = document.getElementById('ai-model').value;
+    const ctx = parseInt(document.getElementById('ctx-size').value);
+    const search = document.getElementById('use-search').checked;
+    const mem = msgs.slice(-(Math.floor(ctx/400))).slice(0,-1);
+
+    let reply = '';
+    if (provider === 'gemini') reply = await callGemini(key, model, mem, text, search, ctx);
+    else if (provider === 'groq') reply = await callGroq(key, model, mem, text, ctx);
+    else reply = await callOpenAI(key, model, mem, text, ctx);
+
+    thinking.querySelector('.ai-body').innerHTML = marked.parse(reply);
+    msgs.push({ role: 'assistant', content: reply });
+
+    if (document.getElementById('use-tts').checked) speakText(reply);
+    db.chatHistory = msgs.slice(-100);
+    persist();
+  } catch(e) {
+    thinking.querySelector('.ai-body').innerHTML = `<span style="color:var(--red)">Erro: ${esc(e.message)}</span>`;
+  }
+
+  thinking.id = '';
+  busy = false;
+  document.getElementById('send-btn').disabled = false;
+  document.getElementById('send-btn').textContent = '▶';
+  document.getElementById('mem-lbl').textContent = msgs.length;
+}
+
+async function callGemini(key, model, history, msg, search, maxTok) {
+  const contents = [
+    ...history.map(m=>({role:m.role==='user'?'user':'model',parts:[{text:m.content}]})),
+    {role:'user',parts:[{text:msg}]}
+  ];
+  const body = { contents, generationConfig:{maxOutputTokens:Math.min(maxTok,8192)} };
+  if (search) body.tools = [{googleSearch:{}}];
+  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+    {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const d = await r.json();
+  if (d.error) throw new Error(d.error.message);
+  return d.candidates?.[0]?.content?.parts?.[0]?.text || '(sem resposta)';
+}
+
+async function callGroq(key, model, history, msg, maxTok) {
+  const messages = [{role:'system',content:'Assistente útil especializado em programação e direito. Responda em português.'},...history,{role:'user',content:msg}];
+  const r = await fetch('https://api.groq.com/openai/v1/chat/completions',
+    {method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+     body:JSON.stringify({model,messages,max_tokens:Math.min(maxTok,8192)})});
+  const d = await r.json();
+  if (d.error) throw new Error(d.error.message);
+  return d.choices?.[0]?.message?.content || '(sem resposta)';
+}
+
+async function callOpenAI(key, model, history, msg, maxTok) {
+  const messages = [{role:'system',content:'Assistente útil especializado em programação e direito. Responda em português.'},...history,{role:'user',content:msg}];
+  const r = await fetch('https://api.openai.com/v1/chat/completions',
+    {method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+     body:JSON.stringify({model,messages,max_tokens:Math.min(maxTok,4096)})});
+  const d = await r.json();
+  if (d.error) throw new Error(d.error.message);
+  return d.choices?.[0]?.message?.content || '(sem resposta)';
+}
+
+function clearChat() { if (!confirm('Limpar conversa?')) return; msgs=[]; document.getElementById('chat-msgs').innerHTML=''; document.getElementById('mem-lbl').textContent='0'; }
+
+function saveConv() {
+  const title = prompt('Nome da conversa:',`Conversa ${new Date().toLocaleDateString('pt-BR')}`);
+  if (!title) return;
+  db.savedChats.push({title,date:new Date().toISOString(),messages:[...msgs]});
+  persist(); alert('Salvo!');
+}
+
+// ── TTS ──
+let ttsUtter = null;
+function toggleTTSBar() { document.getElementById('tts-bar').style.display = document.getElementById('use-tts').checked ? 'flex' : 'none'; }
+
+function speakText(text) {
+  if (!window.speechSynthesis) return;
+  stopTTS();
+  const clean = text.replace(/```[\s\S]*?```/g,'').replace(/\*\*|__|`/g,'').trim().slice(0,2000);
+  ttsUtter = new SpeechSynthesisUtterance(clean);
+  ttsUtter.lang = 'pt-BR';
+  ttsUtter.rate = parseFloat(document.getElementById('tts-speed').value);
+  window.speechSynthesis.speak(ttsUtter);
+}
+
+function stopTTS() { if (window.speechSynthesis) window.speechSynthesis.cancel(); }
+
+// ══════════════════════════════════════════════════════
+// PLAYGROUND
+// ══════════════════════════════════════════════════════
+let pg = { tab: 'html', html: `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<style>
+  body{font-family:sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#f0f4f8;}
+  .card{background:#fff;border-radius:12px;padding:40px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.1);}
+  h1{color:#2563eb;} button{background:#2563eb;color:#fff;border:none;padding:12px 24px;border-radius:8px;font-size:16px;cursor:pointer;margin-top:16px;}
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>🚀 Playground</h1>
+    <p>Edite e veja ao vivo!</p>
+    <button onclick="alert('Funcionou! ✅')">Testar</button>
+  </div>
+</body>
+</html>`, css: '', js: '' };
+
+function setPgTab(t) {
+  pg.tab = t;
+  const labels = {html:'HTML',css:'CSS',js:'JavaScript'};
+  ['html','css','js'].forEach(x => {
+    const b = document.getElementById('pgt-'+x);
+    b.style.background = x===t?'var(--blue)':'transparent';
+    b.style.color = x===t?'#000':'var(--muted)';
+  });
+  document.getElementById('pg-editor').value = pg[t];
+  document.getElementById('pg-lbl').textContent = 'Editando: ' + labels[t];
+}
+
+function onPgChange() {
+  pg[pg.tab] = document.getElementById('pg-editor').value;
+  if (document.getElementById('pg-auto').checked) {
+    clearTimeout(pgTimer); pgTimer = setTimeout(runPg, 600);
+  }
+}
+
+function pgTab(e) {
+  if (e.key==='Tab') { e.preventDefault(); const t=e.target,s=t.selectionStart; t.value=t.value.substring(0,s)+'  '+t.value.substring(t.selectionEnd); t.selectionStart=t.selectionEnd=s+2; onPgChange(); }
+}
+
+function buildDoc() {
+  const h = pg.html.trim().toLowerCase();
+  if (h.includes('<!doctype') || h.includes('<html')) return pg.html;
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${pg.css}</style></head><body>${pg.html}<script>${pg.js}<\/script></html>`;
+}
+
+function runPg() {
+  const doc = buildDoc();
+  const blob = new Blob([doc],{type:'text/html;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const frame = document.getElementById('preview-frame');
+  if (frame._prev) URL.revokeObjectURL(frame._prev);
+  frame._prev = url; frame.src = url;
+}
+
+function dlPg() {
+  const title = document.getElementById('pg-title').value || 'playground';
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([buildDoc()],{type:'text/html'}));
+  a.download = title+'.html'; a.click();
+}
+
+async function savePg() {
+  const title = document.getElementById('pg-title').value || 'Sem título';
+  const s = { id: Date.now(), title, html: pg.html, css: pg.css, js: pg.js, date: new Date().toISOString() };
+
+  // Tentar salvar no Supabase primeiro
+  if (sbClient) {
+    const saved = await sbSaveSnippet({ title, html: pg.html, css: pg.css, js: pg.js });
+    if (saved) { s.sbId = saved.id; }
+  }
+
+  db.snippets.push(s);
+  persist();
+  renderSnippets();
+  alert('Salvo! ✅');
+}
+
+async function loadSnippetsFromSB() {
+  if (!sbClient) return;
+  const data = await sbLoadSnippets();
+  if (data) { db.snippets = data.map(x=>({id:x.id,title:x.title,html:x.html||'',css:x.css||'',js:x.js||'',date:x.created_at})); persist(); }
+}
+
+function loadSnippet(id) {
+  const s = db.snippets.find(x=>x.id==id);
+  if (!s) return;
+  pg.html=s.html||''; pg.css=s.css||''; pg.js=s.js||'';
+  document.getElementById('pg-title').value=s.title;
+  setPgTab('html'); runPg(); toggleSnippets();
+}
+
+function delSnippet(id,e) {
+  e.stopPropagation();
+  db.snippets=db.snippets.filter(x=>x.id!=id);
+  persist(); renderSnippets();
+}
+
+function renderSnippets() {
+  const list = document.getElementById('snippets-list');
+  if (!db.snippets.length) { list.innerHTML='<p style="font-size:12px;color:var(--muted);padding:10px;">Nenhum salvo.</p>'; return; }
+  list.innerHTML = db.snippets.slice().reverse().map(s=>`
+    <div onclick="loadSnippet(${s.id})" style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;cursor:pointer;border-bottom:1px solid var(--border);font-size:12px;" onmouseenter="this.style.background='#1c2128'" onmouseleave="this.style.background=''">
+      <div>
+        <div style="font-weight:500;color:var(--text);">${esc(s.title)}</div>
+        <div style="font-size:10px;color:var(--muted);">${new Date(s.date).toLocaleDateString('pt-BR')}</div>
+      </div>
+      <button onclick="delSnippet(${s.id},event)" style="background:none;color:var(--red);font-size:16px;padding:0 4px;">×</button>
+    </div>`).join('');
+}
+
+let snippetsOpen = false;
+function toggleSnippets() {
+  snippetsOpen = !snippetsOpen;
+  const p = document.getElementById('snippets-panel');
+  p.style.display = snippetsOpen ? 'flex' : 'none';
+  if (snippetsOpen) { renderSnippets(); loadSnippetsFromSB(); }
+}
+
+// ══════════════════════════════════════════════════════
+// SETTINGS
+// ══════════════════════════════════════════════════════
+function saveKey(p) {
+  const v = document.getElementById('key-'+p).value.trim();
+  if (!v) { alert('Digite a chave!'); return; }
+  db.keys[p]=v; persist();
+  document.getElementById('key-'+p).value='';
+  document.getElementById('key-'+p).placeholder='✅ Salva';
+}
+
+function saveSupabase() {
+  const url = document.getElementById('sb-url').value.trim();
+  const key = document.getElementById('sb-key').value.trim();
+  if (!url||!key) { alert('Preencha URL e Key!'); return; }
+  db.sbUrl=url; db.sbKey=key; persist();
+  initSupabase(url, key);
+}
+
+function loadKeysUI() {
+  Object.keys(db.keys).forEach(p => {
+    const el = document.getElementById('key-'+p);
+    if (el) el.placeholder='✅ Configurada';
+  });
+  if (db.sbUrl) document.getElementById('sb-url').value=db.sbUrl;
+}
+
+function exportData() {
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:'application/json'}));
+  a.download=`meuapp-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+}
+
+function importData() {
+  const inp=document.createElement('input'); inp.type='file'; inp.accept='.json';
+  inp.onchange=e=>{
+    const r=new FileReader();
+    r.onload=ev=>{try{if(confirm('Substituir dados atuais?')){db=JSON.parse(ev.target.result);persist();alert('Importado!');}}catch{alert('Arquivo inválido.');}};
+    r.readAsText(e.target.files[0]);
+  };
+  inp.click();
+}
+
+// ══════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════
+setPgTab('html');
+
+// Restaurar histórico do chat
+if (db.chatHistory?.length) {
+  msgs = [...db.chatHistory];
+  msgs.forEach(m => addMsg(m.role==='user'?'user':'assistant', m.content));
+  document.getElementById('mem-lbl').textContent = msgs.length;
+}
+
+// Conectar Supabase se configurado
+if (db.sbUrl && db.sbKey) initSupabase(db.sbUrl, db.sbKey);
+</script>
+</body>
+</html>
