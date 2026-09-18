@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>🔍 Analisador de Projetos</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#0d1117;color:#c9d1d9;min-height:100vh}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#0d1117}::-webkit-scrollbar-thumb{background:#30363d;border-radius:2px}
+
+.header{padding:12px 16px;background:#161b22;border-bottom:1px solid #30363d;display:flex;align-items:center;gap:8px}
+.header h1{font-size:15px;font-weight:700;color:#fff}
+
+.tabs{display:flex;background:#161b22;border-bottom:1px solid #30363d}
+.tab{padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;color:#8b949e;transition:all .15s}
+.tab.active{color:#58a6ff;border-bottom-color:#58a6ff}
+.tab:hover{color:#c9d1d9}
+
+.panel{display:none;padding:14px}
+.panel.active{display:block}
+
+textarea{width:100%;background:#161b22;border:1px solid #30363d;border-radius:8px;color:#c9d1d9;font-family:monospace;font-size:11px;padding:10px;resize:vertical;outline:none;min-height:120px}
+textarea:focus{border-color:#58a6ff}
+
+.btn{padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .15s}
+.btn-blue{background:#1f6feb;color:#fff}.btn-blue:hover{background:#388bfd}
+.btn-green{background:#238636;color:#fff}.btn-green:hover{background:#2ea043}
+.btn-red{background:#da3633;color:#fff}.btn-red:hover{background:#f85149}
+.btn-gray{background:#21262d;color:#c9d1d9;border:1px solid #30363d}.btn-gray:hover{background:#30363d}
+.btn-sm{padding:4px 10px;font-size:11px}
+
+/* CARDS DE RESULTADO */
+.result-area{margin-top:12px;space-y:8px}
+.card{background:#161b22;border:1px solid #30363d;border-radius:10px;margin-bottom:10px;overflow:hidden}
+.card-header{padding:8px 12px;display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+.card-header:hover{background:#21262d}
+.card-title{font-size:12px;font-weight:700;flex:1}
+.card-body{padding:10px 12px;border-top:1px solid #30363d;display:none}
+.card-body.open{display:block}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:6px;font-size:10px;font-weight:700;margin:2px}
+.b-red{background:#da363322;border:1px solid #da363360;color:#f85149}
+.b-yellow{background:#e3b34122;border:1px solid #e3b34160;color:#e3b341}
+.b-green{background:#23863622;border:1px solid #23863660;color:#3fb950}
+.b-blue{background:#1f6feb22;border:1px solid #1f6feb60;color:#58a6ff}
+.b-purple{background:#a371f722;border:1px solid #a371f760;color:#d2a8ff}
+.b-gray{background:#21262d;border:1px solid #30363d;color:#8b949e}
+
+/* PROBLEMAS */
+.prob{display:flex;gap:8px;padding:6px 8px;border-radius:6px;margin-bottom:6px;font-size:11px;line-height:1.5}
+.prob-crit{background:#da363315;border-left:3px solid #da3633}
+.prob-warn{background:#e3b34115;border-left:3px solid #e3b341}
+.prob-info{background:#1f6feb15;border-left:3px solid #1f6feb}
+.prob-ok{background:#23863615;border-left:3px solid #238636}
+.prob-icon{font-size:14px;flex-shrink:0}
+.prob-content b{display:block;font-weight:700;margin-bottom:2px}
+.prob-content code{background:#0d1117;padding:1px 5px;border-radius:4px;font-family:monospace;font-size:10px}
+
+/* TABELA */
+table{width:100%;border-collapse:collapse;font-size:11px}
+th{text-align:left;padding:5px 8px;background:#21262d;color:#8b949e;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.5px}
+td{padding:5px 8px;border-top:1px solid #21262d;vertical-align:top}
+tr:hover td{background:#21262d22}
+
+/* CÓDIGO */
+.code-box{background:#0d1117;border:1px solid #21262d;border-radius:7px;padding:10px;font-family:monospace;font-size:10px;white-space:pre-wrap;word-break:break-all;max-height:300px;overflow-y:auto;line-height:1.6}
+.hl-red{color:#f85149}
+.hl-yellow{color:#e3b341}
+.hl-green{color:#3fb950}
+.hl-blue{color:#58a6ff}
+.hl-purple{color:#d2a8ff}
+
+/* SCORE */
+.score-bar{height:8px;background:#21262d;border-radius:4px;overflow:hidden;margin:6px 0}
+.score-fill{height:100%;border-radius:4px;transition:width .5s}
+
+/* DROP */
+.drop-zone{border:2px dashed #30363d;border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:10px}
+.drop-zone:hover,.drop-zone.over{border-color:#58a6ff;background:#0d1f3a22}
+
+/* SUMÁRIO */
+.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.sum-card{background:#21262d;border-radius:8px;padding:10px;text-align:center}
+.sum-num{font-size:22px;font-weight:700}
+.sum-label{font-size:10px;color:#8b949e;margin-top:2px}
+
+.sep{height:1px;background:#21262d;margin:10px 0}
+.row{display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:11px}
+.row label{color:#8b949e;min-width:120px;flex-shrink:0}
+.row span{color:#c9d1d9}
+
+/* FIX PREVIEW */
+.fix-box{background:#0d2818;border:1px solid #23863640;border-radius:8px;padding:10px;margin-top:8px}
+.fix-title{font-size:11px;font-weight:700;color:#3fb950;margin-bottom:6px}
+
+.toast{position:fixed;bottom:16px;right:16px;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;z-index:9999;transition:opacity .3s;pointer-events:none}
+.t-ok{background:#238636;color:#fff}
+.t-err{background:#da3633;color:#fff}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span style="font-size:20px">🔍</span>
+  <h1>Analisador de Projetos — Detector de Problemas</h1>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('colar')">📋 Colar Arquivo</div>
+  <div class="tab" onclick="showTab('zip')">📦 Importar ZIP</div>
+  <div class="tab" onclick="showTab('resultado')">📊 Resultado</div>
+  <div class="tab" onclick="showTab('corrigido')">✅ Arquivos Corrigidos</div>
+</div>
+
+<!-- ABA COLAR -->
+<div class="panel active" id="tab-colar">
+  <p style="font-size:11px;color:#8b949e;margin-bottom:8px">Cole qualquer arquivo: package.json, app.json, eas.json, tsconfig.json, credentials.json, .jks info, fingerprint, etc.</p>
+  <textarea id="txt-input" placeholder='Cole aqui o conteúdo do arquivo...
+Exemplos aceitos:
+- package.json
+- app.json  
+- eas.json
+- tsconfig.json
+- credentials.json
+- O fingerprint JSON que você colou antes
+- Qualquer texto com configurações' rows="10"></textarea>
+  <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+    <button class="btn btn-blue" onclick="analisar()">🔍 Analisar</button>
+    <button class="btn btn-gray" onclick="document.getElementById('txt-input').value=''">🗑️ Limpar</button>
+    <button class="btn btn-gray" onclick="colarExemplo()">📋 Colar exemplo</button>
+  </div>
+  <div style="margin-top:10px">
+    <p style="font-size:11px;color:#8b949e;margin-bottom:6px">Ou cole múltiplos arquivos de uma vez (separa automaticamente):</p>
+    <textarea id="txt-multi" placeholder="Cole vários arquivos juntos aqui — o analisador separa automaticamente..." rows="6"></textarea>
+    <button class="btn btn-blue btn-sm" style="margin-top:6px" onclick="analisarMulti()">🔍 Analisar Tudo</button>
+  </div>
+</div>
+
+<!-- ABA ZIP -->
+<div class="panel" id="tab-zip">
+  <div class="drop-zone" id="dz" onclick="document.getElementById('fi').click()">
+    <div style="font-size:32px;margin-bottom:8px">📦</div>
+    <div style="font-size:13px;font-weight:700;margin-bottom:4px">Importe o ZIP do projeto</div>
+    <div style="font-size:11px;color:#8b949e">Analisa todos os arquivos de configuração automaticamente</div>
+  </div>
+  <input type="file" id="fi" accept=".zip,.json,.jks,.keystore" style="display:none" onchange="importarArquivo(this)"/>
+  <div id="zip-status" style="display:none" class="prob prob-info"><span class="prob-icon">⏳</span><div class="prob-content"><b id="zip-msg">Processando...</b></div></div>
+</div>
+
+<!-- ABA RESULTADO -->
+<div class="panel" id="tab-resultado">
+  <div id="resultado-vazio" style="text-align:center;padding:40px;color:#8b949e">
+    <div style="font-size:40px;margin-bottom:12px">🔍</div>
+    <div>Cole um arquivo na aba "Colar Arquivo" e clique em Analisar</div>
+  </div>
+  <div id="resultado-content" style="display:none"></div>
+</div>
+
+<!-- ABA CORRIGIDOS -->
+<div class="panel" id="tab-corrigido">
+  <div id="corrigido-vazio" style="text-align:center;padding:40px;color:#8b949e">
+    <div style="font-size:40px;margin-bottom:12px">✅</div>
+    <div>Os arquivos corrigidos aparecerão aqui após a análise</div>
+  </div>
+  <div id="corrigido-content" style="display:none"></div>
+</div>
+
+<div class="toast" id="toast" style="opacity:0"></div>
+
+<script>
+// ══════════════════════════════════════════
+// ESTADO GLOBAL
+// ══════════════════════════════════════════
+let PROJETOS = []; // projetos detectados
+let TODOS_ARQUIVOS = {}; // todos os arquivos do ZIP
+
+// ══════════════════════════════════════════
+// TABS
+// ══════════════════════════════════════════
+function showTab(id){
+  document.querySelectorAll('.tab').forEach((t,i)=>{
+    const ids=['colar','zip','resultado','corrigido'];
+    t.classList.toggle('active', ids[i]===id);
+  });
+  document.querySelectorAll('.panel').forEach((p,i)=>{
+    const ids=['colar','zip','resultado','corrigido'];
+    p.classList.toggle('active', ids[i]===id);
+  });
+}
+
+// ══════════════════════════════════════════
+// ANALISAR TEXTO COLADO
+// ══════════════════════════════════════════
+function analisar(){
+  const txt = document.getElementById('txt-input').value.trim();
+  if(!txt){ toast('Cole algum conteúdo primeiro!','err'); return; }
+  const arquivos = detectarArquivos(txt);
+  processarResultados(arquivos);
+  showTab('resultado');
+}
+
+function analisarMulti(){
+  const txt = document.getElementById('txt-multi').value.trim();
+  if(!txt){ toast('Cole algum conteúdo primeiro!','err'); return; }
+  const arquivos = detectarArquivos(txt);
+  processarResultados(arquivos);
+  showTab('resultado');
+}
+
+// ══════════════════════════════════════════
+// DETECTAR TIPO DE ARQUIVO
+// ══════════════════════════════════════════
+function detectarArquivos(texto){
+  const resultado = [];
+
+  // Tentar separar múltiplos JSONs
+  const blocos = extrairBlocos(texto);
+
+  for(const bloco of blocos){
+    const tipo = identificarTipo(bloco);
+    resultado.push({ tipo, conteudo: bloco, parsed: tentarParse(bloco) });
+  }
+
+  // Se não encontrou blocos JSON, analisar como texto
+  if(resultado.length === 0){
+    resultado.push({ tipo: 'texto', conteudo: texto, parsed: null });
+  }
+
+  return resultado;
+}
+
+function extrairBlocos(texto){
+  const blocos = [];
+  let depth = 0, start = -1, inStr = false, escape = false;
+
+  for(let i=0; i<texto.length; i++){
+    const c = texto[i];
+    if(escape){ escape=false; continue; }
+    if(c==='\\'&&inStr){ escape=true; continue; }
+    if(c==='"'){ inStr=!inStr; continue; }
+    if(inStr) continue;
+    if(c==='{'){ if(depth===0) start=i; depth++; }
+    else if(c==='}'){ depth--; if(depth===0&&start!==-1){ blocos.push(texto.slice(start,i+1)); start=-1; } }
+  }
+
+  // Se não encontrou blocos, retornar o texto inteiro
+  if(blocos.length===0) blocos.push(texto);
+  return blocos;
+}
+
+function tentarParse(txt){
+  try{ return JSON.parse(txt); }catch{ return null; }
+}
+
+function identificarTipo(txt){
+  const p = tentarParse(txt);
+  if(!p) return detectarTipoTexto(txt);
+
+  // app.json
+  if(p.expo) return 'app.json';
+  // eas.json
+  if(p.build && (p.build.preview||p.build.production||p.build.development) && !p.name) return 'eas.json';
+  // credentials.json
+  if(p.android?.keystore || p.keystore) return 'credentials.json';
+  // tsconfig
+  if(p.compilerOptions || p.extends?.includes('tsconfig')) return 'tsconfig.json';
+  // package.json com expo
+  if(p.name && p.dependencies && (p['react-native']||p.dependencies?.expo||p.devDependencies?.expo)) return 'package.json (mobile)';
+  // package.json web/electron
+  if(p.name && (p.dependencies||p.devDependencies) && p.scripts) return 'package.json (web/electron)';
+  // package.json genérico
+  if(p.name && p.version) return 'package.json';
+  // fingerprint
+  if(p.hash && p.sources) return 'fingerprint.json';
+  // metro config
+  if(txt.includes('metro-config')||txt.includes('getDefaultConfig')) return 'metro.config.js';
+  // babel config
+  if(txt.includes('babel-preset-expo')||txt.includes('api.cache')) return 'babel.config.js';
+
+  return 'json (desconhecido)';
+}
+
+function detectarTipoTexto(txt){
+  if(txt.includes('keystorePassword')||txt.includes('keyAlias')) return 'credentials';
+  if(txt.includes('EXPO_TOKEN')||txt.includes('expo_')) return '.env';
+  if(txt.includes('gradlew')||txt.includes('assembleDebug')) return 'script bash';
+  if(txt.includes('runs-on:')||txt.includes('workflow_dispatch')) return 'github actions';
+  return 'texto';
+}
+
+// ══════════════════════════════════════════
+// PROCESSAR E EXIBIR RESULTADOS
+// ══════════════════════════════════════════
+function processarResultados(arquivos){
+  const el = document.getElementById('resultado-content');
+  const vazio = document.getElementById('resultado-vazio');
+  el.style.display='block';
+  vazio.style.display='none';
+
+  let html = '';
+  let totalProblemas = 0;
+  let totalCriticos = 0;
+  const correcoes = [];
+
+  for(const arq of arquivos){
+    const analise = analisarArquivo(arq);
+    totalProblemas += analise.problemas.length;
+    totalCriticos += analise.problemas.filter(p=>p.nivel==='crit').length;
+    html += renderCard(arq, analise);
+    if(analise.correcao) correcoes.push({ tipo: arq.tipo, correcao: analise.correcao });
+  }
+
+  // Sumário no topo
+  const score = Math.max(0, 100 - totalCriticos*20 - (totalProblemas-totalCriticos)*5);
+  const scoreColor = score>=80?'#3fb950':score>=50?'#e3b341':'#f85149';
+
+  const sumario = `
+    <div class="summary-grid">
+      <div class="sum-card">
+        <div class="sum-num" style="color:${scoreColor}">${score}</div>
+        <div class="sum-label">Score de Saúde</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-num" style="color:#f85149">${totalCriticos}</div>
+        <div class="sum-label">Críticos</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-num" style="color:#e3b341">${totalProblemas-totalCriticos}</div>
+        <div class="sum-label">Avisos</div>
+      </div>
+    </div>
+    <div class="score-bar"><div class="score-fill" style="width:${score}%;background:${scoreColor}"></div></div>
+  `;
+
+  el.innerHTML = sumario + html;
+
+  // Gerar arquivos corrigidos
+  if(correcoes.length > 0){
+    renderCorrigidos(correcoes, arquivos);
+  }
+
+  toast(`✅ ${arquivos.length} arquivo(s) analisado(s) — ${totalCriticos} crítico(s)`,'ok');
+}
+
+// ══════════════════════════════════════════
+// ANALISAR ARQUIVO ESPECÍFICO
+// ══════════════════════════════════════════
+function analisarArquivo(arq){
+  const problemas = [];
+  const info = [];
+  let correcao = null;
+  const p = arq.parsed;
+  const txt = arq.conteudo;
+
+  // ── APP.JSON ──
+  if(arq.tipo === 'app.json' && p?.expo){
+    const expo = p.expo;
+
+    // CRÍTICO: origin Replit
+    if(txt.includes('replit.com')){
+      problemas.push({
+        nivel:'crit',
+        titulo:'🔴 Origin do Replit detectado',
+        desc:'O app tenta conectar em replit.com ao abrir. Fora do Replit = tela azul/erro.',
+        codigo: '"origin": "https://replit.com/"',
+        fix: 'Remover o objeto {origin} do plugin expo-router'
+      });
+    }
+
+    // CRÍTICO: reactCompiler
+    if(expo.experiments?.reactCompiler){
+      problemas.push({
+        nivel:'crit',
+        titulo:'🔴 reactCompiler ativado',
+        desc:'Causa crashes em builds de produção. Ainda é experimental.',
+        codigo: '"reactCompiler": true',
+        fix: 'Remover ou definir como false'
+      });
+    }
+
+    // INFO: dados do projeto
+    info.push({label:'Nome', valor: expo.name||'?'});
+    info.push({label:'Slug', valor: expo.slug||'?'});
+    info.push({label:'Versão', valor: expo.version||'?'});
+    info.push({label:'Package Android', valor: expo.android?.package||'?'});
+    info.push({label:'Owner', valor: expo.owner||'❌ não definido'});
+    info.push({label:'ProjectId EAS', valor: expo.extra?.eas?.projectId||'❌ não definido'});
+    info.push({label:'SDK', valor: expo.sdkVersion||'não especificado'});
+
+    // AVISO: sem owner
+    if(!expo.owner){
+      problemas.push({nivel:'warn',titulo:'⚠️ Owner não definido',desc:'Sem owner o EAS não sabe a qual conta pertence.',fix:'Adicionar "owner": "seu-usuario-expo"'});
+    }
+
+    // AVISO: sem projectId
+    if(!expo.extra?.eas?.projectId){
+      problemas.push({nivel:'warn',titulo:'⚠️ ProjectId EAS vazio',desc:'Necessário para builds no EAS Cloud.',fix:'Adicionar o projectId da sua conta expo.dev'});
+    }
+
+    // OK: teclado
+    if(expo.android?.softwareKeyboardLayoutMode==='resize'){
+      problemas.push({nivel:'ok',titulo:'✅ Teclado configurado corretamente',desc:'softwareKeyboardLayoutMode: resize — teclado não vai sumir'});
+    } else {
+      problemas.push({nivel:'warn',titulo:'⚠️ Configuração de teclado ausente',desc:'O teclado pode sumir sobre inputs no Android.',fix:'Adicionar "softwareKeyboardLayoutMode": "resize" em android{}'});
+    }
+
+    // Gerar correção
+    correcao = gerarAppJsonCorrigido(p);
+  }
+
+  // ── PACKAGE.JSON MOBILE ──
+  else if(arq.tipo === 'package.json (mobile)' && p){
+
+    // CRÍTICO: nome @workspace
+    if(p.name?.startsWith('@workspace/')){
+      problemas.push({
+        nivel:'crit',
+        titulo:'🔴 Nome @workspace — dependência do Replit',
+        desc:'Este nome só funciona dentro do monorepo do Replit.',
+        codigo: `"name": "${p.name}"`,
+        fix: `Trocar para: "name": "${p.name.replace('@workspace/','').replace(/[^a-z0-9-]/g,'-')}"`
+      });
+    }
+
+    // CRÍTICO: scripts com variáveis Replit
+    const scriptsTxt = JSON.stringify(p.scripts||{});
+    if(scriptsTxt.includes('REPLIT')||scriptsTxt.includes('$REPL_')){
+      problemas.push({
+        nivel:'crit',
+        titulo:'🔴 Scripts dependem do Replit',
+        desc:'Os scripts usam variáveis de ambiente ($REPLIT_*, $REPL_ID) que só existem no Replit.',
+        codigo: 'EXPO_PACKAGER_PROXY_URL=https://$REPLIT_EXPO_DEV_DOMAIN ...',
+        fix: 'Substituir script "dev" por: "expo start"'
+      });
+    }
+
+    // AVISO: react: "catalog:"
+    if(JSON.stringify(p).includes('"catalog:"')){
+      problemas.push({
+        nivel:'crit',
+        titulo:'🔴 Versão "catalog:" — específico do pnpm workspace',
+        desc:'Esta sintaxe só funciona no monorepo do Replit com pnpm workspaces.',
+        codigo: '"react": "catalog:"',
+        fix: 'Trocar para versão real: "react": "19.0.0"'
+      });
+    }
+
+    // INFO
+    info.push({label:'Nome', valor: p.name||'?'});
+    info.push({label:'Versão', valor: p.version||'?'});
+    info.push({label:'Expo', valor: p.devDependencies?.expo||p.dependencies?.expo||'não encontrado'});
+    info.push({label:'React Native', valor: p.devDependencies?.['react-native']||p.dependencies?.['react-native']||'não encontrado'});
+    info.push({label:'Total deps', valor: Object.keys({...p.dependencies,...p.devDependencies}).length});
+
+    correcao = gerarPackageJsonMobileCorrigido(p);
+  }
+
+  // ── PACKAGE.JSON WEB/ELECTRON ──
+  else if(arq.tipo === 'package.json (web/electron)' && p){
+
+    if(p.name?.startsWith('@workspace/')){
+      problemas.push({nivel:'crit',titulo:'🔴 Nome @workspace',desc:'Dependência do Replit.',codigo:`"name": "${p.name}"`,fix:'Remover @workspace/ do nome'});
+    }
+
+    // Detectar tipo
+    const isElectron = !!(p.dependencies?.electron||p.devDependencies?.electron);
+    const isVite = !!(p.devDependencies?.vite||p.dependencies?.vite);
+    const hasWebcontainer = !!(p.dependencies?.['@webcontainer/api']);
+    const hasMonaco = !!(p.dependencies?.['@monaco-editor/react']);
+
+    info.push({label:'Tipo', valor: isElectron?'Electron Desktop':isVite?'Vite Web':'Node.js'});
+    info.push({label:'Nome', valor: p.name||'?'});
+    info.push({label:'Versão', valor: p.version||'?'});
+    if(isElectron) info.push({label:'Electron', valor: p.devDependencies?.electron||'?'});
+    if(isVite) info.push({label:'Vite', valor: p.devDependencies?.vite||'?'});
+    if(hasWebcontainer) info.push({label:'WebContainer', valor: '✅ presente (terminal real)'});
+    if(hasMonaco) info.push({label:'Monaco Editor', valor: '✅ presente (editor de código)'});
+
+    if(hasWebcontainer){
+      problemas.push({nivel:'info',titulo:'ℹ️ WebContainer API detectada',desc:'Este projeto tem terminal real (npm install, etc). Requer COOP/COEP headers para funcionar.'});
+    }
+
+    problemas.push({nivel:'ok',titulo:'✅ Projeto web/desktop identificado',desc:`${isElectron?'Electron':'Vite'} — pode ser buildado independente do Replit`});
+  }
+
+  // ── EAS.JSON ──
+  else if(arq.tipo === 'eas.json' && p){
+    info.push({label:'CLI mínimo', valor: p.cli?.version||'não definido'});
+    info.push({label:'Perfis', valor: Object.keys(p.build||{}).join(', ')||'nenhum'});
+
+    const preview = p.build?.preview;
+    if(preview){
+      info.push({label:'Tipo build (preview)', valor: preview.android?.buildType||'não definido'});
+      info.push({label:'Distribuição', valor: preview.distribution||'não definido'});
+      info.push({label:'Credenciais', valor: preview.credentialsSource||'remote (padrão)'});
+    }
+
+    if(p.build?.preview?.android?.buildType==='apk'){
+      problemas.push({nivel:'ok',titulo:'✅ Perfil preview gera APK',desc:'Configurado para gerar .apk (instalável direto)'});
+    }
+
+    if(!p.build?.preview){
+      problemas.push({nivel:'warn',titulo:'⚠️ Sem perfil preview',desc:'Sem perfil preview não dá para gerar APK de teste.',fix:'Adicionar perfil preview com buildType: "apk"'});
+    }
+
+    correcao = gerarEasJsonCorrigido(p);
+  }
+
+  // ── CREDENTIALS.JSON ──
+  else if(arq.tipo === 'credentials.json' && p){
+    problemas.push({
+      nivel:'crit',
+      titulo:'🔴 SENHA EXPOSTA no arquivo!',
+      desc:'Este arquivo contém senhas do keystore em texto puro. NUNCA suba para o GitHub!',
+      codigo: JSON.stringify(p.android?.keystore||p.keystore||{},null,2),
+      fix: 'Adicionar credentials.json ao .gitignore'
+    });
+
+    const ks = p.android?.keystore||p.keystore||{};
+    info.push({label:'Keystore', valor: ks.keystorePath||'?'});
+    info.push({label:'Key Alias', valor: ks.keyAlias||'?'});
+    info.push({label:'⚠️ Senha', valor: ks.keystorePassword?'[EXPOSTA - '+ks.keystorePassword.length+' chars]':'não definida'});
+  }
+
+  // ── FINGERPRINT ──
+  else if(arq.tipo === 'fingerprint.json' && p){
+    info.push({label:'Hash do build', valor: p.hash||'?'});
+    info.push({label:'Total de fontes', valor: p.sources?.length||0});
+
+    // Detectar projetos no fingerprint
+    const expoConfig = p.sources?.find(s=>s.id==='expoConfig');
+    if(expoConfig){
+      try{
+        const cfg = JSON.parse(expoConfig.contents||'{}');
+        info.push({label:'App detectado', valor: cfg.name||'?'});
+        info.push({label:'Package', valor: cfg.android?.package||'?'});
+        info.push({label:'Owner', valor: cfg.owner||'?'});
+        info.push({label:'ProjectId', valor: cfg.extra?.eas?.projectId||'?'});
+        info.push({label:'Versão', valor: cfg.version||'?'});
+
+        if(expoConfig.contents?.includes('replit.com')){
+          problemas.push({nivel:'crit',titulo:'🔴 Origin Replit no fingerprint',desc:'O build foi feito com origin do Replit. O APK gerado vai tentar conectar no Replit.',fix:'Corrigir app.json e fazer novo build'});
+        }
+      }catch{}
+    }
+
+    // Detectar scripts Replit
+    const pkgScripts = p.sources?.find(s=>s.id==='packageJson:scripts');
+    if(pkgScripts?.contents?.includes('REPLIT')){
+      problemas.push({nivel:'crit',titulo:'🔴 Scripts Replit no build',desc:'Os scripts de build dependem de variáveis do Replit.',fix:'Corrigir package.json'});
+    }
+
+    // Listar módulos
+    const dirs = p.sources?.filter(s=>s.type==='dir'&&s.filePath?.includes('node_modules'))||[];
+    info.push({label:'Módulos Android', valor: dirs.length+' detectados'});
+
+    problemas.push({nivel:'info',titulo:'ℹ️ Fingerprint é arquivo de cache do EAS',desc:'Não precisa modificar. Serve para identificar o que estava no build.'});
+  }
+
+  // ── TSCONFIG ──
+  else if(arq.tipo === 'tsconfig.json' && p){
+    if(p.references?.some(r=>r.path?.includes('../../'))){
+      problemas.push({
+        nivel:'crit',
+        titulo:'🔴 Referência a pasta externa (../../lib)',
+        desc:'Aponta para pasta que só existe no monorepo do Replit.',
+        codigo: JSON.stringify(p.references,null,2),
+        fix: 'Remover o array "references" completamente'
+      });
+      correcao = gerarTsconfigCorrigido(p);
+    } else {
+      problemas.push({nivel:'ok',titulo:'✅ tsconfig sem referências externas',desc:'Configuração limpa.'});
+    }
+  }
+
+  // ── TEXTO GENÉRICO ──
+  else {
+    const refs = detectarReferenciasReplit(txt);
+    refs.forEach(r=>problemas.push(r));
+    if(refs.length===0){
+      problemas.push({nivel:'ok',titulo:'✅ Nenhuma referência ao Replit detectada',desc:'Arquivo parece limpo.'});
+    }
+  }
+
+  return { problemas, info, correcao };
+}
+
+// ══════════════════════════════════════════
+// DETECTAR REFERÊNCIAS REPLIT
+// ══════════════════════════════════════════
+function detectarReferenciasReplit(txt){
+  const problemas = [];
+  const checks = [
+    {pattern:/replit\.com/gi, nivel:'crit', titulo:'🔴 URL do Replit', desc:'Referência direta ao replit.com'},
+    {pattern:/\$REPLIT_/g, nivel:'crit', titulo:'🔴 Variável $REPLIT_*', desc:'Variável de ambiente específica do Replit'},
+    {pattern:/\$REPL_ID/g, nivel:'crit', titulo:'🔴 Variável $REPL_ID', desc:'ID do Repl — só existe no Replit'},
+    {pattern:/@workspace\//g, nivel:'crit', titulo:'🔴 @workspace/', desc:'Namespace de monorepo do Replit'},
+    {pattern:/"catalog:"/g, nivel:'crit', titulo:'🔴 "catalog:"', desc:'Sintaxe de pnpm workspace do Replit'},
+    {pattern:/@replit\//g, nivel:'warn', titulo:'⚠️ Pacote @replit/', desc:'Pacote específico do Replit'},
+    {pattern:/\.replit/g, nivel:'warn', titulo:'⚠️ Arquivo .replit', desc:'Arquivo de configuração do Replit'},
+  ];
+
+  for(const c of checks){
+    const matches = txt.match(c.pattern);
+    if(matches){
+      problemas.push({
+        nivel: c.nivel,
+        titulo: c.titulo,
+        desc: c.desc + ` (${matches.length}x encontrado)`,
+        fix: 'Remover ou substituir esta referência'
+      });
+    }
+  }
+  return problemas;
+}
+
+// ══════════════════════════════════════════
+// RENDER CARD
+// ══════════════════════════════════════════
+function renderCard(arq, analise){
+  const criticos = analise.problemas.filter(p=>p.nivel==='crit').length;
+  const avisos = analise.problemas.filter(p=>p.nivel==='warn').length;
+  const oks = analise.problemas.filter(p=>p.nivel==='ok').length;
+
+  const statusColor = criticos>0?'#f85149':avisos>0?'#e3b341':'#3fb950';
+  const statusIcon = criticos>0?'🔴':avisos>0?'⚠️':'✅';
+
+  const id = 'card-'+Math.random().toString(36).slice(2,7);
+
+  let html = `
+    <div class="card">
+      <div class="card-header" onclick="toggleCard('${id}')">
+        <span style="font-size:16px">${statusIcon}</span>
+        <div class="card-title">${arq.tipo}</div>
+        <div style="display:flex;gap:4px">
+          ${criticos>0?`<span class="badge b-red">🔴 ${criticos}</span>`:''}
+          ${avisos>0?`<span class="badge b-yellow">⚠️ ${avisos}</span>`:''}
+          ${oks>0?`<span class="badge b-green">✅ ${oks}</span>`:''}
+        </div>
+        <span style="font-size:12px;color:#8b949e;margin-left:4px" id="chv-${id}">▶</span>
+      </div>
+      <div class="card-body" id="${id}">
+  `;
+
+  // Info do projeto
+  if(analise.info.length > 0){
+    html += '<div style="margin-bottom:10px">';
+    for(const i of analise.info){
+      html += `<div class="row"><label>${i.label}:</label><span>${eh(String(i.valor))}</span></div>`;
+    }
+    html += '</div><div class="sep"></div>';
+  }
+
+  // Problemas
+  html += '<div style="margin-top:8px">';
+  for(const prob of analise.problemas){
+    const cls = prob.nivel==='crit'?'prob-crit':prob.nivel==='warn'?'prob-warn':prob.nivel==='ok'?'prob-ok':'prob-info';
+    html += `<div class="prob ${cls}">
+      <div class="prob-icon">${prob.nivel==='crit'?'🔴':prob.nivel==='warn'?'⚠️':prob.nivel==='ok'?'✅':'ℹ️'}</div>
+      <div class="prob-content">
+        <b>${eh(prob.titulo)}</b>
+        ${eh(prob.desc)}
+        ${prob.codigo?`<br><code>${eh(prob.codigo.slice(0,100))}${prob.codigo.length>100?'...':''}</code>`:''}
+        ${prob.fix?`<br><span style="color:#3fb950">💡 Fix: ${eh(prob.fix)}</span>`:''}
+      </div>
+    </div>`;
+  }
+  html += '</div>';
+
+  // Preview da correção
+  if(analise.correcao){
+    html += `<div class="fix-box">
+      <div class="fix-title">✅ Versão corrigida disponível na aba "Arquivos Corrigidos"</div>
+    </div>`;
+  }
+
+  html += '</div></div>';
+  return html;
+}
+
+function toggleCard(id){
+  const b=document.getElementById(id);
+  const c=document.getElementById('chv-'+id);
+  const open=b.classList.toggle('open');
+  c.textContent=open?'▼':'▶';
+}
+
+// ══════════════════════════════════════════
+// RENDER CORRIGIDOS
+// ══════════════════════════════════════════
+function renderCorrigidos(correcoes, arquivos){
+  const el = document.getElementById('corrigido-content');
+  const vazio = document.getElementById('corrigido-vazio');
+  el.style.display='block';
+  vazio.style.display='none';
+
+  let html = `<p style="font-size:11px;color:#8b949e;margin-bottom:12px">
+    Substitua estes arquivos no seu projeto. Todas as referências ao Replit foram removidas.
+  </p>`;
+
+  for(const c of correcoes){
+    if(!c.correcao) continue;
+    const id='fix-'+Math.random().toString(36).slice(2,6);
+    const conteudo = typeof c.correcao==='string'?c.correcao:JSON.stringify(c.correcao,null,2);
+    html += `
+      <div class="card" style="margin-bottom:10px">
+        <div class="card-header" onclick="toggleCard('${id}')">
+          <span>✅</span>
+          <div class="card-title">${c.tipo} — CORRIGIDO</div>
+          <button class="btn btn-green btn-sm" onclick="event.stopPropagation();copiar('${id}-code')">📋 Copiar</button>
+          <button class="btn btn-blue btn-sm" onclick="event.stopPropagation();baixarArquivo('${c.tipo}','${id}-code')">⬇️ Baixar</button>
+          <span style="font-size:12px;color:#8b949e" id="chv-${id}">▶</span>
+        </div>
+        <div class="card-body" id="${id}">
+          <div class="code-box" id="${id}-code">${eh(conteudo)}</div>
+        </div>
+      </div>`;
+  }
+
+  // Botão baixar tudo
+  html += `
+    <button class="btn btn-green" style="width:100%;margin-top:8px" onclick="baixarTodosCorrigidos()">
+      ⬇️ Baixar todos os arquivos corrigidos (.zip)
+    </button>`;
+
+  el.innerHTML = html;
+
+  // Guardar correcoes globalmente
+  window._correcoes = correcoes;
+}
+
+// ══════════════════════════════════════════
+// GERADORES DE ARQUIVOS CORRIGIDOS
+// ══════════════════════════════════════════
+function gerarAppJsonCorrigido(p){
+  const expo = p.expo;
+  const plugins = (expo.plugins||[]).map(plugin=>{
+    if(Array.isArray(plugin) && plugin[0]==='expo-router'){
+      return 'expo-router'; // Remove o objeto {origin}
+    }
+    return plugin;
+  });
+
+  return {
+    expo: {
+      name: expo.name,
+      slug: expo.slug,
+      version: expo.version,
+      orientation: expo.orientation||'portrait',
+      icon: expo.icon,
+      scheme: expo.scheme,
+      userInterfaceStyle: expo.userInterfaceStyle||'dark',
+      newArchEnabled: expo.newArchEnabled||true,
+      splash: expo.splash,
+      ios: expo.ios,
+      android: {
+        ...expo.android,
+        softwareKeyboardLayoutMode: 'resize',
+      },
+      web: expo.web,
+      plugins: plugins,
+      experiments: {
+        typedRoutes: true,
+        // reactCompiler REMOVIDO
+      },
+      extra: expo.extra,
+      owner: expo.owner,
+    }
+  };
+}
+
+function gerarPackageJsonMobileCorrigido(p){
+  const nome = (p.name||'meu-app').replace('@workspace/','').replace(/[^a-z0-9-]/g,'-');
+  const deps = {};
+  const devDeps = {};
+
+  // Limpar deps
+  for(const[k,v]of Object.entries(p.dependencies||{})){
+    if(!k.startsWith('@replit/')&&!k.startsWith('@workspace/')) deps[k]=v;
+  }
+  for(const[k,v]of Object.entries(p.devDependencies||{})){
+    if(!k.startsWith('@replit/')&&!k.startsWith('@workspace/')){
+      // Corrigir "catalog:"
+      const versao = v==='catalog:'?'*':v;
+      devDeps[k]=versao;
+    }
+  }
+
+  // Corrigir react/react-dom se "catalog:"
+  if(devDeps.react==='*') devDeps.react='19.0.0';
+  if(devDeps['react-dom']==='*') devDeps['react-dom']='19.0.0';
+
+  return {
+    name: nome,
+    version: p.version||'1.0.0',
+    private: true,
+    main: 'expo-router/entry',
+    scripts: {
+      start: 'expo start',
+      'start:tunnel': 'expo start --tunnel',
+      android: 'expo run:android',
+      'build:apk': 'eas build --platform android --profile preview',
+      typecheck: 'tsc -p tsconfig.json --noEmit',
+    },
+    devDependencies: devDeps,
+    dependencies: deps,
+  };
+}
+
+function gerarEasJsonCorrigido(p){
+  return {
+    cli: { version: '>= 12.0.0', appVersionSource: 'local' },
+    build: {
+      preview: {
+        distribution: 'internal',
+        credentialsSource: p.build?.preview?.credentialsSource||'remote',
+        android: {
+          buildType: 'apk',
+          gradleCommand: ':app:assembleRelease',
+          resourceClass: 'medium',
+        },
+        node: '20.18.0',
+        cache: { disabled: false },
+        env: {},
+      },
+      development: {
+        distribution: 'internal',
+        android: { buildType: 'apk', resourceClass: 'medium' },
+        node: '20.18.0',
+      },
+      production: {
+        android: { buildType: 'app-bundle', resourceClass: 'medium' },
+        node: '20.18.0',
+      },
+    },
+    submit: { production: {} },
+  };
+}
+
+function gerarTsconfigCorrigido(p){
+  const corrigido = {...p};
+  delete corrigido.references; // Remove referências externas
+  return corrigido;
+}
+
+// ══════════════════════════════════════════
+// IMPORTAR ZIP
+// ══════════════════════════════════════════
+async function importarArquivo(inp){
+  const f = inp.files[0]; if(!f) return;
+  const st = document.getElementById('zip-status');
+  const msg = document.getElementById('zip-msg');
+  st.style.display='flex';
+
+  if(f.name.endsWith('.zip')){
+    try{
+      msg.textContent='Carregando JSZip...';
+      const JSZ = await loadJSZ();
+      msg.textContent='Lendo ZIP...';
+      const zip = await JSZ.loadAsync(await f.arrayBuffer());
+      const arquivosParaAnalisar = [];
+      const configFiles = ['package.json','app.json','eas.json','tsconfig.json','credentials.json','babel.config.js','metro.config.js','.env','.env.example'];
+
+      for(const [path, entry] of Object.entries(zip.files)){
+        if(entry.dir) continue;
+        const nome = path.split('/').pop();
+        if(configFiles.includes(nome) && !path.includes('node_modules')){
+          const txt = await entry.async('text').catch(()=>'');
+          arquivosParaAnalisar.push({ tipo: identificarTipo(txt)||nome, conteudo: txt, parsed: tentarParse(txt), path });
+          msg.textContent=`Analisando: ${path}`;
+        }
+      }
+
+      if(arquivosParaAnalisar.length===0){
+        msg.textContent='Nenhum arquivo de configuração encontrado no ZIP';
+        return;
+      }
+
+      msg.textContent=`${arquivosParaAnalisar.length} arquivos encontrados!`;
+      processarResultados(arquivosParaAnalisar);
+      showTab('resultado');
+    }catch(e){
+      msg.textContent='Erro: '+e.message;
+    }
+  } else {
+    // Arquivo único
+    const txt = await f.text().catch(()=>'');
+    const arquivos = detectarArquivos(txt);
+    processarResultados(arquivos);
+    showTab('resultado');
+  }
+  inp.value='';
+}
+
+// ══════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════
+function copiar(id){
+  const el=document.getElementById(id);
+  navigator.clipboard.writeText(el.textContent||el.innerText).then(()=>toast('✅ Copiado!','ok'));
+}
+
+function baixarArquivo(tipo, codeId){
+  const conteudo = document.getElementById(codeId).textContent||'';
+  const nome = tipo.replace(' — CORRIGIDO','').replace(' (mobile)','').replace(' (web/electron)','');
+  const blob = new Blob([conteudo],{type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download=nome; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+async function baixarTodosCorrigidos(){
+  if(!window._correcoes||window._correcoes.length===0){ toast('Nenhuma correção disponível','err'); return; }
+  try{
+    const JSZ = await loadJSZ();
+    const zip = new JSZ();
+    for(const c of window._correcoes){
+      if(!c.correcao) continue;
+      const conteudo = typeof c.correcao==='string'?c.correcao:JSON.stringify(c.correcao,null,2);
+      const nome = c.tipo.replace(' (mobile)','').replace(' (web/electron)','');
+      zip.file(nome, conteudo);
+    }
+    // Adicionar .gitignore com credentials
+    zip.file('.gitignore-additions.txt','# Adicione ao seu .gitignore:\ncredentials.json\n.env\n*.keystore\n*.jks\n');
+    const blob = await zip.generateAsync({type:'blob'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href=url; a.download='arquivos-corrigidos.zip'; a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    toast('✅ ZIP baixado!','ok');
+  }catch(e){ toast('Erro: '+e.message,'err'); }
+}
+
+function colarExemplo(){
+  document.getElementById('txt-input').value=`{
+  "expo": {
+    "name": "Meu App",
+    "slug": "meu-app",
+    "version": "1.0.0",
+    "plugins": [
+      ["expo-router", {"origin": "https://replit.com/"}],
+      "expo-font"
+    ],
+    "experiments": {"reactCompiler": true},
+    "android": {"package": "com.meuapp.test"},
+    "extra": {"eas": {"projectId": ""}}
+  }
+}`;
+  toast('Exemplo colado!','ok');
+}
+
+function eh(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function toast(msg,tipo){
+  const el=document.getElementById('toast');
+  el.textContent=msg;
+  el.className='toast '+(tipo==='ok'?'t-ok':'t-err');
+  el.style.opacity='1';
+  clearTimeout(el._t);
+  el._t=setTimeout(()=>el.style.opacity='0',2500);
+}
+
+function loadJSZ(){
+  return new Promise((res,rej)=>{
+    if(window.JSZip){res(window.JSZip);return;}
+    const s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+    s.onload=()=>res(window.JSZip);
+    s.onerror=()=>rej(new Error('JSZip não carregou'));
+    document.head.appendChild(s);
+  });
+}
+
+// Drag & drop no ZIP
+const dz=document.getElementById('dz');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
+dz.addEventListener('drop',e=>{
+  e.preventDefault();dz.classList.remove('over');
+  const f=e.dataTransfer.files[0]; if(!f) return;
+  const inp=document.getElementById('fi');
+  const dt=new DataTransfer();dt.items.add(f);inp.files=dt.files;
+  importarArquivo(inp);
+});
+
+// Auto-analisar os exemplos da conversa
+window.onload = ()=>{
+  // Pré-carregar os arquivos que você já colou
+  document.getElementById('txt-multi').value = `{"name":"@workspace/sk-editor","version":"1.0.0","type":"module","scripts":{"dev":"vite --host 0.0.0.0"},"dependencies":{"@webcontainer/api":"^1.6.4","express":"^5.2.1","jszip":"^3.10.1"}}
+
+{"expo":{"name":"APK Builder","slug":"apk","version":"2.0.0","plugins":[["expo-router",{"origin":"https://replit.com/"}],"expo-font"],"experiments":{"typedRoutes":true,"reactCompiler":true},"android":{"package":"com.sktools.apkbuilder","softwareKeyboardLayoutMode":"resize"},"extra":{"eas":{"projectId":"4ecb0863-1738-4d4e-b693-185e905fc234"}},"owner":"maikons-individual-orga"}}
+
+{"name":"@workspace/habit-tracker","version":"0.0.0","main":"expo-router/entry","scripts":{"dev":"EXPO_PACKAGER_PROXY_URL=https://$REPLIT_EXPO_DEV_DOMAIN pnpm exec expo start --localhost --port $PORT"},"devDependencies":{"expo":"~54.0.27","react":"catalog:","react-native":"0.81.5"}}`;
+};
+</script>
+</body>
+</html>
