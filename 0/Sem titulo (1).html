@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerador de Estrutura - CORRIGIDO</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    
+    .panel {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    
+    h1 {
+      grid-column: 1 / -1;
+      text-align: center;
+      color: white;
+      margin-bottom: 20px;
+      font-size: 2.5em;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    h2 {
+      color: #667eea;
+      margin-bottom: 15px;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 10px;
+    }
+    
+    .upload-area {
+      border: 3px dashed #667eea;
+      border-radius: 8px;
+      padding: 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: #f8f9ff;
+    }
+    
+    .upload-area:hover {
+      background: #f0f2ff;
+      border-color: #764ba2;
+    }
+    
+    .upload-area.active {
+      background: #e8ebff;
+      border-color: #764ba2;
+    }
+    
+    input[type="file"] {
+      display: none;
+    }
+    
+    .tree-container {
+      background: #1e1e1e;
+      border: 1px solid #333;
+      border-radius: 5px;
+      padding: 15px;
+      max-height: 500px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      color: #00ff00;
+    }
+    
+    .tree-line {
+      padding: 2px 0;
+      word-break: break-all;
+    }
+    
+    .commands-container {
+      background: #1e1e1e;
+      border: 1px solid #333;
+      border-radius: 5px;
+      padding: 15px;
+      max-height: 500px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      line-height: 1.8;
+      color: #00ff00;
+    }
+    
+    .command {
+      margin: 10px 0;
+      padding: 10px;
+      background: #0d0d0d;
+      border-left: 3px solid #00ff00;
+      border-radius: 3px;
+      word-break: break-all;
+    }
+    
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      transition: all 0.3s;
+      margin: 10px 5px 10px 0;
+    }
+    
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+    
+    .info-box {
+      background: #e8f5e9;
+      border-left: 4px solid #4caf50;
+      padding: 12px;
+      border-radius: 3px;
+      margin: 10px 0;
+      font-size: 13px;
+      color: #2e7d32;
+    }
+    
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 15px 0;
+    }
+    
+    .stat-box {
+      background: #f0f2ff;
+      padding: 12px;
+      border-radius: 5px;
+      text-align: center;
+      border: 1px solid #667eea;
+    }
+    
+    .stat-number {
+      font-size: 24px;
+      font-weight: bold;
+      color: #667eea;
+    }
+    
+    .stat-label {
+      font-size: 12px;
+      color: #666;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🗺️ Gerador de Estrutura - CORRIGIDO</h1>
+
+<div class="container">
+  <!-- PAINEL 1: UPLOAD -->
+  <div class="panel">
+    <h2>📤 Importar ZIP</h2>
+    
+    <div class="upload-area" id="upload-area" onclick="document.getElementById('file-input').click()">
+      <div style="font-size: 40px; margin-bottom: 10px;">📦</div>
+      <p><strong>Clique ou arraste um ZIP aqui</strong></p>
+      <p style="font-size: 12px; color: #999; margin-top: 5px;">Suporta: .zip</p>
+    </div>
+    
+    <input type="file" id="file-input" accept=".zip" onchange="handleZip(event)">
+    
+    <div id="stats" class="stats" style="display: none;">
+      <div class="stat-box">
+        <div class="stat-number" id="stat-files">0</div>
+        <div class="stat-label">Arquivos</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number" id="stat-folders">0</div>
+        <div class="stat-label">Pastas</div>
+      </div>
+    </div>
+    
+    <div class="info-box" id="info" style="display: none;">
+      ✅ ZIP importado com sucesso!
+    </div>
+  </div>
+
+  <!-- PAINEL 2: ÁRVORE -->
+  <div class="panel">
+    <h2>🌳 Estrutura Completa</h2>
+    <div class="tree-container" id="tree">
+      <p style="color: #999; text-align: center; padding: 20px;">Importe um ZIP para ver a estrutura</p>
+    </div>
+  </div>
+
+  <!-- PAINEL 3: COMANDOS -->
+  <div class="panel">
+    <h2>⌨️ Comandos para Terminal</h2>
+    <div class="commands-container" id="commands">
+      <p style="color: #999; text-align: center; padding: 20px;">Importe um ZIP para gerar comandos</p>
+    </div>
+    <button onclick="copiarComandos()">📋 Copiar Comandos</button>
+  </div>
+
+  <!-- PAINEL 4: INFO -->
+  <div class="panel">
+    <h2>📖 Como Usar</h2>
+    <p>1. Clique na área e selecione um ZIP</p>
+    <p>2. Veja a estrutura aparecer</p>
+    <p>3. Clique em "Copiar Comandos"</p>
+    <p>4. Abra o terminal e cole</p>
+    <p>5. Pressione Enter</p>
+    <p>6. Pronto! Estrutura criada!</p>
+    <div class="info-box" style="margin-top: 20px;">
+      <strong>💡 Dica:</strong> Os comandos funcionam no Windows, Mac e Linux!
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SCRIPTS -->
+<!-- ============================================ -->
+
+<script>
+let allFiles = [];
+let allFolders = [];
+
+// DRAG & DROP
+const uploadArea = document.getElementById('upload-area');
+
+uploadArea.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  uploadArea.classList.add('active');
+});
+
+uploadArea.addEventListener('dragleave', () => {
+  uploadArea.classList.remove('active');
+});
+
+uploadArea.addEventListener('drop', (e) => {
+  e.preventDefault();
+  uploadArea.classList.remove('active');
+  const files = e.dataTransfer.files;
+  if (files.length > 0) {
+    document.getElementById('file-input').files = files;
+    handleZip({ target: { files: files } });
+  }
+});
+
+// PROCESSAR ZIP
+async function handleZip(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  try {
+    const zip = await JSZip.loadAsync(file);
+    allFiles = [];
+    allFolders = new Set();
+    
+    console.log('=== PROCESSANDO ZIP ===');
+    
+    // Extrair TUDO
+    for (const [path, obj] of Object.entries(zip.files)) {
+      console.log('Encontrado:', path, '| Dir:', obj.dir);
+      
+      if (obj.dir) {
+        // É uma pasta
+        allFolders.add(path.replace(/\/$/, ''));
+      } else {
+        // É um arquivo
+        allFiles.push(path);
+        
+        // Adicionar todas as pastas pai
+        const partes = path.split('/');
+        for (let i = 1; i < partes.length; i++) {
+          const pasta = partes.slice(0, i).join('/');
+          allFolders.add(pasta);
+        }
+      }
+    }
+    
+    console.log('Total de arquivos:', allFiles.length);
+    console.log('Total de pastas:', allFolders.size);
+    
+    // Mostrar resultado
+    mostrarResultado();
+    
+  } catch (err) {
+    alert('❌ Erro: ' + err.message);
+    console.error(err);
+  }
+}
+
+// MOSTRAR RESULTADO
+function mostrarResultado() {
+  // Stats
+  document.getElementById('stats').style.display = 'grid';
+  document.getElementById('stat-files').textContent = allFiles.length;
+  document.getElementById('stat-folders').textContent = allFolders.size;
+  document.getElementById('info').style.display = 'block';
+  
+  // Árvore
+  renderizarArvore();
+  
+  // Comandos
+  gerarComandos();
+}
+
+// RENDERIZAR ÁRVORE
+function renderizarArvore() {
+  const tree = document.getElementById('tree');
+  let html = '';
+  
+  // Combinar arquivos e pastas
+  const tudo = new Set([...allFiles, ...allFolders]);
+  const sorted = Array.from(tudo).sort();
+  
+  // Construir estrutura em árvore
+  const estrutura = {};
+  
+  for (const item of sorted) {
+    const partes = item.split('/');
+    let atual = estrutura;
+    
+    for (let i = 0; i < partes.length; i++) {
+      const parte = partes[i];
+      if (!atual[parte]) {
+        atual[parte] = {
+          _isFile: i === partes.length - 1 && allFiles.includes(item),
+          _path: partes.slice(0, i + 1).join('/')
+        };
+      }
+      atual = atual[parte];
+    }
+  }
+  
+  // Renderizar
+  html = renderizarNode(estrutura, 0);
+  
+  tree.innerHTML = html || '<p style="color: #999;">Nenhum arquivo encontrado</p>';
+}
+
+function renderizarNode(obj, level) {
+  let html = '';
+  const keys = Object.keys(obj).filter(k => !k.startsWith('_')).sort();
+  
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
+    const value = obj[key];
+    const isFile = value._isFile;
+    const isLast = i === keys.length - 1;
+    
+    const prefix = isLast ? '└── ' : '├── ';
+    const indent = '│   '.repeat(level);
+    const icon = isFile ? '📄' : '📁';
+    
+    html += `<div class="tree-line">${indent}${prefix}${icon} ${key}</div>`;
+    
+    if (!isFile && Object.keys(value).some(k => !k.startsWith('_'))) {
+      html += renderizarNode(value, level + 1);
+    }
+  }
+  
+  return html;
+}
+
+// GERAR COMANDOS
+function gerarComandos() {
+  const nomeProjeto = 'meu-projeto';
+  const pastas = Array.from(allFolders).sort();
+  
+  let cmd = '';
+  
+  // Comando 1: Criar pasta principal
+  cmd += `<div class="command">mkdir ${nomeProjeto}</div>`;
+  
+  // Comando 2: Entrar na pasta
+  cmd += `<div class="command">cd ${nomeProjeto}</div>`;
+  
+  // Comando 3: Criar todas as pastas
+  if (pastas.length > 0) {
+    cmd += `<div class="command">mkdir -p ${pastas.map(p => p.replace(/\//g, '/')).join(' ')}</div>`;
+  }
+  
+  // Alternativa: Um comando só (Mac/Linux)
+  if (pastas.length > 0) {
+    const pastasUnificadas = pastas
+      .map(p => p.split('/').join('/'))
+      .filter((p, i, arr) => arr.indexOf(p) === i)
+      .join(' ');
+    
+    cmd += `<div class="command">mkdir -p ${nomeProjeto}/{${pastasUnificadas.replace(/\//g, '/')}}</div>`;
+  }
+  
+  document.getElementById('commands').innerHTML = cmd;
+}
+
+// COPIAR COMANDOS
+function copiarComandos() {
+  const html = document.getElementById('commands').innerHTML;
+  const texto = html
+    .replace(/<div class="command">/g, '')
+    .replace(/<\/div>/g, '\n')
+    .trim();
+  
+  navigator.clipboard.writeText(texto).then(() => {
+    alert('✅ Comandos copiados!\n\nAbra o terminal e cole com Ctrl+V (ou Cmd+V no Mac)');
+  }).catch(() => {
+    alert('❌ Erro ao copiar. Copie manualmente os comandos acima.');
+  });
+}
+</script>
+
+</body>
+</html>
