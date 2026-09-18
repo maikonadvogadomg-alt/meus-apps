@@ -1,0 +1,756 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><style></style></head><body># ⚡ Iara Suite PRO
+
+**Ferramenta profissional para desenvolvimento web com IA integrada**
+
+Desenvolvida por: **Dr. Maikon Caldeira** (OAB/MG 183712)
+
+---
+
+## 📋 Índice
+
+- [Características](#características)
+- [Instalação](#instalação)
+- [Como Usar](#como-usar)
+- [Estrutura](#estrutura)
+- [Módulos](#módulos)
+- [Atalhos](#atalhos)
+- [API](#api)
+- [Troubleshooting](#troubleshooting)
+
+---
+
+## ✨ Características
+
+### 🎨 Editor Completo
+- ✅ Edição de código em tempo real
+- ✅ Números de linha
+- ✅ Sincronização de scroll
+- ✅ Atalhos de teclado
+- ✅ Suporte a múltiplos idiomas
+
+### 👁️ Preview ao Vivo
+- ✅ Preview instantâneo (HTML/CSS/JS)
+- ✅ 3 modos: off / split / full
+- ✅ Minimizar/expandir
+- ✅ Redimensionável
+
+### 🤖 IA Integrada
+- ✅ Auto-detecção de chaves
+- ✅ Suporte múltiplos provedores:
+  - 🟠 Anthropic (Claude)
+  - 🔵 Google (Gemini)
+  - 🟢 OpenAI-Compat (GPT, Groq, etc)
+- ✅ Chat interativo
+- ✅ Análise de código
+
+### 🗺️ Mapa de Projeto
+- ✅ Análise de ZIP
+- ✅ Detectar dependências
+- ✅ Mapear APIs
+- ✅ Identificar problemas
+- ✅ Gerar relatórios
+
+### 📤 Exportação
+- ✅ ZIP
+- ✅ Scripts Bash/PowerShell
+- ✅ Dockerfile
+- ✅ .gitignore
+- ✅ README.md
+- ✅ Relatórios Markdown
+
+### 📱 Mobile-First
+- ✅ Responsivo
+- ✅ Toque otimizado
+- ✅ Abas que fecham/abrem
+- ✅ Preview redimensionável
+
+---
+
+## 🚀 Instalação
+
+### Opção 1: Arquivo Local
+```bash
+# 1. Clone ou baixe os arquivos
+git clone https://github.com/seu-repo/iara-pro.git
+cd iara-pro
+
+# 2. Abra no navegador
+# Windows: start index.html
+# Mac: open index.html
+# Linux: xdg-open index.html
+```
+
+### Opção 2: Servidor Local
+```bash
+# Python 3
+python -m http.server 8000
+
+# Node.js
+npx http-server
+
+# PHP
+php -S localhost:8000
+```
+
+Acesse: `http://localhost:8000`
+
+### Opção 3: Deploy Online
+```bash
+# Vercel
+vercel
+
+# Netlify
+netlify deploy
+
+# GitHub Pages
+git push origin main
+```
+
+---
+
+## 📖 Como Usar
+
+### 1️⃣ Criar Novo Arquivo
+
+```
+1. Clique em "📁 Arquivos"
+2. Digite o nome: "index.html"
+3. Clique em "+"
+4. Arquivo aparece na árvore
+```
+
+**Nomes válidos:**
+- `index.html`
+- `src/app.js`
+- `styles/main.css`
+- `pasta/subfolder/arquivo.txt`
+
+### 2️⃣ Editar Código
+
+```
+1. Clique no arquivo na árvore
+2. Edite no editor central
+3. Pressione Ctrl+S para salvar
+4. Mudanças são salvas automaticamente
+```
+
+**Atalhos:**
+- `Ctrl+S` / `Cmd+S` → Salvar
+- `Tab` → Indentar
+- `Ctrl+Enter` / `Cmd+Enter` → Enviar para IA
+
+### 3️⃣ Preview ao Vivo
+
+```
+1. Clique em "💻 Código"
+2. Selecione um arquivo HTML
+3. Clique em "⚡" (split) ou "🔲" (full)
+4. Veja as mudanças em tempo real
+```
+
+**Modos:**
+- `⊗` → Desativar preview
+- `⚡` → Split (editor + preview)
+- `🔲` → Full (apenas preview)
+
+**Redimensionar:**
+- Arraste a linha entre editor e preview
+
+### 4️⃣ Usar IA
+
+```
+1. Clique em "🔑" no header
+2. Cole sua chave API
+3. Clique em "💻 Código"
+4. Digite sua pergunta no painel IA (direita)
+5. Clique "Enviar ↵" ou Ctrl+Enter
+```
+
+**Chaves suportadas:**
+- `sk-ant-...` → Anthropic
+- `AIza...` → Google Gemini
+- `sk-or-...` → OpenRouter
+- `gsk_...` → Groq
+- `xai-...` → X.AI (Grok)
+- `ap-...` → Mistral
+- `ds-...` → DeepSeek
+- `sk-...` → OpenAI
+
+### 5️⃣ Analisar Projeto
+
+```
+1. Clique em "🗺️ Mapa"
+2. Carregue um arquivo ZIP
+3. Aguarde análise
+4. Veja:
+   - 📦 Dependências
+   - 🌐 APIs/Endpoints
+   - ⚠️ Problemas
+5. Clique "⬇ Markdown" para relatório
+```
+
+### 6️⃣ Exportar
+
+```
+1. Clique em "📤" no header
+2. Escolha formato:
+   - 1 = ZIP (todos os arquivos)
+   - 2 = Bate (script de estrutura)
+   - 3 = Dockerfile
+   - 4 = README
+3. Arquivo é baixado
+```
+
+---
+
+## 📁 Estrutura
+
+```
+iara-pro/
+│
+├── 📄 index.html              ← ABRA AQUI
+│
+├── 📁 core/                   (Núcleo)
+│   ├── app.js                 (Inicialização)
+│   ├── state.js               (Estado global)
+│   ├── storage.js             (Persistência)
+│   └── utils.js               (Funções básicas)
+│
+├── 📁 styles/                 (CSS)
+│   ├── theme.css              (Tema + componentes)
+│   └── responsive.css         (Mobile)
+│
+└── 📁 modules/                (Funcionalidades)
+    ├── sidebar/               (Árvore de arquivos)
+    ├── editor/                (Editor de código)
+    ├── preview/               (Preview ao vivo)
+    ├── ai/                    (IA integrada)
+    ├── mapper/                (Análise de projetos)
+    ├── context-menu/          (Menu de contexto)
+    ├── tabs/                  (Sistema de abas)
+    ├── guide/                 (Guia)
+    └── export/                (Exportação)
+```
+
+---
+
+## 🧩 Módulos
+
+### `core/utils.js`
+Funções auxiliares globais
+- `qs()` - querySelector
+- `qsa()` - querySelectorAll
+- `ls()` / `lsSet()` - localStorage
+- `toast()` - notificações
+- `dlBlob()` - download
+- `FICON()` - ícones por tipo
+
+### `core/state.js`
+Estado global da aplicação
+- `State.files` - arquivos abertos
+- `State.currentFile` - arquivo ativo
+- `State.aiHistory` - histórico IA
+- `State.slots` - chaves API
+
+### `core/storage.js`
+Persistência de dados
+- `Storage.createFile()`
+- `Storage.openFile()`
+- `Storage.saveFile()`
+- `Storage.deleteFile()`
+- `Storage.renameFile()`
+- `Storage.duplicateFile()`
+
+### `modules/sidebar/sidebar.js`
+Árvore de arquivos
+- Criar/editar/deletar
+- Menu de contexto
+- Renderização dinâmica
+
+### `modules/editor/editor.js`
+Editor de código
+- Números de linha
+- Sincronização de scroll
+- Atalhos de teclado
+- Renomear arquivos
+
+### `modules/preview/preview.js`
+Preview ao vivo
+- 3 modos (off/split/full)
+- Minimizar/expandir
+- Redimensionável
+
+### `modules/ai/ai.js`
+IA integrada
+- Chat interativo
+- Auto-detecção de chaves
+- Múltiplos provedores
+
+### `modules/mapper/mapper.js`
+Análise de projetos
+- Detectar dependências
+- Mapear APIs
+- Identificar problemas
+- Gerar relatórios
+
+---
+
+## ⌨️ Atalhos
+
+| Atalho | Ação |
+|--------|------|
+| `Ctrl+S` | Salvar arquivo |
+| `Tab` | Indentar |
+| `Ctrl+Enter` | Enviar para IA |
+| `Escape` | Fechar modal |
+| `Click direito` | Menu de contexto |
+
+---
+
+## 🔌 API
+
+### State
+
+```javascript
+// Acessar estado
+State.files              // { 'arquivo.js': 'conteúdo' }
+State.currentFile        // 'arquivo.js'
+State.aiHistory          // [ {role, content} ]
+
+// Modificar estado
+State.files['novo.js'] = 'console.log("oi")';
+State.save();            // Salvar localStorage
+State.saveSlots();       // Salvar chaves
+```
+
+### Storage
+
+```javascript
+// Criar arquivo
+Storage.createFile('index.html');
+
+// Abrir arquivo
+const content = Storage.openFile('index.html');
+
+// Salvar
+Storage.saveFile();
+
+// Deletar
+Storage.deleteFile('index.html');
+
+// Renomear
+Storage.renameFile('old.js', 'new.js');
+
+// Duplicar
+Storage.duplicateFile('original.js');
+```
+
+### Modules
+
+```javascript
+// Sidebar
+SidebarModule.render();
+SidebarModule.openFile('arquivo.js');
+SidebarModule.createItem();
+
+// Editor
+EditorModule.updateLineNums();
+EditorModule.onInput();
+EditorModule.rename();
+
+// Preview
+PreviewModule.refresh();
+PreviewModule.setMode('split');
+PreviewModule.toggleMin();
+
+// AI
+AIModule.send();
+AIModule.sendWithCode();
+AIModule.addMsg('user', 'Olá');
+
+// Mapper
+MapperModule.analyze(event);
+MapperModule.render();
+MapperModule.downloadMarkdown();
+```
+
+---
+
+## 🐛 Troubleshooting
+
+### Preview não funciona
+```
+❌ Problema: Preview branco
+✅ Solução: Certifique-se que o arquivo é HTML
+           Clique em "⚡" para ativar preview
+```
+
+### IA não responde
+```
+❌ Problema: Erro "Nenhuma chave ativa"
+✅ Solução: Clique em "🔑" e adicione sua chave API
+           Escolha um provedor válido
+```
+
+### Arquivo não salva
+```
+❌ Problema: Mudanças desaparecem
+✅ Solução: Pressione Ctrl+S
+           Verifique se localStorage está ativado
+           Tente em modo anônimo
+```
+
+### Mapper não carrega ZIP
+```
+❌ Problema: "JSZip não carregado"
+✅ Solução: Verifique conexão com internet
+           Recarregue a página
+           Tente outro ZIP
+```
+
+### Mobile não funciona bem
+```
+❌ Problema: Abas não fecham/abrem
+✅ Solução: Atualize o navegador
+           Tente em modo paisagem
+           Limpe cache (Ctrl+Shift+Delete)
+```
+
+---
+
+## 📊 Exemplos
+
+### Exemplo 1: Criar um projeto Web
+
+```
+1. Clique em "📁 Arquivos"
+2. Crie:
+   - index.html
+   - styles.css
+   - script.js
+3. Edite cada arquivo
+4. Clique "⚡" para preview
+5. Veja as mudanças em tempo real
+```
+
+### Exemplo 2: Usar IA para gerar código
+
+```
+1. Clique em "🔑" e adicione chave
+2. Vá para "💻 Código"
+3. No painel IA, digite:
+   "Crie um botão HTML com CSS bonito"
+4. Clique "Enviar ↵"
+5. Copie o código gerado
+6. Cole no seu arquivo
+```
+
+### Exemplo 3: Analisar um projeto
+
+```
+1. Baixe um projeto como ZIP
+2. Clique em "🗺️ Mapa"
+3. Carregue o ZIP
+4. Veja dependências, APIs, problemas
+5. Clique "⬇ Markdown" para relatório
+```
+
+---
+
+## 🔐 Segurança
+
+### Chaves API
+- ✅ Armazenadas localmente (localStorage)
+- ✅ Nunca enviadas para servidor
+- ✅ Criptografia recomendada
+- ⚠️ Não use em computadores públicos
+
+### Dados
+- ✅ Salvos em localStorage
+- ✅ Sincronização automática
+- ✅ Backup recomendado
+- ⚠️ Limite: ~5-10MB por navegador
+
+---
+
+## 🤝 Contribuindo
+
+Quer melhorar? Contribua!
+
+```bash
+# 1. Fork o repositório
+# 2. Crie uma branch
+git checkout -b feature/sua-feature
+
+# 3. Commit suas mudanças
+git commit -m "Adiciona nova feature"
+
+# 4. Push
+git push origin feature/sua-feature
+
+# 5. Abra um Pull Request
+```
+
+---
+
+## 📝 Licença
+
+MIT License - Veja LICENSE.md
+
+---
+
+## 👨‍💼 Autor
+
+**Dr. Maikon Caldeira**
+- OAB/MG 183712
+- Especialista em desenvolvimento jurídico
+- Email: contato@maikon.dev
+
+---
+
+## 🙏 Agradecimentos
+
+- Claude (Anthropic)
+- Gemini (Google)
+- OpenAI
+- Comunidade open source
+
+---
+
+## 📞 Suporte
+
+- 📧 Email: support@iara-suite.dev
+- 🐛 Issues: GitHub Issues
+- 💬 Discussões: GitHub Discussions
+- 📚 Docs: https://iara-suite.dev/docs
+
+---
+
+**Última atualização:** 2026-09-15
+**Versão:** 2.0.0
+**Status:** ✅ Produção
+
+1. Install package
+Add @supabase/server to your backend.
+Details:
+npm install @supabase/server
+On Edge Functions you can import it directly, no install needed.
+Code:
+File: Code
+```
+npm install @supabase/server
+```
+
+2. Set environment variables
+Copy these into your environment so your handler can verify users and use supabase-js.
+Details:
+.env
+SUPABASE_URL=https://qnvvljdjicgnbuftskyt.supabase.co
+SUPABASE_PUBLISHABLE_KEY=sb_publishable_N1PKHR-lpN3ry08TmdwYTA_rL-qurVu
+SUPABASE_SECRET_KEY=sb_secret_LqV95••••••••••••••••••••
+SUPABASE_JWKS_URL=https://qnvvljdjicgnbuftskyt.supabase.co/auth/v1/.well-known/jwks.json
+On Edge Functions these are injected automatically. For other runtimes, copy the values above. Manage keys in API Keys settings.
+
+3. Install the Supabase Server skill (optional)
+Give AI coding tools instructions for building APIs with @supabase/server.
+Code:
+File: Code
+```
+npx skills add supabase/server
+```
+
+1. Connection string
+Copy the connection details for your database.
+Details:
+If your database password contains special characters, percent-encode them in the connection string.
+Connection parameters
+host:db.qnvvljdjicgnbuftskyt.supabase.co
+port:5432
+database:postgres
+user:postgres
+Code:
+File: Code
+```
+postgresql://postgres:[YOUR-PASSWORD]@db.qnvvljdjicgnbuftskyt.supabase.co:5432/postgres
+```
+
+2. Install Agent Skills (optional)
+Agent Skills give AI coding tools ready-made instructions, scripts, and resources for working with Supabase more accurately and efficiently.
+Code:
+File: Code
+```
+npx skills add supabase/agent-skills
+```
+
+
+https://qnvvljdjicgnbuftskyt.supabase.co/auth/v1/.well-known/jwks.json
+
+
+1. Connection string
+Copy the connection details for your database.
+Details:
+Shared pooler
+If your database password contains special characters, percent-encode them in the connection string.
+Connection parameters
+host:aws-0-us-west-2.pooler.supabase.com
+port:6543
+database:postgres
+user:postgres.qnvvljdjicgnbuftskyt
+Code:
+File: Code
+```
+postgresql://postgres.qnvvljdjicgnbuftskyt:[YOUR-PASSWORD]@aws-0-us-west-2.pooler.supabase.com:6543/postgres
+```
+
+2. Install Agent Skills (optional)
+Agent Skills give AI coding tools ready-made instructions, scripts, and resources for working with Supabase more accurately and efficiently.
+Code:
+File: Code
+```
+npx skills add supabase/agent-skills
+```
+
+aws-0-us-west-2.pooler.supabase.com
+
+-0-us-west-2.pooler.supabase.com:6543/postgres
+
+
+1. Connection string
+Copy the connection details for your database.
+Details:
+Shared pooler
+If your database password contains special characters, percent-encode them in the connection string.
+Connection parameters
+host:aws-0-us-west-2.pooler.supabase.com
+port:6543
+database:postgres
+user:postgres.qnvvljdjicgnbuftskyt
+Code:
+File: Code
+```
+postgresql://postgres.qnvvljdjicgnbuftskyt:[YOUR-PASSWORD]@aws-0-us-west-2.pooler.supabase.com:6543/postgres
+```
+
+2. Install Agent Skills (optional)
+Agent Skills give AI coding tools ready-made instructions, scripts, and resources for working with Supabase more accurately and efficiently.
+Code:
+File: Code
+```
+npx skills add supabase/agent-skills
+```
+
+1. Connection string
+Copy the connection details for your database.
+Details:
+Shared pooler
+If your database password contains special characters, percent-encode them in the connection string.
+Connection parameters
+host:aws-0-us-west-2.pooler.supabase.com
+port:6543
+database:postgres
+user:postgres.qnvvljdjicgnbuftskyt
+Code:
+File: Code
+```
+postgresql://postgres.qnvvljdjicgnbuftskyt:[YOUR-PASSWORD]@aws-0-us-west-2.pooler.supabase.com:6543/postgres
+```
+
+2. Install Agent Skills (optional)
+Agent Skills give AI coding tools ready-made instructions, scripts, and resources for working with Supabase more accurately and efficiently.
+Code:
+File: Code
+```
+npx skills add supabase/agent-skills
+```
+
+
+https://mcp.supabase.com/mcp?project_ref=qnvvljdjicgnbuftskyt&read_only=true&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cfunctions%2Cbranching
+
+
+1. Add MCP server
+Add the MCP server to your project config using the command line.
+Code:
+File: Code
+```
+claude mcp add --scope project --transport http supabase "https://mcp.supabase.com/mcp?project_ref=qnvvljdjicgnbuftskyt&read_only=true&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cfunctions%2Cbranching"
+```
+
+2. Authenticate
+After configuring the MCP server, you need to authenticate. Run this in a regular terminal, not an IDE extension.
+Details:
+Select the supabase server, then Authenticate to begin the flow.
+Code:
+File: Code
+```
+claude /mcp
+```
+
+3. Install Agent Skills (optional)
+Agent Skills give AI coding tools ready-made instructions, scripts, and resources for working with Supabase more accurately and efficiently.
+Code:
+File: Code
+```
+npx skills add supabase/agent-skills
+```
+
+
+https://qnvvljdjicgnbuftskyt.supabase.co
+
+db.qnvvljdjicgnbuftskyt.supabase.co
+
+
+1. Connection string
+Copy the connection details for your database.
+Details:
+If your database password contains special characters, percent-encode them in the connection string.
+Connection parameters
+host:db.qnvvljdjicgnbuftskyt.supabase.co
+port:5432
+database:postgres
+user:postgres
+Code:
+File: Code
+```
+postgresql://postgres:[YOUR-PASSWORD]@db.qnvvljdjicgnbuftskyt.supabase.co:5432/postgres
+```
+
+2. Install Agent Skills (optional)
+Agent Skills give AI coding tools ready-made instructions, scripts, and resources for working with Supabase more accurately and efficiently.
+Code:
+File: Code
+```
+npx skills add supabase/agent-skills
+```
+db.qnvvljdjicgnbuftskyt.supabase.co
+
+supabase.com/library.
+
+db.qnvvljdjicgnbuftskyt.supabase.co
+
+1. Add MCP server
+Add the MCP server to your project config using the command line.
+Code:
+File: Code
+```
+claude mcp add --scope project --transport http supabase "https://mcp.supabase.com/mcp?project_ref=qnvvljdjicgnbuftskyt&read_only=true&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cfunctions%2Cbranching"
+```
+
+2. Authenticate
+After configuring the MCP server, you need to authenticate. Run this in a regular terminal, not an IDE extension.
+Details:
+Select the supabase server, then Authenticate to begin the flow.
+Code:
+File: Code
+```
+claude /mcp
+```
+
+3. Install Agent Skills (optional)
+Agent Skills give AI coding tools ready-made instructions, scripts, and resources for working with Supabase more accurately and efficiently.
+Code:
+File: Code
+```
+npx skills add supabase/agent-skills
+```
+
+<script></script></html>
