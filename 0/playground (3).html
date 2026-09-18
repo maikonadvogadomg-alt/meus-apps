@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Playground Profissional</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #0b1120;
+      --panel: #111827;
+      --panel-2: #172033;
+      --editor: #020617;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --border: #334155;
+      --primary: #6b8e23;
+      --primary-hover: #556b2f;
+      --success: #059669;
+      --danger: #dc2626;
+      --warning: #d97706;
+      --line: #1e293b;
+    }
+
+    :root.light {
+      --bg: #f1f5f9;
+      --panel: #ffffff;
+      --panel-2: #e2e8f0;
+      --editor: #f8fafc;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #cbd5e1;
+      --line: #e2e8f0;
+      --primary: #7cb342;
+      --primary-hover: #689f38;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    .app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background: var(--bg);
+    }
+
+    /* ═══ TOPBAR ═══ */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 10px;
+      min-height: 52px;
+      border-bottom: 1px solid var(--border);
+      background: var(--panel);
+      flex-wrap: wrap;
+      overflow-x: auto;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .brand-icon {
+      color: var(--primary);
+      font-size: 18px;
+    }
+
+    .brand-name {
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex: 1;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+
+    .toolbar::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    .toolbar::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 2px;
+    }
+
+    .btn,
+    .mode-btn,
+    .tab-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      min-height: 28px;
+      padding: 5px 8px;
+      border-radius: 5px;
+      color: var(--text);
+      background: transparent;
+      white-space: nowrap;
+      font-size: 11px;
+      flex-shrink: 0;
+    }
+
+    .btn:hover,
+    .mode-btn:hover,
+    .tab-btn:hover {
+      background: var(--panel-2);
+    }
+
+    .btn.primary,
+    .mode-btn.active,
+    .tab-btn.active {
+      color: white;
+      background: var(--primary);
+    }
+
+    .btn.primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn.success {
+      background: var(--success);
+      color: white;
+    }
+
+    .btn.danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .icon-btn {
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      font-size: 14px;
+    }
+
+    .status {
+      display: none;
+      padding: 6px 10px;
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      white-space: pre-wrap;
+      max-height: 60px;
+      overflow-y: auto;
+      background: var(--panel);
+    }
+
+    .status.show {
+      display: block;
+    }
+
+    .status.success {
+      color: #a7f3d0;
+      background: #064e3b;
+    }
+
+    .status.error {
+      color: #fecaca;
+      background: #7f1d1d;
+    }
+
+    .status.info {
+      color: #bfdbfe;
+      background: #1e3a8a;
+    }
+
+    .main {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .workarea {
+      display: flex;
+      flex: 1;
+      min-width: 0;
+      min-height: 0;
+    }
+
+    .editor-panel,
+    .preview-panel {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 0;
+    }
+
+    .editor-panel {
+      width: 50%;
+      border-right: 1px solid var(--border);
+    }
+
+    .editor-panel.collapsed {
+      display: none;
+    }
+
+    .preview-panel {
+      flex: 1;
+    }
+
+    .preview-panel.collapsed {
+      display: none;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      min-height: 36px;
+      padding: 5px 8px;
+      border-bottom: 1px solid var(--border);
+      background: var(--panel);
+    }
+
+    .panel-label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .editor-tabs {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      padding: 4px;
+      border-bottom: 1px solid var(--border);
+      background: var(--panel);
+      overflow-x: auto;
+    }
+
+    .editor-tabs::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    .editor-tabs .tab-btn {
+      min-height: 24px;
+      padding: 4px 7px;
+      font-size: 10px;
+    }
+
+    .line-count {
+      margin-left: auto;
+      color: var(--muted);
+      font-size: 9px;
+      flex-shrink: 0;
+    }
+
+    .editor-wrap {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+      background: var(--editor);
+    }
+
+    .line-numbers {
+      width: 35px;
+      padding: 8px 5px 8px 0;
+      border-right: 1px solid var(--line);
+      color: var(--muted);
+      font-family: Consolas, monospace;
+      font-size: 10px;
+      line-height: 1.6rem;
+      text-align: right;
+      user-select: none;
+      overflow: hidden;
+    }
+
+    .code-editor {
+      flex: 1;
+      width: 100%;
+      min-width: 0;
+      min-height: 0;
+      padding: 8px 10px;
+      border: 0;
+      outline: none;
+      resize: none;
+      color: var(--text);
+      background: var(--editor);
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 12px;
+      line-height: 1.6rem;
+      tab-size: 2;
+    }
+
+    .preview-frame {
+      flex: 1;
+      width: 100%;
+      min-height: 0;
+      border: 0;
+      background: white;
+    }
+
+    .search-box {
+      display: none;
+      padding: 6px 8px;
+      border-bottom: 1px solid var(--border);
+      background: var(--panel);
+      gap: 4px;
+      align-items: center;
+    }
+
+    .search-box.show {
+      display: flex;
+    }
+
+    .search-box input {
+      flex: 1;
+      padding: 4px 6px;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      background: var(--editor);
+      color: var(--text);
+      font-size: 11px;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .search-info {
+      font-size: 10px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      background: rgb(0 0 0 / 65%);
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal {
+      width: min(560px, 100%);
+      max-height: 90vh;
+      overflow: auto;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      background: var(--panel);
+      box-shadow: 0 20px 60px rgb(0 0 0 / 35%);
+    }
+
+    .modal h2 {
+      margin: 0 0 12px;
+      font-size: 16px;
+    }
+
+    .form-row {
+      margin-bottom: 10px;
+    }
+
+    .form-row label {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .form-row input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      outline: none;
+      color: var(--text);
+      background: var(--editor);
+      font-size: 12px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .config-status {
+      margin-top: 10px;
+      padding: 8px;
+      border-radius: 5px;
+      color: var(--muted);
+      background: var(--editor);
+      font-size: 10px;
+      white-space: pre-wrap;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    .supabase-status {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 4px;
+      background: #dc2626;
+    }
+
+    .supabase-status.connected {
+      background: #059669;
+    }
+
+    /* ═══ RESPONSIVE ═══ */
+    @media (max-width: 650px) {
+      .topbar {
+        min-height: 48px;
+        padding: 6px 8px;
+      }
+
+      .toolbar {
+        width: 100%;
+        order: 3;
+        flex-basis: 100%;
+      }
+
+      .btn,
+      .mode-btn,
+      .tab-btn {
+        min-height: 32px;
+        padding: 6px 10px;
+        font-size: 10px;
+      }
+
+      .icon-btn {
+        width: 32px;
+        height: 32px;
+      }
+
+      .main {
+        flex-direction: column;
+      }
+
+      .workarea {
+        flex-direction: column;
+      }
+
+      .editor-panel,
+      .preview-panel {
+        width: 100%;
+        height: 50%;
+      }
+
+      .editor-panel.mobile-hidden,
+      .preview-panel.mobile-hidden {
+        display: none;
+      }
+
+      .editor-panel.mobile-hidden+.preview-panel,
+      .preview-panel.mobile-hidden {
+        height: 100%;
+      }
+
+      .panel-header {
+        min-height: 32px;
+        padding: 4px 6px;
+      }
+
+      .panel-label {
+        font-size: 10px;
+      }
+
+      .editor-tabs {
+        padding: 3px;
+        gap: 2px;
+      }
+
+      .editor-tabs .tab-btn {
+        min-height: 22px;
+        padding: 3px 6px;
+        font-size: 9px;
+      }
+
+      .line-count {
+        display: none;
+      }
+
+      .line-numbers {
+        width: 30px;
+        padding: 6px 4px 6px 0;
+        font-size: 9px;
+        line-height: 1.5rem;
+      }
+
+      .code-editor {
+        padding: 6px 8px;
+        font-size: 11px;
+        line-height: 1.5rem;
+      }
+
+      .modal {
+        width: 95%;
+        padding: 12px;
+      }
+
+      .modal h2 {
+        font-size: 14px;
+        margin-bottom: 10px;
+      }
+    }
+
+    @media (max-height: 500px) and (orientation: landscape) {
+      .topbar {
+        min-height: 40px;
+        padding: 4px 6px;
+      }
+
+      .btn,
+      .mode-btn,
+      .tab-btn {
+        min-height: 28px;
+        padding: 4px 6px;
+        font-size: 9px;
+      }
+
+      .icon-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+      }
+
+      .panel-header {
+        min-height: 28px;
+        padding: 3px 4px;
+      }
+
+      .line-numbers {
+        width: 28px;
+        padding: 4px 3px 4px 0;
+        font-size: 8px;
+        line-height: 1.4rem;
+      }
+
+      .code-editor {
+        padding: 4px 6px;
+        font-size: 10px;
+        line-height: 1.4rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-icon">◆</span>
+        <span class="brand-name">Playground</span>
+      </div>
+
+      <div class="toolbar">
+        <button id="importBtn" class="btn outline" title="Importar código">↑ Importar</button>
+        <button id="autoRunBtn" class="btn primary">◉ Ao vivo</button>
+        <button id="runBtn" class="btn primary">▶ Executar</button>
+        <button id="searchBtn" class="btn outline" title="Pesquisar">🔍 Pesquisar</button>
+        <button id="copyBtn" class="btn outline">⧉ Copiar</button>
+        <button id="downloadBtn" class="btn outline">↓ Baixar</button>
+        <button id="saveLocalBtn" class="btn success">💾 Local</button>
+        <button id="saveCloudBtn" class="btn primary">
+          <span class="supabase-status"></span>
+          ☁️ Cloud
+        </button>
+        <button id="configBtn" class="btn outline">⚙️ Banco</button>
+        <button id="themeBtn" class="btn outline icon-btn" title="Tema">☾</button>
+        <button id="fullscreenBtn" class="btn outline icon-btn" title="Tela cheia">⛶</button>
+        <button id="resetBtn" class="btn outline icon-btn" title="Restaurar">↺</button>
+      </div>
+    </header>
+
+    <div id="status" class="status"></div>
+
+    <main class="main">
+      <section class="workarea">
+        <section id="editorPanel" class="editor-panel">
+          <div class="editor-tabs">
+            <button class="tab-btn active" data-tab="html">HTML</button>
+            <button class="tab-btn" data-tab="css">CSS</button>
+            <button class="tab-btn" data-tab="js">JS</button>
+            <button class="tab-btn" data-tab="jsx">JSX</button>
+            <span id="lineCount" class="line-count">1 linha</span>
+            <button id="collapseEditorBtn" class="btn outline icon-btn" title="Fechar editor">‹</button>
+          </div>
+
+          <div class="search-box" id="searchBox">
+            <input id="searchInput" placeholder="Pesquisar..." />
+            <input id="replaceInput" placeholder="Substituir..." />
+            <button id="replaceBtn" class="btn outline" style="padding:4px 6px;font-size:9px;">Substituir</button>
+            <button id="replaceAllBtn" class="btn outline" style="padding:4px 6px;font-size:9px;">Tudo</button>
+            <span id="searchInfo" class="search-info">0/0</span>
+            <button id="closeSearchBtn" class="btn outline icon-btn" style="width:24px;height:24px;">✕</button>
+          </div>
+
+          <div class="editor-wrap">
+            <div id="lineNumbers" class="line-numbers">1</div>
+            <textarea id="codeEditor" class="code-editor" spellcheck="false"></textarea>
+          </div>
+        </section>
+
+        <section id="previewPanel" class="preview-panel">
+          <div class="panel-header">
+            <div class="panel-label">
+              <span>◉</span>
+              <span>Resultado</span>
+            </div>
+            <button id="expandEditorBtn" class="btn outline icon-btn" title="Mostrar editor" style="display:none;">›</button>
+            <button id="collapsePreviewBtn" class="btn outline icon-btn" title="Fechar preview">‹</button>
+          </div>
+
+          <iframe id="previewFrame" class="preview-frame" sandbox="allow-scripts allow-modals allow-forms allow-popups"
+            title="Preview"></iframe>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <input id="fileInput" type="file" hidden accept=".html,.htm,.css,.js,.jsx,.tsx,.py,.txt" />
+
+  <div id="configModal" class="modal-backdrop">
+    <div class="modal">
+      <h2>Configuração Supabase</h2>
+
+      <div class="form-row">
+        <label for="supabaseUrl">Project URL</label>
+        <input id="supabaseUrl" placeholder="https://seu-projeto.supabase.co" />
+      </div>
+
+      <div class="form-row">
+        <label for="supabaseKey">Chave pública anon</label>
+        <input id="supabaseKey" type="password" placeholder="eyJ..." />
+      </div>
+
+      <div style="display:flex;gap:6px;">
+        <button id="testSupabaseBtn" class="btn primary">Testar</button>
+        <button id="clearSupabaseBtn" class="btn outline">Limpar</button>
+      </div>
+
+      <div id="configStatus" class="config-status">
+        Nenhum teste realizado.
+      </div>
+
+      <div class="modal-actions">
+        <button id="closeConfigBtn" class="btn outline">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    "use strict";
+
+    const STORAGE_KEY = "playground_v2";
+    const CONFIG_KEY = "playground_config_v2";
+
+    const DEFAULT_HTML = `<div style="padding:20px;text-align:center;font-family:Arial">
+  <h1>Olá, Playground!</h1>
+  <p>Edite o código e veja o resultado ao vivo.</p>
+  <button id="btn">Clique aqui</button>
+</div>`;
+
+    const DEFAULT_CSS = `body {
+  margin: 0;
+  background: #f0f0f0;
+  font-family: Arial, sans-serif;
+}
+
+button {
+  padding: 10px 20px;
+  background: #6b8e23;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #556b2f;
+}`;
+
+    const DEFAULT_JS = `document.getElementById("btn")?.addEventListener("click", () => {
+  alert("Funcionou!");
+});`;
+
+    const state = {
+      tab: "html",
+      html: DEFAULT_HTML,
+      css: DEFAULT_CSS,
+      js: DEFAULT_JS,
+      jsx: "",
+      autoRun: true,
+      editorCollapsed: false,
+      previewCollapsed: false,
+      supabase: null,
+      supabaseConnected: false,
+      searchMatches: [],
+      searchIndex: 0
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    function showStatus(type, message, timeout = 5000) {
+      const el = $("status");
+      el.className = "status show " + type;
+      el.textContent = message;
+
+      if (timeout) {
+        window.clearTimeout(showStatus.timer);
+        showStatus.timer = window.setTimeout(() => {
+          el.className = "status";
+        }, timeout);
+      }
+    }
+
+    function loadState() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          Object.assign(state, JSON.parse(saved));
+        } catch (e) {
+          console.error("Erro ao carregar estado:", e);
+        }
+      }
+
+      const config = localStorage.getItem(CONFIG_KEY);
+      if (config) {
+        try {
+          const cfg = JSON.parse(config);
+          $("supabaseUrl").value = cfg.url || "";
+          $("supabaseKey").value = cfg.key || "";
+        } catch (e) {
+          console.error("Erro ao carregar config:", e);
+        }
+      }
+
+      renderAll();
+    }
+
+    function persistState() {
+      const copy = {
+        tab: state.tab,
+        html: state.html,
+        css: state.css,
+        js: state.js,
+        jsx: state.jsx,
+        autoRun: state.autoRun,
+        editorCollapsed: state.editorCollapsed,
+        previewCollapsed: state.previewCollapsed
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(copy));
+    }
+
+    function getCurrentCode() {
+      return state[state.tab] || "";
+    }
+
+    function setCurrentCode(value) {
+      state[state.tab] = value;
+      persistState();
+      updateEditor();
+      if (state.autoRun) {
+        schedulePreview();
+      }
+    }
+
+    function setTab(tab) {
+      state.tab = tab;
+      persistState();
+      renderAll();
+    }
+
+    function updateEditor() {
+      const value = getCurrentCode();
+      $("codeEditor").value = value;
+
+      const lines = Math.max(1, value.split("\n").length);
+      $("lineNumbers").textContent = Array.from(
+        { length: lines },
+        (_, i) => i + 1
+      ).join("\n");
+
+      $("lineCount").textContent = `${lines} ${lines === 1 ? "linha" : "linhas"}`;
+    }
+
+    function renderTabs() {
+      document.querySelectorAll("[data-tab]").forEach((button) => {
+        button.classList.toggle("active", button.dataset.tab === state.tab);
+      });
+    }
+
+    function renderLayout() {
+      $("editorPanel").classList.toggle("collapsed", state.editorCollapsed);
+      $("previewPanel").classList.toggle("collapsed", state.previewCollapsed);
+      $("expandEditorBtn").style.display = state.editorCollapsed ? "inline-flex" : "none";
+      $("collapseEditorBtn").style.display = state.editorCollapsed ? "none" : "inline-flex";
+      $("collapsePreviewBtn").style.display = state.previewCollapsed ? "none" : "inline-flex";
+
+      $("autoRunBtn").classList.toggle("primary", state.autoRun);
+      $("autoRunBtn").textContent = state.autoRun ? "◉ Ao vivo" : "○ Manual";
+
+      const isMobile = window.innerWidth <= 650;
+      if (isMobile) {
+        if (state.editorCollapsed) {
+          $("editorPanel").classList.add("mobile-hidden");
+          $("previewPanel").classList.remove("mobile-hidden");
+        } else if (state.previewCollapsed) {
+          $("editorPanel").classList.remove("mobile-hidden");
+          $("previewPanel").classList.add("mobile-hidden");
+        } else {
+          $("editorPanel").classList.remove("mobile-hidden");
+          $("previewPanel").classList.remove("mobile-hidden");
+        }
+      } else {
+        $("editorPanel").classList.remove("mobile-hidden");
+        $("previewPanel").classList.remove("mobile-hidden");
+      }
+
+      updateSupabaseStatus();
+    }
+
+    function updateSupabaseStatus() {
+      const indicator = document.querySelector(".supabase-status");
+      if (state.supabaseConnected) {
+        indicator.classList.add("connected");
+      } else {
+        indicator.classList.remove("connected");
+      }
+    }
+
+    function renderAll() {
+      renderTabs();
+      updateEditor();
+      renderLayout();
+    }
+
+    function buildDocument() {
+      return `<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>${state.css}</style>
+</head>
+<body>
+  ${state.html}
+  <script>
+try {
+${state.js}
+} catch (error) {
+  document.body.insertAdjacentHTML(
+    "beforeend",
+    "<pre style='color:red;padding:12px;white-space:pre-wrap'>" +
+    error.stack +
+    "</pre>"
+  );
+}
+  <\/script>
+</body>
+</html>`;
+    }
+
+    let previewTimer = null;
+
+    function schedulePreview() {
+      window.clearTimeout(previewTimer);
+      previewTimer = window.setTimeout(updatePreview, 350);
+    }
+
+    function updatePreview() {
+      persistState();
+
+      const blob = new Blob([buildDocument()], {
+        type: "text/html;charset=utf-8"
+      });
+
+      const url = URL.createObjectURL(blob);
+      const oldUrl = $("previewFrame").dataset.objectUrl;
+
+      $("previewFrame").src = url;
+      $("previewFrame").dataset.objectUrl = url;
+
+      if (oldUrl) {
+        window.setTimeout(() => URL.revokeObjectURL(oldUrl), 1000);
+      }
+    }
+
+    function findMatches(text, searchTerm) {
+      if (!searchTerm) return [];
+      
+      const regex = new RegExp(searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+      const matches = [];
+      let match;
+
+      while ((match = regex.exec(text)) !== null) {
+        matches.push({
+          start: match.index,
+          end: match.index + match[0].length,
+          text: match[0]
+        });
+      }
+
+      return matches;
+    }
+
+    function highlightMatch(editor, match) {
+      if (!match) return;
+
+      const text = editor.value;
+      const before = text.substring(0, match.start);
+      const lineNum = before.split("\n").length;
+
+      editor.setSelectionRange(match.start, match.end);
+      editor.focus();
+
+      const lineHeight = parseInt(window.getComputedStyle(editor).lineHeight);
+      editor.scrollTop = (lineNum - 1) * lineHeight - editor.clientHeight / 2;
+    }
+
+    function doSearch() {
+      const searchTerm = $("searchInput").value;
+      const editor = $("codeEditor");
+
+      state.searchMatches = findMatches(editor.value, searchTerm);
+      state.searchIndex = 0;
+
+      if (state.searchMatches.length > 0) {
+        highlightMatch(editor, state.searchMatches[0]);
+        $("searchInfo").textContent = `1/${state.searchMatches.length}`;
+      } else {
+        $("searchInfo").textContent = "0/0";
+      }
+    }
+
+    function doReplace() {
+      const searchTerm = $("searchInput").value;
+      const replaceTerm = $("replaceInput").value;
+      const editor = $("codeEditor");
+
+      if (!searchTerm || state.searchMatches.length === 0) return;
+
+      const match = state.searchMatches[state.searchIndex];
+      const before = editor.value.substring(0, match.start);
+      const after = editor.value.substring(match.end);
+
+      editor.value = before + replaceTerm + after;
+      setCurrentCode(editor.value);
+
+      state.searchMatches = findMatches(editor.value, searchTerm);
+      if (state.searchMatches.length > 0) {
+        highlightMatch(editor, state.searchMatches[0]);
+        $("searchInfo").textContent = `1/${state.searchMatches.length}`;
+      }
+    }
+
+    function doReplaceAll() {
+      const searchTerm = $("searchInput").value;
+      const replaceTerm = $("replaceInput").value;
+      const editor = $("codeEditor");
+
+      if (!searchTerm) return;
+
+      const regex = new RegExp(searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+      const newValue = editor.value.replace(regex, replaceTerm);
+      const count = (editor.value.match(regex) || []).length;
+
+      editor.value = newValue;
+      setCurrentCode(newValue);
+
+      showStatus("success", `${count} ocorrência(s) substituída(s).`);
+      doSearch();
+    }
+
+    async function saveLocal() {
+      persistState();
+      showStatus("success", "Salvo localmente.");
+    }
+
+    async function saveCloud() {
+      if (!state.supabase && !connectSupabase()) {
+        showStatus("error", "Configure o Supabase antes.");
+        return;
+      }
+
+      const payload = {
+        name: "Snippet " + new Date().toLocaleTimeString(),
+        html: state.html,
+        css: state.css,
+        js: state.js
+      };
+
+      const { error } = await state.supabase
+        .from("snippets")
+        .insert(payload);
+
+      if (error) {
+        showStatus("error", "Erro: " + error.message);
+        return;
+      }
+
+      state.supabaseConnected = true;
+      renderLayout();
+      showStatus("success", "Salvo no Supabase.");
+    }
+
+    function connectSupabase() {
+      const url = $("supabaseUrl").value.trim();
+      const key = $("supabaseKey").value.trim();
+
+      if (!url || !key) {
+        showStatus("error", "Informe URL e chave.");
+        return false;
+      }
+
+      if (!window.supabase) {
+        showStatus("error", "Biblioteca Supabase não carregada.");
+        return false;
+      }
+
+      state.supabase = window.supabase.createClient(url, key);
+      localStorage.setItem(CONFIG_KEY, JSON.stringify({ url, key }));
+      return true;
+    }
+
+    async function testSupabase() {
+      if (!connectSupabase()) return;
+
+      const { error } = await state.supabase
+        .from("snippets")
+        .select("id")
+        .limit(1);
+
+      if (error) {
+        state.supabaseConnected = false;
+        showStatus("error", "Falha: " + error.message);
+        renderLayout();
+        return;
+      }
+
+      state.supabaseConnected = true;
+      showStatus("success", "Supabase conectado!");
+      renderLayout();
+    }
+
+    function importFile(file) {
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        const content = String(reader.result || "");
+        const ext = file.name.split(".").pop().toLowerCase();
+
+        if (ext === "html" || ext === "htm") {
+          state.html = content;
+          state.tab = "html";
+        } else if (ext === "css") {
+          state.css = content;
+          state.tab = "css";
+        } else if (ext === "js") {
+          state.js = content;
+          state.tab = "js";
+        } else if (ext === "jsx" || ext === "tsx") {
+          state.jsx = content;
+          state.tab = "jsx";
+        } else {
+          state.html = content;
+          state.tab = "html";
+        }
+
+        persistState();
+        renderAll();
+        updatePreview();
+        showStatus("success", "Arquivo importado: " + file.name);
+      };
+
+      reader.readAsText(file);
+    }
+
+    function downloadCurrent() {
+      let content;
+      let ext;
+
+      if (state.tab === "jsx") {
+        content = state.jsx;
+        ext = "jsx";
+      } else if (state.tab === "css") {
+        content = state.css;
+        ext = "css";
+      } else if (state.tab === "js") {
+        content = state.js;
+        ext = "js";
+      } else {
+        content = buildDocument();
+        ext = "html";
+      }
+
+      const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.download = "playground." + ext;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      showStatus("success", "Arquivo baixado.");
+    }
+
+    async function copyCurrent() {
+      try {
+        await navigator.clipboard.writeText(buildDocument());
+        showStatus("success", "Código copiado.");
+      } catch {
+        showStatus("error", "Erro ao copiar.");
+      }
+    }
+
+    function resetCurrent() {
+      state.html = DEFAULT_HTML;
+      state.css = DEFAULT_CSS;
+      state.js = DEFAULT_JS;
+      state.tab = "html";
+      persistState();
+      renderAll();
+      updatePreview();
+      showStatus("success", "Restaurado.");
+    }
+
+    function openFullscreen() {
+      const blob = new Blob([buildDocument()], {
+        type: "text/html;charset=utf-8"
+      });
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank", "noopener,noreferrer");
+      window.setTimeout(() => URL.revokeObjectURL(url), 5000);
+    }
+
+    function toggleTheme() {
+      const isLight = document.documentElement.classList.toggle("light");
+      localStorage.setItem("playground_theme", isLight ? "light" : "dark");
+      $("themeBtn").textContent = isLight ? "☀" : "☾";
+    }
+
+    function applyTheme() {
+      const theme = localStorage.getItem("playground_theme") || "dark";
+      document.documentElement.classList.toggle("light", theme === "light");
+      $("themeBtn").textContent = theme === "light" ? "☀" : "☾";
+    }
+
+    function bindEvents() {
+      document.querySelectorAll("[data-tab]").forEach((button) => {
+        button.addEventListener("click", () => setTab(button.dataset.tab));
+      });
+
+      $("codeEditor").addEventListener("input", (event) => {
+        setCurrentCode(event.target.value);
+      });
+
+      $("autoRunBtn").addEventListener("click", () => {
+        state.autoRun = !state.autoRun;
+        persistState();
+        renderLayout();
+        if (state.autoRun) updatePreview();
+      });
+
+      $("runBtn").addEventListener("click", updatePreview);
+      $("saveLocalBtn").addEventListener("click", saveLocal);
+      $("saveCloudBtn").addEventListener("click", saveCloud);
+      $("copyBtn").addEventListener("click", copyCurrent);
+      $("downloadBtn").addEventListener("click", downloadCurrent);
+      $("fullscreenBtn").addEventListener("click", openFullscreen);
+      $("resetBtn").addEventListener("click", resetCurrent);
+      $("themeBtn").addEventListener("click", toggleTheme);
+
+      $("collapseEditorBtn").addEventListener("click", () => {
+        state.editorCollapsed = true;
+        persistState();
+        renderLayout();
+      });
+
+      $("expandEditorBtn").addEventListener("click", () => {
+        state.editorCollapsed = false;
+        persistState();
+        renderLayout();
+      });
+
+      $("collapsePreviewBtn").addEventListener("click", () => {
+        state.previewCollapsed = true;
+        persistState();
+        renderLayout();
+      });
+
+      $("importBtn").addEventListener("click", () => $("fileInput").click());
+
+      $("fileInput").addEventListener("change", (event) => {
+        const file = event.target.files[0];
+        if (file) importFile(file);
+        event.target.value = "";
+      });
+
+      $("searchBtn").addEventListener("click", () => {
+        $("searchBox").classList.toggle("show");
+        if ($("searchBox").classList.contains("show")) {
+          $("searchInput").focus();
+        }
+      });
+
+      $("searchInput").addEventListener("input", doSearch);
+      $("replaceBtn").addEventListener("click", doReplace);
+      $("replaceAllBtn").addEventListener("click", doReplaceAll);
+
+      $("closeSearchBtn").addEventListener("click", () => {
+        $("searchBox").classList.remove("show");
+        $("codeEditor").focus();
+      });
+
+      $("configBtn").addEventListener("click", () => {
+        $("configModal").classList.add("open");
+      });
+
+      $("closeConfigBtn").addEventListener("click", () => {
+        $("configModal").classList.remove("open");
+      });
+
+      $("testSupabaseBtn").addEventListener("click", testSupabase);
+
+      $("clearSupabaseBtn").addEventListener("click", () => {
+        $("supabaseUrl").value = "";
+        $("supabaseKey").value = "";
+        state.supabase = null;
+        state.supabaseConnected = false;
+        localStorage.removeItem(CONFIG_KEY);
+        showStatus("success", "Configuração removida.");
+        renderLayout();
+      });
+
+      window.addEventListener("resize", renderLayout);
+    }
+
+    function startup() {
+      applyTheme();
+      bindEvents();
+      loadState();
+      updatePreview();
+
+      const config = localStorage.getItem(CONFIG_KEY);
+      if (config) {
+        try {
+          const cfg = JSON.parse(config);
+          if (cfg.url && cfg.key && window.supabase) {
+            state.supabase = window.supabase.createClient(cfg.url, cfg.key);
+            state.supabaseConnected = true;
+            renderLayout();
+          }
+        } catch (e) {
+          console.error("Erro ao conectar Supabase:", e);
+        }
+      }
+    }
+
+    startup();
+  </script>
+</body>
+
+</html>
