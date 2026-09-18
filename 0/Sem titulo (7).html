@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guia: Código Único vs Modular</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    .container { max-width: 900px; margin: 0 auto; }
+    h1 { color: #333; margin: 30px 0 20px; border-bottom: 3px solid #0066cc; padding-bottom: 10px; }
+    h2 { color: #0066cc; margin: 25px 0 15px; }
+    h3 { color: #333; margin: 15px 0 10px; }
+    p { color: #555; margin: 10px 0; }
+    .box {
+      background: white;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 15px 0;
+      border-left: 5px solid #0066cc;
+    }
+    .box.warning {
+      border-left-color: #ff6600;
+      background: #fff9f0;
+    }
+    .box.success {
+      border-left-color: #00cc00;
+      background: #f0fff0;
+    }
+    .code-block {
+      background: #1e1e1e;
+      color: #00ff00;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+      margin: 10px 0;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin: 15px 0;
+    }
+    .comparison-item {
+      background: white;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+    }
+    .comparison-item h4 {
+      margin-bottom: 10px;
+      color: #0066cc;
+      border-bottom: 2px solid #0066cc;
+      padding-bottom: 5px;
+    }
+    .comparison-item ul {
+      margin-left: 20px;
+    }
+    .comparison-item li {
+      margin: 5px 0;
+      color: #555;
+    }
+    .pros { border-left: 5px solid #00cc00; }
+    .cons { border-left: 5px solid #ff6600; }
+    button {
+      background: #0066cc;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+      font-size: 14px;
+    }
+    button:hover { background: #0052a3; }
+    .hidden { display: none; }
+    .example {
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 15px;
+      margin: 15px 0;
+    }
+    .file-structure {
+      background: #1e1e1e;
+      color: #00ff00;
+      padding: 15px;
+      border-radius: 5px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      margin: 15px 0;
+    }
+    .highlight { background: #ffff00; color: #000; padding: 2px 5px; border-radius: 3px; }
+    .tab-buttons { display: flex; gap: 5px; margin: 15px 0; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <h1>📚 Guia Completo: Código Único vs Modular</h1>
+
+  <!-- SEÇÃO 1 -->
+  <h2>1️⃣ O QUE É CÓDIGO ÚNICO?</h2>
+
+  <div class="box">
+    <h3>Definição</h3>
+    <p><strong>Código único</strong> é quando <span class="highlight">TUDO está em UM arquivo só</span>.</p>
+    <p>HTML, CSS, JavaScript, tudo junto.</p>
+  </div>
+
+  <h3>Exemplo de Código Único:</h3>
+  <div class="code-block">
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+  &lt;style&gt;
+    body { background: blue; }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1&gt;Olá&lt;/h1&gt;
+  &lt;script&gt;
+    console.log('Funciona!');
+  &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+  </div>
+
+  <div class="box success">
+    <h3>✅ Vantagens do Código Único:</h3>
+    <ul>
+      <li>Simples de abrir (só 1 arquivo)</li>
+      <li>Fácil de testar (tudo junto)</li>
+      <li>Não precisa de servidor</li>
+      <li>Funciona em qualquer lugar</li>
+    </ul>
+  </div>
+
+  <div class="box warning">
+    <h3>❌ Desvantagens do Código Único:</h3>
+    <ul>
+      <li>Fica MUITO grande (difícil de ler)</li>
+      <li>Difícil de encontrar erros</li>
+      <li>Difícil de reutilizar partes</li>
+      <li>Confuso quando cresce</li>
+    </ul>
+  </div>
+
+  <!-- SEÇÃO 2 -->
+  <h2>2️⃣ O QUE É CÓDIGO MODULAR?</h2>
+
+  <div class="box">
+    <h3>Definição</h3>
+    <p><strong>Código modular</strong> é quando você <span class="highlight">SEPARA em vários arquivos</span>.</p>
+    <p>Cada arquivo faz UMA coisa.</p>
+  </div>
+
+  <h3>Exemplo de Estrutura Modular:</h3>
+  <div class="file-structure">
+/meu-projeto/
+  ├── index.html       (estrutura)
+  ├── style.css        (aparência)
+  ├── app.js           (funcionamento)
+  └── utils.js         (funções úteis)
+  </div>
+
+  <div class="box success">
+    <h3>✅ Vantagens do Código Modular:</h3>
+    <ul>
+      <li>Fácil de ler (cada arquivo é pequeno)</li>
+      <li>Fácil de encontrar erros</li>
+      <li>Fácil de reutilizar partes</li>
+      <li>Fácil de trabalhar em equipe</li>
+      <li>Fácil de atualizar</li>
+    </ul>
+  </div>
+
+  <div class="box warning">
+    <h3>❌ Desvantagens do Código Modular:</h3>
+    <ul>
+      <li>Mais arquivos para gerenciar</li>
+      <li>Precisa de servidor para testar</li>
+      <li>Mais complexo no início</li>
+    </ul>
+  </div>
+
+  <!-- SEÇÃO 3 -->
+  <h2>3️⃣ COMPARAÇÃO LADO A LADO</h2>
+
+  <div class="comparison">
+    <div class="comparison-item pros">
+      <h4>📦 CÓDIGO ÚNICO</h4>
+      <p><strong>Arquivo:</strong> index.html (1 arquivo)</p>
+      <p><strong>Tamanho:</strong> Pode ficar gigante</p>
+      <p><strong>Uso:</strong> Projetos pequenos</p>
+      <p><strong>Exemplo:</strong> Seu editor anterior</p>
+    </div>
+
+    <div class="comparison-item cons">
+      <h4>🧩 CÓDIGO MODULAR</h4>
+      <p><strong>Arquivos:</strong> index.html, style.css, app.js, etc</p>
+      <p><strong>Tamanho:</strong> Vários pequenos</p>
+      <p><strong>Uso:</strong> Projetos grandes</p>
+      <p><strong>Exemplo:</strong> Aplicações profissionais</p>
+    </div>
+  </div>
+
+  <!-- SEÇÃO 4 -->
+  <h2>4️⃣ OS 3 TIPOS DE CÓDIGO MODULAR</h2>
+
+  <h3>Tipo 1: Modular por Arquivo (Simples)</h3>
+  <div class="box">
+    <p>Você separa em <span class="highlight">3 arquivos básicos</span>:</p>
+    <div class="file-structure">
+index.html    ← Estrutura (HTML)
+style.css     ← Aparência (CSS)
+app.js        ← Funcionamento (JavaScript)
+    </div>
+    <p><strong>Como funciona:</strong></p>
+    <div class="code-block">
+&lt;!-- index.html --&gt;
+&lt;link rel="stylesheet" href="style.css"&gt;
+&lt;script src="app.js"&gt;&lt;/script&gt;
+    </div>
+  </div>
+
+  <h3>Tipo 2: Modular por Funcionalidade (Médio)</h3>
+  <div class="box">
+    <p>Você separa por <span class="highlight">O QUE CADA COISA FAZ</span>:</p>
+    <div class="file-structure">
+/editor/
+  ├── index.html
+  ├── css/
+  │   ├── navbar.css
+  │   ├── sidebar.css
+  │   └── editor.css
+  ├── js/
+  │   ├── files.js
+  │   ├── preview.js
+  │   └── editor.js
+    </div>
+    <p><strong>Cada arquivo faz UMA coisa:</strong></p>
+    <ul>
+      <li><code>files.js</code> = gerencia arquivos</li>
+      <li><code>preview.js</code> = gerencia preview</li>
+      <li><code>editor.js</code> = gerencia editor</li>
+    </ul>
+  </div>
+
+  <h3>Tipo 3: Modular Completo (Avançado)</h3>
+  <div class="box">
+    <p>Você usa <span class="highlight">FRAMEWORKS</span> como React, Vue, Angular:</p>
+    <div class="file-structure">
+/projeto/
+  ├── src/
+  │   ├── components/
+  │   │   ├── Editor.js
+  │   │   ├── Preview.js
+  │   │   └── Sidebar.js
+  │   ├── utils/
+  │   │   └── files.js
+  │   └── App.js
+  ├── package.json
+  └── build/
+    </div>
+    <p><strong>Nota:</strong> Isso é para projetos MUITO grandes. Você não precisa disso agora.</p>
+  </div>
+
+  <!-- SEÇÃO 5 -->
+  <h2>5️⃣ A DIFERENÇA ENTRE "COR" E "MOTOR"</h2>
+
+  <div class="box success">
+    <h3>🎨 COR = CSS (Aparência)</h3>
+    <p>É tudo que você <span class="highlight">VÊ</span>:</p>
+    <ul>
+      <li>Cores (background, color)</li>
+      <li>Tamanhos (width, height)</li>
+      <li>Posições (position, flex)</li>
+      <li>Bordas (border, border-radius)</li>
+      <li>Sombras (box-shadow)</li>
+    </ul>
+    <p><strong>Pode remover CSS que nada quebra.</strong></p>
+  </div>
+
+  <div class="box success">
+    <h3>⚙️ MOTOR = JavaScript (Funcionamento)</h3>
+    <p>É tudo que <span class="highlight">FUNCIONA</span>:</p>
+    <ul>
+      <li>Clicar em botão (onclick)</li>
+      <li>Abrir arquivo (openFile)</li>
+      <li>Salvar (saveFile)</li>
+      <li>Atualizar preview (refreshPreview)</li>
+      <li>Importar/Exportar ZIP</li>
+    </ul>
+    <p><strong>Se remover JavaScript, nada funciona.</strong></p>
+  </div>
+
+  <h3>Exemplo:</h3>
+  <div class="code-block">
+/* COR (CSS) - Só aparência */
+button {
+  background: blue;      ← Cor
+  border-radius: 5px;    ← Formato
+  padding: 10px;         ← Tamanho
+}
+
+/* MOTOR (JavaScript) - Funciona */
+button.onclick = function() {
+  saveFile();            ← Faz algo
+}
+  </div>
+
+  <!-- SEÇÃO 6 -->
+  <h2>6️⃣ COMO SEPARAR CORRETAMENTE</h2>
+
+  <h3>Passo 1: Identifique as Partes</h3>
+  <div class="box">
+    <p>Seu editor tem essas partes:</p>
+    <ul>
+      <li><strong>Navbar:</strong> Botões no topo</li>
+      <li><strong>Sidebar:</strong> Árvore de arquivos</li>
+      <li><strong>Editor:</strong> Textarea com código</li>
+      <li><strong>Preview:</strong> Iframe com resultado</li>
+    </ul>
+  </div>
+
+  <h3>Passo 2: Crie Arquivos Separados</h3>
+  <div class="file-structure">
+/editor/
+  ├── index.html         (estrutura)
+  ├── style.css          (aparência)
+  ├── app.js             (lógica principal)
+  ├── files.js           (gerencia arquivos)
+  ├── editor.js          (gerencia editor)
+  └── preview.js         (gerencia preview)
+  </div>
+
+  <h3>Passo 3: Cada Arquivo Faz UMA Coisa</h3>
+  <div class="code-block">
+/* files.js - Só gerencia arquivos */
+function openFile(path) { ... }
+function saveFile() { ... }
+function deleteFile(path) { ... }
+
+/* editor.js - Só gerencia editor */
+function updateLineNumbers() { ... }
+function syncScroll() { ... }
+
+/* preview.js - Só gerencia preview */
+function refreshPreview() { ... }
+  </div>
+
+  <!-- SEÇÃO 7 -->
+  <h2>7️⃣ COMO CONECTAR OS ARQUIVOS</h2>
+
+  <h3>No index.html, você conecta assim:</h3>
+  <div class="code-block">
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+  &lt;!-- Conecta o CSS --&gt;
+  &lt;link rel="stylesheet" href="style.css"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;!-- Conecta os JavaScripts --&gt;
+  &lt;script src="files.js"&gt;&lt;/script&gt;
+  &lt;script src="editor.js"&gt;&lt;/script&gt;
+  &lt;script src="preview.js"&gt;&lt;/script&gt;
+  &lt;script src="app.js"&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+  </div>
+
+  <div class="box warning">
+    <h3>⚠️ IMPORTANTE:</h3>
+    <p>A ordem importa! Se <code>app.js</code> usa funções de <code>files.js</code>, você deve carregar <code>files.js</code> ANTES de <code>app.js</code>.</p>
+  </div>
+
+  <!-- SEÇÃO 8 -->
+  <h2>8️⃣ EXEMPLO PRÁTICO: SEU EDITOR</h2>
+
+  <h3>Antes (Código Único - Gigante):</h3>
+  <div class="code-block">
+index.html (1500+ linhas)
+  ├── HTML (estrutura)
+  ├── CSS (cores, estilos)
+  └── JavaScript (funcionamento)
+  </div>
+
+  <h3>Depois (Código Modular - Organizado):</h3>
+  <div class="file-structure">
+/editor/
+  ├── index.html         (100 linhas - só estrutura)
+  ├── style.css          (300 linhas - só aparência)
+  ├── app.js             (200 linhas - lógica principal)
+  ├── files.js           (150 linhas - gerencia arquivos)
+  ├── editor.js          (100 linhas - gerencia editor)
+  └── preview.js         (100 linhas - gerencia preview)
+  </div>
+
+  <div class="box success">
+    <h3>✅ Resultado:</h3>
+    <ul>
+      <li>Cada arquivo é pequeno (fácil de ler)</li>
+      <li>Fácil de encontrar o que precisa</li>
+      <li>Fácil de corrigir erros</li>
+      <li>Fácil de adicionar novas funcionalidades</li>
+    </ul>
+  </div>
+
+  <!-- SEÇÃO 9 -->
+  <h2>9️⃣ QUANDO USAR CADA UM?</h2>
+
+  <div class="comparison">
+    <div class="comparison-item">
+      <h4>📦 USE CÓDIGO ÚNICO QUANDO:</h4>
+      <ul>
+        <li>Projeto é muito pequeno</li>
+        <li>Quer testar algo rápido</li>
+        <li>Não precisa de manutenção</li>
+        <li>Está aprendendo</li>
+      </ul>
+    </div>
+
+    <div class="comparison-item">
+      <h4>🧩 USE CÓDIGO MODULAR QUANDO:</h4>
+      <ul>
+        <li>Projeto é grande</li>
+        <li>Precisa manter por tempo</li>
+        <li>Trabalha em equipe</li>
+        <li>Quer adicionar funcionalidades</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- SEÇÃO 10 -->
+  <h2>🔟 RESUMO FINAL</h2>
+
+  <div class="box success">
+    <h3>O Que Você Aprendeu:</h3>
+    <ul>
+      <li>✅ Código único = 1 arquivo (simples, mas fica gigante)</li>
+      <li>✅ Código modular = vários arquivos (organizado, fácil de manter)</li>
+      <li>✅ CSS = cor/aparência (pode remover)</li>
+      <li>✅ JavaScript = motor/funcionamento (não pode remover)</li>
+      <li>✅ Separar por funcionalidade (cada arquivo faz 1 coisa)</li>
+      <li>✅ Conectar no index.html com &lt;link&gt; e &lt;script&gt;</li>
+    </ul>
+  </div>
+
+  <div class="box">
+    <h3>🎯 Próximo Passo:</h3>
+    <p>Agora que você entende a diferença, você pode:</p>
+    <ol>
+      <li>Pegar seu editor que funcionava</li>
+      <li>Separar em arquivos (HTML, CSS, JS)</li>
+      <li>Testar cada parte</li>
+      <li>Adicionar novas funcionalidades sem quebrar</li>
+    </ol>
+  </div>
+
+</div>
+
+</body>
+</html>
