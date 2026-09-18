@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analisador de Logs - SK Editor</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%);
+      color: #e0e0e0;
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding: 30px;
+      background: rgba(77, 166, 255, 0.1);
+      border-radius: 8px;
+      border-left: 4px solid #4da6ff;
+    }
+
+    h1 {
+      color: #4da6ff;
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 14px;
+    }
+
+    .upload-area {
+      background: #2d2d2d;
+      border: 2px dashed #4da6ff;
+      border-radius: 8px;
+      padding: 40px;
+      text-align: center;
+      margin-bottom: 30px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .upload-area:hover {
+      background: #3d3d3d;
+      border-color: #66c2ff;
+    }
+
+    .upload-area.dragover {
+      background: #4da6ff;
+      background: rgba(77, 166, 255, 0.2);
+      border-color: #66c2ff;
+    }
+
+    .upload-icon {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+
+    .upload-text {
+      color: #4da6ff;
+      font-size: 16px;
+      margin-bottom: 5px;
+    }
+
+    .upload-hint {
+      color: #888;
+      font-size: 12px;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .botoes {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      background: #4da6ff;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+
+    button:hover {
+      background: #66c2ff;
+      transform: translateY(-2px);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button.secundario {
+      background: #555;
+    }
+
+    button.secundario:hover {
+      background: #666;
+    }
+
+    .arquivos-lista {
+      margin-bottom: 30px;
+    }
+
+    .arquivo-item {
+      background: #2d2d2d;
+      border-left: 4px solid #4da6ff;
+      border-radius: 4px;
+      padding: 20px;
+      margin-bottom: 15px;
+      transition: all 0.3s;
+    }
+
+    .arquivo-item:hover {
+      background: #3d3d3d;
+      transform: translateX(5px);
+    }
+
+    .arquivo-nome {
+      color: #4da6ff;
+      font-weight: bold;
+      margin-bottom: 15px;
+      font-size: 16px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .stat {
+      background: #1e1e1e;
+      padding: 15px;
+      border-radius: 4px;
+      text-align: center;
+      border-top: 3px solid #555;
+    }
+
+    .stat.sucesso {
+      border-top-color: #6bcf7f;
+    }
+
+    .stat.aviso {
+      border-top-color: #ffd93d;
+    }
+
+    .stat.erro {
+      border-top-color: #ff6b6b;
+    }
+
+    .stat-numero {
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .stat.sucesso .stat-numero {
+      color: #6bcf7f;
+    }
+
+    .stat.aviso .stat-numero {
+      color: #ffd93d;
+    }
+
+    .stat.erro .stat-numero {
+      color: #ff6b6b;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #888;
+      text-transform: uppercase;
+    }
+
+    .erros-container {
+      background: #1e1e1e;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 15px;
+    }
+
+    .erros-titulo {
+      background: #ff6b6b;
+      color: white;
+      padding: 10px 15px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .erros-lista {
+      max-height: 250px;
+      overflow-y: auto;
+    }
+
+    .erro-linha {
+      padding: 10px 15px;
+      border-bottom: 1px solid #333;
+      color: #ff6b6b;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      word-break: break-word;
+    }
+
+    .erro-linha:last-child {
+      border-bottom: none;
+    }
+
+    .avisos-container {
+      background: #1e1e1e;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 15px;
+    }
+
+    .avisos-titulo {
+      background: #ffd93d;
+      color: #1e1e1e;
+      padding: 10px 15px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .avisos-lista {
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .aviso-linha {
+      padding: 10px 15px;
+      border-bottom: 1px solid #333;
+      color: #ffd93d;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      word-break: break-word;
+    }
+
+    .aviso-linha:last-child {
+      border-bottom: none;
+    }
+
+    .resumo-geral {
+      background: #2d2d2d;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 30px;
+      border-left: 4px solid #4da6ff;
+    }
+
+    .resumo-titulo {
+      color: #4da6ff;
+      font-size: 18px;
+      margin-bottom: 15px;
+      font-weight: bold;
+    }
+
+    .resumo-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+    }
+
+    .resumo-stat {
+      background: #1e1e1e;
+      padding: 15px;
+      border-radius: 4px;
+      text-align: center;
+    }
+
+    .resumo-numero {
+      font-size: 32px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .resumo-label {
+      font-size: 12px;
+      color: #888;
+      text-transform: uppercase;
+    }
+
+    .vazio {
+      text-align: center;
+      color: #888;
+      padding: 20px;
+      font-style: italic;
+    }
+
+    .loading {
+      text-align: center;
+      color: #4da6ff;
+      padding: 20px;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid #555;
+      border-top-color: #4da6ff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .botao-limpar {
+      background: #ff6b6b;
+    }
+
+    .botao-limpar:hover {
+      background: #ff8888;
+    }
+
+    .sucesso-msg {
+      background: #6bcf7f;
+      color: white;
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .sucesso-msg.show {
+      display: block;
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 24px;
+      }
+
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .upload-area {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>📊 Analisador de Logs</h1>
+      <p class="subtitle">SK Editor - Análise de Erros e Avisos</p>
+    </header>
+
+    <div class="sucesso-msg" id="sucessoMsg">
+      ✓ Arquivo carregado com sucesso!
+    </div>
+
+    <div class="upload-area" id="uploadArea">
+      <div class="upload-icon">📁</div>
+      <div class="upload-text">Clique ou arraste arquivos aqui</div>
+      <div class="upload-hint">Aceita: .log, .txt</div>
+      <input type="file" id="fileInput" multiple accept=".log,.txt">
+    </div>
+
+    <div class="botoes">
+      <button onclick="document.getElementById('fileInput').click()">
+        📤 Selecionar Arquivos
+      </button>
+      <button class="secundario" onclick="limparTudo()">
+        🗑️ Limpar Tudo
+      </button>
+    </div>
+
+    <div class="arquivos-lista" id="arquivosList"></div>
+
+    <div class="resumo-geral" id="resumoGeral" style="display: none;">
+      <div class="resumo-titulo">📈 Resumo Geral</div>
+      <div class="resumo-stats">
+        <div class="resumo-stat">
+          <div class="resumo-numero" style="color: #6bcf7f;" id="totalSucessos">0</div>
+          <div class="resumo-label">Sucessos</div>
+        </div>
+        <div class="resumo-stat">
+          <div class="resumo-numero" style="color: #ffd93d;" id="totalAvisos">0</div>
+          <div class="resumo-label">Avisos</div>
+        </div>
+        <div class="resumo-stat">
+          <div class="resumo-numero" style="color: #ff6b6b;" id="totalErros">0</div>
+          <div class="resumo-label">Erros</div>
+        </div>
+        <div class="resumo-stat">
+          <div class="resumo-numero" id="totalLinhas">0</div>
+          <div class="resumo-label">Total de Linhas</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const arquivosList = document.getElementById('arquivosList');
+    const resumoGeral = document.getElementById('resumoGeral');
+    const sucessoMsg = document.getElementById('sucessoMsg');
+
+    let arquivos = [];
+    let totaisGerais = {
+      sucessos: 0,
+      avisos: 0,
+      erros: 0,
+      linhas: 0
+    };
+
+    // Drag and drop
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+      uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove('dragover');
+      handleFiles(e.dataTransfer.files);
+    });
+
+    uploadArea.addEventListener('click', () => {
+      fileInput.click();
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      handleFiles(e.target.files);
+    });
+
+    function handleFiles(files) {
+      for (let file of files) {
+        if (file.name.endsWith('.log') || file.name.endsWith('.txt')) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            processarArquivo(file.name, e.target.result);
+          };
+          reader.readAsText(file);
+        }
+      }
+    }
+
+    function processarArquivo(nome, conteudo) {
+      const linhas = conteudo.split('\n').filter(l => l.trim());
+      
+      const erros = linhas.filter(l => 
+        l.toLowerCase().includes('error') || 
+        l.toLowerCase().includes('erro') ||
+        l.toLowerCase().includes('fail')
+      );
+      
+      const avisos = linhas.filter(l => 
+        l.toLowerCase().includes('warn') || 
+        l.toLowerCase().includes('aviso') ||
+        l.toLowerCase().includes('deprecated')
+      );
+      
+      const sucessos = linhas.filter(l => 
+        l.toLowerCase().includes('success') || 
+        l.toLowerCase().includes('sucesso') ||
+        l.toLowerCase().includes('✓')
+      );
+
+      const arquivo = {
+        nome,
+        linhas: linhas.length,
+        erros: erros.length,
+        avisos: avisos.length,
+        sucessos: sucessos.length,
+        errosLinhas: erros.slice(0, 10),
+        avisosLinhas: avisos.slice(0, 10)
+      };
+
+      arquivos.push(arquivo);
+      atualizarTotais();
+      renderizarArquivos();
+      
+      mostrarSucesso();
+    }
+
+    function atualizarTotais() {
+      totaisGerais = {
+        sucessos: 0,
+        avisos: 0,
+        erros: 0,
+        linhas: 0
+      };
+
+      arquivos.forEach(arq => {
+        totaisGerais.sucessos += arq.sucessos;
+        totaisGerais.avisos += arq.avisos;
+        totaisGerais.erros += arq.erros;
+        totaisGerais.linhas += arq.linhas;
+      });
+
+      document.getElementById('totalSucessos').textContent = totaisGerais.sucessos;
+      document.getElementById('totalAvisos').textContent = totaisGerais.avisos;
+      document.getElementById('totalErros').textContent = totaisGerais.erros;
+      document.getElementById('totalLinhas').textContent = totaisGerais.linhas;
+
+      if (arquivos.length > 0) {
+        resumoGeral.style.display = 'block';
+      }
+    }
+
+    function renderizarArquivos() {
+      arquivosList.innerHTML = '';
+
+      arquivos.forEach((arq, index) => {
+        const html = `
+          <div class="arquivo-item">
+            <div class="arquivo-nome">📄 ${arq.nome}</div>
+            
+            <div class="stats">
+              <div class="stat sucesso">
+                <div class="stat-numero">${arq.sucessos}</div>
+                <div class="stat-label">Sucessos</div>
+              </div>
+              <div class="stat aviso">
+                <div class="stat-numero">${arq.avisos}</div>
+                <div class="stat-label">Avisos</div>
+              </div>
+              <div class="stat erro">
+                <div class="stat-numero">${arq.erros}</div>
+                <div class="stat-label">Erros</div>
+              </div>
+              <div class="stat">
+                <div class="stat-numero">${arq.linhas}</div>
+                <div class="stat-label">Linhas</div>
+              </div>
+            </div>
+
+            ${arq.erros > 0 ? `
+              <div class="erros-container">
+                <div class="erros-titulo">🔴 Erros (${arq.erros})</div>
+                <div class="erros-lista">
+                  ${arq.errosLinhas.map(e => `<div class="erro-linha">${escaparHTML(e)}</div>`).join('')}
+                  ${arq.erros > 10 ? `<div class="erro-linha">... e mais ${arq.erros - 10} erros</div>` : ''}
+                </div>
+              </div>
+            ` : '<div class="vazio">✓ Sem erros</div>'}
+
+            ${arq.avisos > 0 ? `
+              <div class="avisos-container">
+                <div class="avisos-titulo">⚠️ Avisos (${arq.avisos})</div>
+                <div class="avisos-lista">
+                  ${arq.avisosLinhas.map(a => `<div class="aviso-linha">${escaparHTML(a)}</div>`).join('')}
+                  ${arq.avisos > 10 ? `<div class="aviso-linha">... e mais ${arq.avisos - 10} avisos</div>` : ''}
+                </div>
+              </div>
+            ` : ''}
+
+            <div style="margin-top: 15px;">
+              <button class="secundario" onclick="removerArquivo(${index})">
+                ❌ Remover
+              </button>
+            </div>
+          </div>
+        `;
+
+        arquivosList.innerHTML += html;
+      });
+    }
+
+    function removerArquivo(index) {
+      arquivos.splice(index, 1);
+      atualizarTotais();
+      renderizarArquivos();
+    }
+
+    function limparTudo() {
+      if (confirm('Tem certeza que deseja limpar tudo?')) {
+        arquivos = [];
+        totaisGerais = { sucessos: 0, avisos: 0, erros: 0, linhas: 0 };
+        arquivosList.innerHTML = '';
+        resumoGeral.style.display = 'none';
+        fileInput.value = '';
+      }
+    }
+
+    function mostrarSucesso() {
+      sucessoMsg.classList.add('show');
+      setTimeout(() => {
+        sucessoMsg.classList.remove('show');
+      }, 3000);
+    }
+
+    function escaparHTML(texto) {
+      const div = document.createElement('div');
+      div.textContent = texto;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>
