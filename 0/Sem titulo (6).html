@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guia: Comandos Terminal para Criar Projetos</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    .container { max-width: 900px; margin: 0 auto; }
+    h1 { color: #333; margin: 30px 0 20px; border-bottom: 3px solid #0066cc; padding-bottom: 10px; }
+    h2 { color: #0066cc; margin: 25px 0 15px; }
+    h3 { color: #333; margin: 15px 0 10px; }
+    p { color: #555; margin: 10px 0; }
+    .box {
+      background: white;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 15px 0;
+      border-left: 5px solid #0066cc;
+    }
+    .box.warning {
+      border-left-color: #ff6600;
+      background: #fff9f0;
+    }
+    .box.success {
+      border-left-color: #00cc00;
+      background: #f0fff0;
+    }
+    .terminal {
+      background: #1e1e1e;
+      color: #00ff00;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+      margin: 10px 0;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      border: 2px solid #333;
+    }
+    .command { color: #ffff00; font-weight: bold; }
+    .output { color: #00ff00; }
+    .structure {
+      background: #1e1e1e;
+      color: #00ff00;
+      padding: 15px;
+      border-radius: 5px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      margin: 15px 0;
+      line-height: 1.8;
+    }
+    .highlight { background: #ffff00; color: #000; padding: 2px 5px; border-radius: 3px; font-weight: bold; }
+    .important { background: #ffcccc; padding: 15px; border-radius: 5px; margin: 20px 0; font-weight: bold; }
+    button { background: #0066cc; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px; }
+    button:hover { background: #0052a3; }
+    .copy-btn { background: #00cc00; font-size: 12px; padding: 5px 10px; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <h1>🖥️ Guia: Criar Estrutura de Projeto com Terminal</h1>
+
+  <!-- SEÇÃO 1 -->
+  <h2>1️⃣ O QUE É TERMINAL?</h2>
+
+  <div class="box">
+    <h3>Terminal = Linha de Comando do Computador</h3>
+    <p>É um programa onde você digita <span class="highlight">COMANDOS</span> para o computador fazer coisas.</p>
+    <p>Você pode criar pastas, arquivos, instalar programas, etc.</p>
+  </div>
+
+  <h3>Como abrir o Terminal:</h3>
+  <div class="box success">
+    <h4>🪟 Windows:</h4>
+    <p>Clique em <span class="highlight">Iniciar</span> → Digite <span class="highlight">cmd</span> → Pressione Enter</p>
+    <p>Ou: Clique em <span class="highlight">Iniciar</span> → Digite <span class="highlight">PowerShell</span> → Pressione Enter</p>
+    
+    <h4>🍎 Mac:</h4>
+    <p>Pressione <span class="highlight">Cmd + Espaço</span> → Digite <span class="highlight">Terminal</span> → Pressione Enter</p>
+    
+    <h4>🐧 Linux:</h4>
+    <p>Pressione <span class="highlight">Ctrl + Alt + T</span></p>
+  </div>
+
+  <!-- SEÇÃO 2 -->
+  <h2>2️⃣ COMANDOS BÁSICOS</h2>
+
+  <h3>Criar uma Pasta:</h3>
+  <div class="terminal">
+<span class="command">mkdir</span> <span class="output">meu-projeto</span>
+  </div>
+  <p>Cria uma pasta chamada "meu-projeto"</p>
+
+  <h3>Entrar em uma Pasta:</h3>
+  <div class="terminal">
+<span class="command">cd</span> <span class="output">meu-projeto</span>
+  </div>
+  <p>Entra dentro da pasta "meu-projeto"</p>
+
+  <h3>Criar um Arquivo:</h3>
+  <div class="terminal">
+<span class="command">echo</span> <span class="output">> index.html</span>
+  </div>
+  <p>Cria um arquivo vazio chamado "index.html"</p>
+
+  <h3>Ver o que tem na Pasta:</h3>
+  <div class="terminal">
+<span class="command">dir</span> <span class="output">(Windows)</span>
+<span class="command">ls</span> <span class="output">(Mac/Linux)</span>
+  </div>
+  <p>Mostra todos os arquivos e pastas</p>
+
+  <!-- SEÇÃO 3 -->
+  <h2>3️⃣ CRIAR ESTRUTURA MANUALMENTE (Passo a Passo)</h2>
+
+  <div class="box">
+    <h3>Vamos criar essa estrutura:</h3>
+    <div class="structure">
+/meu-projeto/
+  ├── index.html
+  ├── css/
+  │   ├── style.css
+  │   └── navbar.css
+  ├── js/
+  │   ├── app.js
+  │   ├── files.js
+  │   └── editor.js
+  └── assets/
+      └── imagens/
+    </div>
+  </div>
+
+  <h3>Passo 1: Criar a Pasta Principal</h3>
+  <div class="terminal">
+<span class="command">mkdir</span> <span class="output">meu-projeto</span>
+  </div>
+
+  <h3>Passo 2: Entrar na Pasta</h3>
+  <div class="terminal">
+<span class="command">cd</span> <span class="output">meu-projeto</span>
+  </div>
+
+  <h3>Passo 3: Criar as Subpastas</h3>
+  <div class="terminal">
+<span class="command">mkdir</span> <span class="output">css</span>
+<span class="command">mkdir</span> <span class="output">js</span>
+<span class="command">mkdir</span> <span class="output">assets</span>
+<span class="command">mkdir</span> <span class="output">assets/imagens</span>
+  </div>
+
+  <h3>Passo 4: Criar os Arquivos</h3>
+  <div class="terminal">
+<span class="command">echo</span> <span class="output">> index.html</span>
+<span class="command">echo</span> <span class="output">> css/style.css</span>
+<span class="command">echo</span> <span class="output">> css/navbar.css</span>
+<span class="command">echo</span> <span class="output">> js/app.js</span>
+<span class="command">echo</span> <span class="output">> js/files.js</span>
+<span class="command">echo</span> <span class="output">> js/editor.js</span>
+  </div>
+
+  <h3>Passo 5: Ver o Resultado</h3>
+  <div class="terminal">
+<span class="command">dir</span> <span class="output">(Windows)</span>
+<span class="command">ls -la</span> <span class="output">(Mac/Linux)</span>
+  </div>
+
+  <!-- SEÇÃO 4 -->
+  <h2>4️⃣ CRIAR TUDO EM UM COMANDO (Mais Rápido)</h2>
+
+  <div class="box success">
+    <h3>Existe um jeito mais rápido!</h3>
+    <p>Você pode criar TUDO com <span class="highlight">UM COMANDO SÓ</span>:</p>
+  </div>
+
+  <h3>Windows (PowerShell):</h3>
+  <div class="terminal">
+<span class="command">mkdir</span> <span class="output">meu-projeto/css,meu-projeto/js,meu-projeto/assets/imagens</span>
+  </div>
+
+  <h3>Mac/Linux (Bash):</h3>
+  <div class="terminal">
+<span class="command">mkdir -p</span> <span class="output">meu-projeto/{css,js,assets/imagens}</span>
+  </div>
+
+  <p>A flag <span class="highlight">-p</span> cria as pastas pai também!</p>
+
+  <!-- SEÇÃO 5 -->
+  <h2>5️⃣ USAR FERRAMENTAS AUTOMÁTICAS (Mais Fácil)</h2>
+
+  <div class="box">
+    <h3>Existem ferramentas que criam a estrutura AUTOMATICAMENTE!</h3>
+    <p>Você só precisa de <span class="highlight">Node.js</span> instalado.</p>
+  </div>
+
+  <h3>Opção 1: Create React App (Para Projetos React)</h3>
+  <div class="terminal">
+<span class="command">npx</span> <span class="output">create-react-app meu-projeto</span>
+  </div>
+  <p>Cria um projeto React completo com estrutura pronta!</p>
+
+  <h3>Opção 2: Vite (Mais Rápido)</h3>
+  <div class="terminal">
+<span class="command">npm</span> <span class="output">create vite@latest meu-projeto</span>
+  </div>
+  <p>Cria um projeto moderno com Vite!</p>
+
+  <h3>Opção 3: Scaffolding Customizado (Seu Próprio)</h3>
+  <div class="terminal">
+<span class="command">npm</span> <span class="output">init -y</span>
+  </div>
+  <p>Cria um arquivo package.json para seu projeto!</p>
+
+  <!-- SEÇÃO 6 -->
+  <h2>6️⃣ SCRIPT AUTOMÁTICO (Cria Tudo de Vez)</h2>
+
+  <div class="box success">
+    <h3>Você pode criar um SCRIPT que faz tudo!</h3>
+    <p>Crie um arquivo chamado <span class="highlight">criar-projeto.bat</span> (Windows) ou <span class="highlight">criar-projeto.sh</span> (Mac/Linux)</p>
+  </div>
+
+  <h3>Windows (criar-projeto.bat):</h3>
+  <div class="terminal">
+@echo off
+mkdir %1
+cd %1
+mkdir css
+mkdir js
+mkdir assets
+mkdir assets\imagens
+echo. > index.html
+echo. > css\style.css
+echo. > js\app.js
+echo Projeto criado!
+  </div>
+
+  <h3>Como usar:</h3>
+  <div class="terminal">
+<span class="command">criar-projeto.bat</span> <span class="output">meu-projeto</span>
+  </div>
+
+  <h3>Mac/Linux (criar-projeto.sh):</h3>
+  <div class="terminal">
+#!/bin/bash
+mkdir -p $1/{css,js,assets/imagens}
+touch $1/index.html
+touch $1/css/style.css
+touch $1/js/app.js
+echo "Projeto criado!"
+  </div>
+
+  <h3>Como usar:</h3>
+  <div class="terminal">
+<span class="command">bash</span> <span class="output">criar-projeto.sh meu-projeto</span>
+  </div>
+
+  <!-- SEÇÃO 7 -->
+  <h2>7️⃣ EXEMPLO PRÁTICO: CRIAR SEU EDITOR</h2>
+
+  <div class="box">
+    <h3>Vamos criar a estrutura do seu editor:</h3>
+    <div class="structure">
+/editor-juridico/
+  ├── index.html
+  ├── css/
+  │   ├── style.css
+  │   ├── navbar.css
+  │   ├── sidebar.css
+  │   ├── editor.css
+  │   └── preview.css
+  ├── js/
+  │   ├── app.js
+  │   ├── files.js
+  │   ├── editor.js
+  │   ├── preview.js
+  │   └── utils.js
+  ├── assets/
+  │   ├── imagens/
+  │   └── icons/
+  └── README.md
+    </div>
+  </div>
+
+  <h3>Comando para criar (Mac/Linux):</h3>
+  <div class="terminal">
+<span class="command">mkdir -p</span> <span class="output">editor-juridico/{css,js,assets/{imagens,icons}}</span>
+<span class="command">cd</span> <span class="output">editor-juridico</span>
+<span class="command">touch</span> <span class="output">index.html css/style.css css/navbar.css css/sidebar.css css/editor.css css/preview.css js/app.js js/files.js js/editor.js js/preview.js js/utils.js README.md</span>
+  </div>
+
+  <h3>Comando para criar (Windows PowerShell):</h3>
+  <div class="terminal">
+<span class="command">mkdir</span> <span class="output">editor-juridico\css,editor-juridico\js,editor-juridico\assets\imagens,editor-juridico\assets\icons</span>
+<span class="command">cd</span> <span class="output">editor-juridico</span>
+<span class="command">New-Item</span> <span class="output">-Path "." -Name "index.html" -ItemType "file"</span>
+<span class="command">New-Item</span> <span class="output">-Path "css" -Name "style.css" -ItemType "file"</span>
+  </div>
+
+  <!-- SEÇÃO 8 -->
+  <h2>8️⃣ FERRAMENTAS RECOMENDADAS</h2>
+
+  <table style="width: 100%; border-collapse: collapse; margin: 15px 0; background: white;">
+    <tr style="background: #0066cc; color: white;">
+      <th style="border: 1px solid #ddd; padding: 10px;">Ferramenta</th>
+      <th style="border: 1px solid #ddd; padding: 10px;">Comando</th>
+      <th style="border: 1px solid #ddd; padding: 10px;">Para Quê?</th>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #ddd; padding: 10px;"><strong>npm init</strong></td>
+      <td style="border: 1px solid #ddd; padding: 10px;"><code>npm init -y</code></td>
+      <td style="border: 1px solid #ddd; padding: 10px;">Criar package.json</td>
+    </tr>
+    <tr style="background: #f9f9f9;">
+      <td style="border: 1px solid #ddd; padding: 10px;"><strong>Create React App</strong></td>
+      <td style="border: 1px solid #ddd; padding: 10px;"><code>npx create-react-app</code></td>
+      <td style="border: 1px solid #ddd; padding: 10px;">Projeto React pronto</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #ddd; padding: 10px;"><strong>Vite</strong></td>
+      <td style="border: 1px solid #ddd; padding: 10px;"><code>npm create vite@latest</code></td>
+      <td style="border: 1px solid #ddd; padding: 10px;">Projeto moderno rápido</td>
+    </tr>
+    <tr style="background: #f9f9f9;">
+      <td style="border: 1px solid #ddd; padding: 10px;"><strong>Vue CLI</strong></td>
+      <td style="border: 1px solid #ddd; padding: 10px;"><code>npm create vue@latest</code></td>
+      <td style="border: 1px solid #ddd; padding: 10px;">Projeto Vue pronto</td>
+    </tr>
+  </table>
+
+  <!-- SEÇÃO 9 -->
+  <h2>9️⃣ RESUMO: QUAL USAR?</h2>
+
+  <div class="box success">
+    <h3>✅ Se você quer SIMPLES e RÁPIDO:</h3>
+    <p>Use comandos manuais:</p>
+    <div class="terminal">
+<span class="command">mkdir -p</span> <span class="output">meu-projeto/{css,js}</span>
+<span class="command">cd</span> <span class="output">meu-projeto</span>
+<span class="command">touch</span> <span class="output">index.html css/style.css js/app.js</span>
+    </div>
+  </div>
+
+  <div class="box success">
+    <h3>✅ Se você quer AUTOMÁTICO e PROFISSIONAL:</h3>
+    <p>Use ferramentas:</p>
+    <div class="terminal">
+<span class="command">npm</span> <span class="output">create vite@latest meu-projeto</span>
+    </div>
+  </div>
+
+  <div class="box success">
+    <h3>✅ Se você quer CUSTOMIZADO:</h3>
+    <p>Crie seu próprio script (arquivo .bat ou .sh)</p>
+  </div>
+
+  <!-- SEÇÃO 10 -->
+  <h2>🔟 PASSO A PASSO FINAL</h2>
+
+  <div class="important">
+    <h3>Para criar seu editor modular:</h3>
+    <ol>
+      <li>Abra o Terminal</li>
+      <li>Crie a pasta: <code>mkdir editor-juridico</code></li>
+      <li>Entre na pasta: <code>cd editor-juridico</code></li>
+      <li>Crie as subpastas: <code>mkdir css js assets</code></li>
+      <li>Crie os arquivos: <code>touch index.html css/style.css js/app.js</code></li>
+      <li>Abra no editor de código (VS Code)</li>
+      <li>Comece a codar!</li>
+    </ol>
+  </div>
+
+</div>
+
+</body>
+</html>
