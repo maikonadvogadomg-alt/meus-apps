@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mapa de Export/Import - Iara Suite PRO</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Courier New', monospace;
+      background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+      color: #e6edf3;
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 30px;
+      border-radius: 12px;
+    }
+
+    h1 {
+      font-size: 42px;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      font-size: 16px;
+      opacity: 0.9;
+    }
+
+    .controls {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .control-btn {
+      background: #58a6ff;
+      color: #0d1117;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+      transition: 0.3s;
+    }
+
+    .control-btn:hover {
+      background: #79c0ff;
+      transform: translateY(-2px);
+    }
+
+    .control-btn.active {
+      background: #3fb950;
+    }
+
+    .zoom-controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .zoom-btn {
+      background: #30363d;
+      color: #58a6ff;
+      border: 1px solid #58a6ff;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    .zoom-btn:hover {
+      background: #58a6ff;
+      color: #0d1117;
+    }
+
+    .zoom-level {
+      color: #8b949e;
+      min-width: 60px;
+      text-align: center;
+    }
+
+    .search-box {
+      background: #161b22;
+      border: 2px solid #30363d;
+      color: #e6edf3;
+      padding: 10px 15px;
+      border-radius: 8px;
+      font-size: 14px;
+      width: 250px;
+    }
+
+    .search-box:focus {
+      outline: none;
+      border-color: #58a6ff;
+    }
+
+    .canvas-container {
+      background: #0d1117;
+      border: 2px solid #30363d;
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+      height: 700px;
+      margin-bottom: 30px;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: grab;
+    }
+
+    canvas:active {
+      cursor: grabbing;
+    }
+
+    .legend {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+
+    .legend-title {
+      color: #58a6ff;
+      font-weight: bold;
+      margin-bottom: 15px;
+      font-size: 16px;
+    }
+
+    .legend-items {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .legend-color {
+      width: 30px;
+      height: 30px;
+      border-radius: 6px;
+      border: 2px solid #30363d;
+    }
+
+    .legend-text {
+      font-size: 13px;
+    }
+
+    .info-panel {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+
+    .info-title {
+      color: #58a6ff;
+      font-weight: bold;
+      margin-bottom: 12px;
+      font-size: 16px;
+    }
+
+    .info-content {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .info-card {
+      background: #0d1117;
+      border-left: 4px solid #58a6ff;
+      padding: 15px;
+      border-radius: 6px;
+    }
+
+    .info-card-title {
+      color: #79c0ff;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .info-card-desc {
+      color: #8b949e;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .code-block {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      padding: 15px;
+      border-radius: 6px;
+      margin-top: 10px;
+      font-size: 11px;
+      overflow-x: auto;
+      color: #79c0ff;
+    }
+
+    .tooltip {
+      position: absolute;
+      background: #161b22;
+      border: 1px solid #58a6ff;
+      color: #e6edf3;
+      padding: 10px 15px;
+      border-radius: 6px;
+      font-size: 12px;
+      pointer-events: none;
+      z-index: 1000;
+      max-width: 250px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    }
+
+    .flow-diagram {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 30px;
+      overflow-x: auto;
+    }
+
+    .flow-step {
+      display: inline-block;
+      background: #161b22;
+      border: 2px solid #58a6ff;
+      padding: 15px 20px;
+      border-radius: 8px;
+      margin-right: 20px;
+      margin-bottom: 10px;
+      min-width: 150px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .flow-arrow {
+      display: inline-block;
+      color: #58a6ff;
+      font-size: 20px;
+      margin: 0 10px;
+      vertical-align: middle;
+    }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      padding: 15px;
+      text-align: left;
+      border-bottom: 1px solid #30363d;
+    }
+
+    .comparison-table th {
+      background: #161b22;
+      color: #58a6ff;
+      font-weight: bold;
+    }
+
+    .comparison-table tr:hover {
+      background: #161b22;
+    }
+
+    .format-badge {
+      display: inline-block;
+      background: #30363d;
+      color: #79c0ff;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    .success {
+      color: #3fb950;
+    }
+
+    .warning {
+      color: #d29922;
+    }
+
+    .error {
+      color: #f85149;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: #8b949e;
+      border-top: 1px solid #30363d;
+      margin-top: 40px;
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 28px;
+      }
+
+      .canvas-container {
+        height: 500px;
+      }
+
+      .controls {
+        flex-direction: column;
+      }
+
+      .search-box {
+        width: 100%;
+      }
+
+      .legend-items {
+        grid-template-columns: 1fr;
+      }
+
+      .info-content {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <header>
+    <h1>🗺️ Mapa de Export/Import</h1>
+    <p class="subtitle">Visualização interativa de formatos e fluxos</p>
+  </header>
+
+  <div class="controls">
+    <button class="control-btn active" onclick="mostrarMapa('export')">📤 EXPORT</button>
+    <button class="control-btn" onclick="mostrarMapa('import')">📥 IMPORT</button>
+    <button class="control-btn" onclick="mostrarMapa('ambos')">🔄 AMBOS</button>
+    <div class="zoom-controls">
+      <button class="zoom-btn" onclick="zoom(-0.1)">🔍−</button>
+      <span class="zoom-level" id="zoom-level">100%</span>
+      <button class="zoom-btn" onclick="zoom(0.1)">🔍+</button>
+    </div>
+    <input type="text" class="search-box" id="search-box" placeholder="🔍 Buscar formato..." onkeyup="filtrar()">
+  </div>
+
+  <div class="canvas-container">
+    <canvas id="mapa-canvas"></canvas>
+    <div id="tooltip" class="tooltip" style="display: none;"></div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-title">📋 Legenda</div>
+    <div class="legend-items">
+      <div class="legend-item">
+        <div class="legend-color" style="background: #58a6ff;"></div>
+        <div class="legend-text">Arquivo (Input)</div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #3fb950;"></div>
+        <div class="legend-text">Formato (Output)</div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #d29922;"></div>
+        <div class="legend-text">Processamento</div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #f85149;"></div>
+        <div class="legend-text">Erro/Aviso</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-panel">
+    <div class="info-title">📊 Formatos Suportados</div>
+    <div class="info-content">
+      <div class="info-card">
+        <div class="info-card-title">📦 ZIP</div>
+        <div class="info-card-desc">
+          Compressão DEFLATE<br>
+          Compatível com qualquer SO<br>
+          Melhor para múltiplos arquivos
+        </div>
+        <div class="code-block">
+ExportModule.exportZip()
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-card-title">📋 TAR</div>
+        <div class="info-card-desc">
+          Sem compressão<br>
+          Padrão Unix/Linux<br>
+          Preserva permissões
+        </div>
+        <div class="code-block">
+ExportModule.exportTar()
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-card-title">📦 TGZ (TAR.GZ)</div>
+        <div class="info-card-desc">
+          TAR + Gzip<br>
+          Compressão forte<br>
+          Ideal para backup
+        </div>
+        <div class="code-block">
+ExportModule.exportTgz()
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-card-title">🔧 BATE</div>
+        <div class="info-card-desc">
+          Script de replicação<br>
+          Bash ou PowerShell<br>
+          Reconstrói estrutura
+        </div>
+        <div class="code-block">
+MapperBate.generate()
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-card-title">🐳 DOCKERFILE</div>
+        <div class="info-card-desc">
+          Containerização<br>
+          Auto-detecta stack<br>
+          Pronto para produção
+        </div>
+        <div class="code-block">
+ExportModule.exportDocker()
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-card-title">📝 .GITIGNORE</div>
+        <div class="info-card-desc">
+          Configuração Git<br>
+          Sugestões automáticas<br>
+          Segurança
+        </div>
+        <div class="code-block">
+ExportModule.exportGitignore()
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-card-title">📖 README.MD</div>
+        <div class="info-card-desc">
+          Documentação<br>
+          Gerado automaticamente<br>
+          Markdown formatado
+        </div>
+        <div class="code-block">
+ExportModule.exportREADME()
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-card-title">📋 RELATÓRIO</div>
+        <div class="info-card-desc">
+          Análise completa<br>
+          Dependências<br>
+          Problemas detectados
+        </div>
+        <div class="code-block">
+ExportModule.exportReport()
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-panel">
+    <div class="info-title">🔄 Fluxo de EXPORT</div>
+    <div class="flow-diagram">
+      <div class="flow-step">📁 Arquivos</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">⚙️ Processar</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">📦 Compactar</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">⬇️ Download</div>
+    </div>
+  </div>
+
+  <div class="info-panel">
+    <div class="info-title">🔄 Fluxo de IMPORT</div>
+    <div class="flow-diagram">
+      <div class="flow-step">⬆️ Upload</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">📦 Extrair</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">⚙️ Processar</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">💾 Salvar</div>
+    </div>
+  </div>
+
+  <div class="info-panel">
+    <div class="info-title">📊 Comparação de Formatos</div>
+    <table class="comparison-table">
+      <tr>
+        <th>Formato</th>
+        <th>Compressão</th>
+        <th>Compatibilidade</th>
+        <th>Tamanho</th>
+        <th>Uso</th>
+      </tr>
+      <tr>
+        <td><span class="format-badge">ZIP</span></td>
+        <td><span class="success">✅ DEFLATE</span></td>
+        <td><span class="success">✅ Universal</span></td>
+        <td>Médio</td>
+        <td>Múltiplos arquivos</td>
+      </tr>
+      <tr>
+        <td><span class="format-badge">TAR</span></td>
+        <td><span class="warning">⚠️ Nenhuma</span></td>
+        <td><span class="success">✅ Unix/Linux</span></td>
+        <td>Grande</td>
+        <td>Backup simples</td>
+      </tr>
+      <tr>
+        <td><span class="format-badge">TGZ</span></td>
+        <td><span class="success">✅ Gzip</span></td>
+        <td><span class="success">✅ Unix/Linux</span></td>
+        <td>Pequeno</td>
+        <td>Backup comprimido</td>
+      </tr>
+      <tr>
+        <td><span class="format-badge">BATE</span></td>
+        <td><span class="warning">⚠️ Script</span></td>
+        <td><span class="success">✅ Bash/PS</span></td>
+        <td>Muito pequeno</td>
+        <td>Replicação</td>
+      </tr>
+      <tr>
+        <td><span class="format-badge">DOCKER</span></td>
+        <td><span class="warning">⚠️ Imagem</span></td>
+        <td><span class="success">✅ Docker</span></td>
+        <td>Variável</td>
+        <td>Containerização</td>
+      </tr>
+      <tr>
+        <td><span class="format-badge">GITIGNORE</span></td>
+        <td><span class="warning">⚠️ Texto</span></td>
+        <td><span class="success">✅ Git</span></td>
+        <td>Muito pequeno</td>
+        <td>Configuração</td>
+      </tr>
+      <tr>
+        <td><span class="format-badge">README</span></td>
+        <td><span class="warning">⚠️ Markdown</span></td>
+        <td><span class="success">✅ Universal</span></td>
+        <td>Pequeno</td>
+        <td>Documentação</td>
+      </tr>
+      <tr>
+        <td><span class="format-badge">RELATÓRIO</span></td>
+        <td><span class="warning">⚠️ Markdown</span></td>
+        <td><span class="success">✅ Universal</span></td>
+        <td>Médio</td>
+        <td>Análise</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="info-panel">
+    <div class="info-title">💡 Casos de Uso</div>
+    <div class="info-content">
+      <div class="info-card">
+        <div class="info-card-title">🎯 Backup Rápido</div>
+        <div class="info-card-desc">
+          Use: <strong>ZIP</strong><br>
+          Razão: Compatível com tudo<br>
+          Comando: ExportModule.exportZip()
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-card-title">🎯 Servidor Linux</div>
+        <div class="info-card-desc">
+          Use: <strong>TGZ</strong><br>
+          Razão: Padrão Unix<br>
+          Comando: ExportModule.exportTgz()
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-card-title">🎯 Replicar Estrutura</div>
+        <div class="info-card-desc">
+          Use: <strong>BATE</strong><br>
+          Razão: Script automático<br>
+          Comando: MapperBate.generate()
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-card-title">🎯 Deploy Docker</div>
+        <div class="info-card-desc">
+          Use: <strong>DOCKERFILE</strong><br>
+          Razão: Containerização<br>
+          Comando: ExportModule.exportDocker()
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-card-title">🎯 Segurança Git</div>
+        <div class="info-card-desc">
+          Use: <strong>.GITIGNORE</strong><br>
+          Razão: Proteção<br>
+          Comando: ExportModule.exportGitignore()
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-card-title">🎯 Documentação</div>
+        <div class="info-card-desc">
+          Use: <strong>README</strong><br>
+          Razão: Informações<br>
+          Comando: ExportModule.exportREADME()
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>Iara Suite PRO v2.0.0 | Mapa de Export/Import</p>
+    <p>Dr. Maikon Caldeira OAB/MG 183712</p>
+  </footer>
+
+</div>
+
+<script>
+  const canvas = document.getElementById('mapa-canvas');
+  const ctx = canvas.getContext('2d');
+  let zoomLevel = 1;
+  let filtroAtivo = '';
+  let mapaAtual = 'export';
+
+  const formatos = {
+    export: [
+      { nome: 'ZIP', x: 100, y: 150, cor: '#3fb950', desc: 'Compressão DEFLATE' },
+      { nome: 'TAR', x: 250, y: 150, cor: '#3fb950', desc: 'Sem compressão' },
+      { nome: 'TGZ', x: 400, y: 150, cor: '#3fb950', desc: 'TAR + Gzip' },
+      { nome: 'BATE', x: 550, y: 150, cor: '#d29922', desc: 'Script Bash/PS' },
+      { nome: 'DOCKER', x: 700, y: 150, cor: '#d29922', desc: 'Containerização' },
+      { nome: 'GITIGNORE', x: 850, y: 150, cor: '#d29922', desc: 'Config Git' },
+      { nome: 'README', x: 1000, y: 150, cor: '#d29922', desc: 'Documentação' },
+      { nome: 'RELATÓRIO', x: 1150, y: 150, cor: '#d29922', desc: 'Análise' },
+      { nome: 'ARQUIVOS', x: 600, y: 50, cor: '#58a6ff', desc: 'Input' },
+    ],
+    import: [
+      { nome: 'ZIP', x: 100, y: 150, cor: '#58a6ff', desc: 'Extrair' },
+      { nome: 'TAR', x: 250, y: 150, cor: '#58a6ff', desc: 'Extrair' },
+      { nome: 'TGZ', x: 400, y: 150, cor: '#58a6ff', desc: 'Extrair' },
+      { nome: 'BATE', x: 550, y: 150, cor: '#58a6ff', desc: 'Executar' },
+      { nome: 'ARQUIVOS', x: 600, y: 300, cor: '#3fb950', desc: 'Output' },
+    ]
+  };
+
+  function desenharMapa() {
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+
+    ctx.fillStyle = '#0d1117';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const dados = formatos[mapaAtual];
+    
+    dados.forEach((item, idx) => {
+      const x = item.x * zoomLevel;
+      const y = item.y * zoomLevel;
+      const w = 80 * zoomLevel;
+      const h = 60 * zoomLevel;
+
+      // Caixa
+      ctx.fillStyle = item.cor;
+      ctx.fillRect(x, y, w, h);
+
+      // Borda
+      ctx.strokeStyle = '#e6edf3';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, y, w, h);
+
+      // Texto
+      ctx.fillStyle = '#0d1117';
+      ctx.font = `bold ${12 * zoomLevel}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.fillText(item.nome, x + w/2, y + h/2 - 5);
+
+      ctx.fillStyle = '#8b949e';
+      ctx.font = `${10 * zoomLevel}px Arial`;
+      ctx.fillText(item.desc, x + w/2, y + h/2 + 12);
+
+      // Setas
+      if (idx < dados.length - 1 && mapaAtual === 'export') {
+        ctx.strokeStyle = '#58a6ff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x + w, y + h/2);
+        ctx.lineTo(x + w + 30, y + h/2);
+        ctx.stroke();
+
+        ctx.fillStyle = '#58a6ff';
+        ctx.beginPath();
+        ctx.moveTo(x + w + 30, y + h/2);
+        ctx.lineTo(x + w + 20, y + h/2 - 5);
+        ctx.lineTo(x + w + 20, y + h/2 + 5);
+        ctx.fill();
+      }
+    });
+  }
+
+  function zoom(delta) {
+    zoomLevel = Math.max(0.5, Math.min(2, zoomLevel + delta));
+    document.getElementById('zoom-level').textContent = Math.round(zoomLevel * 100) + '%';
+    desenharMapa();
+  }
+
+  function mostrarMapa(tipo) {
+    mapaAtual = tipo;
+    document.querySelectorAll('.control-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    desenharMapa();
+  }
+
+  function filtrar() {
+    filtroAtivo = document.getElementById('search-box').value.toLowerCase();
+    desenharMapa();
+  }
+
+  window.addEventListener('resize', desenharMapa);
+  desenharMapa();
+</script>
+
+</body>
+</html>
