@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperador de Projetos Incompletos</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 24px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+        }
+
+        .card h3 {
+            color: #667eea;
+            margin-top: 20px;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 1200px) {
+            .grid-3 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .grid-3, .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            background: #f8f9ff;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 15px 0;
+        }
+
+        .upload-area:hover {
+            background: #e3f2fd;
+            border-color: #764ba2;
+        }
+
+        .upload-area.dragover {
+            background: #e3f2fd;
+            border-color: #764ba2;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-small {
+            width: auto;
+            padding: 8px 15px;
+            font-size: 12px;
+            margin: 5px;
+            display: inline-block;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .stat-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-box h4 {
+            color: #667eea;
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .stat-box p {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-size: 13px;
+            color: #1565c0;
+            line-height: 1.6;
+        }
+
+        .success-box {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-size: 13px;
+            color: #155724;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-size: 13px;
+            color: #856404;
+        }
+
+        .error-box {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-size: 13px;
+            color: #721c24;
+        }
+
+        .file-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 5px;
+            margin: 8px 0;
+            border-left: 4px solid #667eea;
+            font-size: 12px;
+        }
+
+        .file-item.missing {
+            border-left-color: #dc3545;
+            background: #fff5f5;
+        }
+
+        .file-item.found {
+            border-left-color: #28a745;
+            background: #f0f9f5;
+        }
+
+        .code-preview {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow: auto;
+            line-height: 1.6;
+        }
+
+        .copy-btn {
+            padding: 10px 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .copy-btn:hover {
+            background: #764ba2;
+        }
+
+        .download-btn {
+            padding: 10px 15px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 10px;
+            margin-left: 5px;
+        }
+
+        .download-btn:hover {
+            background: #218838;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+            margin: 2px;
+        }
+
+        .badge-missing {
+            background: #dc3545;
+            color: white;
+        }
+
+        .badge-found {
+            background: #28a745;
+            color: white;
+        }
+
+        .badge-generated {
+            background: #667eea;
+            color: white;
+        }
+
+        .badge-pwa {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .badge-backend {
+            background: #4ecdc4;
+            color: white;
+        }
+
+        .badge-frontend {
+            background: #ffe66d;
+            color: #333;
+        }
+
+        .analysis-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .analysis-item strong {
+            color: #333;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .analysis-item p {
+            color: #666;
+            margin: 5px 0;
+            font-size: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 13px;
+            font-family: 'Courier New', monospace;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            font-size: 12px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .checklist {
+            margin: 15px 0;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .checklist-item input {
+            margin-right: 10px;
+            width: auto;
+        }
+
+        .checklist-item label {
+            flex: 1;
+            cursor: pointer;
+            margin: 0;
+            font-weight: normal;
+        }
+
+        .project-type {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #667eea;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .project-type:hover {
+            background: #e3f2fd;
+            transform: translateX(5px);
+        }
+
+        .project-type.selected {
+            background: #667eea;
+            color: white;
+            border-left-color: #764ba2;
+        }
+
+        .project-type h4 {
+            margin-bottom: 5px;
+        }
+
+        .project-type p {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 Recuperador de Projetos Incompletos</h1>
+            <p>Analise, recupere e gere arquivos faltantes em projetos PWA, Backend ou Frontend</p>
+        </div>
+
+        <!-- FERRAMENTA 1: IMPORTAR PROJETOS -->
+        <div class="card">
+            <h2>📦 Passo 1: Importar Projetos Incompletos</h2>
+            
+            <div class="info-box">
+                ℹ️ Importe até 3 projetos ZIP (Backend, Frontend, PWA) para análise e recuperação
+            </div>
+
+            <div class="grid-3">
+                <div>
+                    <h3>📁 Projeto 1</h3>
+                    <div class="upload-area" id="uploadArea1" ondrop="handleDrop(event, 1)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                        <div style="font-size: 36px; margin-bottom: 10px;">📂</div>
+                        <p style="font-weight: 600; color: #333;">Backend/API</p>
+                        <p style="color: #999; font-size: 12px;">Arraste ou clique</p>
+                    </div>
+                    <input type="file" id="fileInput1" style="display: none;" accept=".zip" onchange="handleFileSelect(event, 1)">
+                    <button class="btn btn-small" onclick="document.getElementById('fileInput1').click()" style="width: 100%; margin-top: 10px;">Selecionar</button>
+                    <div id="status1"></div>
+                </div>
+
+                <div>
+                    <h3>📁 Projeto 2</h3>
+                    <div class="upload-area" id="uploadArea2" ondrop="handleDrop(event, 2)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                        <div style="font-size: 36px; margin-bottom: 10px;">📂</div>
+                        <p style="font-weight: 600; color: #333;">Frontend/SRC</p>
+                        <p style="color: #999; font-size: 12px;">Arraste ou clique</p>
+                    </div>
+                    <input type="file" id="fileInput2" style="display: none;" accept=".zip" onchange="handleFileSelect(event, 2)">
+                    <button class="btn btn-small" onclick="document.getElementById('fileInput2').click()" style="width: 100%; margin-top: 10px;">Selecionar</button>
+                    <div id="status2"></div>
+                </div>
+
+                <div>
+                    <h3>📁 Projeto 3</h3>
+                    <div class="upload-area" id="uploadArea3" ondrop="handleDrop(event, 3)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                        <div style="font-size: 36px; margin-bottom: 10px;">📂</div>
+                        <p style="font-weight: 600; color: #333;">PWA/Completo</p>
+                        <p style="color: #999; font-size: 12px;">Arraste ou clique</p>
+                    </div>
+                    <input type="file" id="fileInput3" style="display: none;" accept=".zip" onchange="handleFileSelect(event, 3)">
+                    <button class="btn btn-small" onclick="document.getElementById('fileInput3').click()" style="width: 100%; margin-top: 10px;">Selecionar</button>
+                    <div id="status3"></div>
+                </div>
+            </div>
+
+            <button class="btn" onclick="analisarTodosProjetos()">🔍 Analisar Todos os Projetos</button>
+        </div>
+
+        <!-- FERRAMENTA 2: ANÁLISE COMPARATIVA -->
+        <div class="card">
+            <h2>📊 Passo 2: Análise Comparativa</h2>
+            
+            <div class="grid-3">
+                <div class="stat-box">
+                    <h4 id="totalArquivos">0</h4>
+                    <p>Arquivos Encontrados</p>
+                </div>
+                <div class="stat-box">
+                    <h4 id="totalFaltando">0</h4>
+                    <p>Arquivos Faltando</p>
+                </div>
+                <div class="stat-box">
+                    <h4 id="viabilidade">0%</h4>
+                    <p>Viabilidade do Projeto</p>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab-btn active" onclick="mudarTab('analysis-estrutura')">🏗️ Estrutura</button>
+                <button class="tab-btn" onclick="mudarTab('analysis-faltando')">❌ Faltando</button>
+                <button class="tab-btn" onclick="mudarTab('analysis-tipo')">🔍 Tipo de Projeto</button>
+            </div>
+
+            <div id="tab-analysis-estrutura" class="tab-content active">
+                <div id="estruturaAnalise"></div>
+            </div>
+
+            <div id="tab-analysis-faltando" class="tab-content">
+                <div id="arquivosFaltando"></div>
+            </div>
+
+            <div id="tab-analysis-tipo" class="tab-content">
+                <div id="tipoProjetoAnalise"></div>
+            </div>
+        </div>
+
+        <!-- FERRAMENTA 3: DETECÇÃO DE TIPO -->
+        <div class="card">
+            <h2>🔍 Passo 3: Detecção de Tipo de Projeto</h2>
+            
+            <div class="info-box">
+                ℹ️ Com base na análise, o sistema detectou o tipo de projeto. Confirme ou ajuste:
+            </div>
+
+            <div class="grid-2">
+                <div class="project-type" onclick="selecionarTipo('pwa')">
+                    <h4>📱 PWA (Progressive Web App)</h4>
+                    <p>React/Vue + Service Worker + Manifest</p>
+                </div>
+                <div class="project-type" onclick="selecionarTipo('fullstack')">
+                    <h4>🔄 Full Stack</h4>
+                    <p>Backend + Frontend + Database</p>
+                </div>
+                <div class="project-type" onclick="selecionarTipo('frontend')">
+                    <h4>🎨 Frontend Only</h4>
+                    <p>React/Vue/Angular SPA</p>
+                </div>
+                <div class="project-type" onclick="selecionarTipo('backend')">
+                    <h4>⚙️ Backend Only</h4>
+                    <p>Node.js/Python/Java API</p>
+                </div>
+            </div>
+
+            <div id="tipoSelecionado" style="margin-top: 20px;"></div>
+        </div>
+
+        <!-- FERRAMENTA 4: GERAÇÃO DE ARQUIVOS -->
+        <div class="card">
+            <h2>⚙️ Passo 4: Gerar Arquivos Faltantes</h2>
+            
+            <div class="info-box">
+                ℹ️ Selecione quais arquivos deseja gerar automaticamente
+            </div>
+
+            <div class="checklist">
+                <div class="checklist-item">
+                    <input type="checkbox" id="genPackageJson" checked>
+                    <label for="genPackageJson">📦 package.json</label>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="genGitignore" checked>
+                    <label for="genGitignore">🚫 .gitignore</label>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="genReadme" checked>
+                    <label for="genReadme">📝 README.md</label>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="genEnv" checked>
+                    <label for="genEnv">🔐 .env.example</label>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="genManifest" checked>
+                    <label for="genManifest">📋 manifest.json (PWA)</label>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="genServiceWorker" checked>
+                    <label for="genServiceWorker">⚙️ service-worker.js (PWA)</label>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="genTsconfig" checked>
+                    <label for="genTsconfig">📘 tsconfig.json</label>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" id="genEslint" checked>
+                    <label for="genEslint">🔍 .eslintrc.json</label>
+                </div>
+            </div>
+
+            <button class="btn" onclick="gerarArquivos()">🚀 Gerar Arquivos</button>
+        </div>
+
+        <!-- FERRAMENTA 5: PREVIEW DOS ARQUIVOS -->
+        <div class="card">
+            <h2>👁️ Passo 5: Preview dos Arquivos Gerados</h2>
+            
+            <div class="tabs">
+                <button class="tab-btn active" onclick="mudarTab('preview-package')">📦 package.json</button>
+                <button class="tab-btn" onclick="mudarTab('preview-readme')">📝 README.md</button>
+                <button class="tab-btn" onclick="mudarTab('preview-env')">🔐 .env.example</button>
+                <button class="tab-btn" onclick="mudarTab('preview-manifest')">📋 manifest.json</button>
+            </div>
+
+            <div id="tab-preview-package" class="tab-content active">
+                <div class="code-preview" id="previewPackage"></div>
+                <button class="copy-btn" onclick="copiarCodigo('previewPackage')">📋 Copiar</button>
+            </div>
+
+            <div id="tab-preview-readme" class="tab-content">
+                <div class="code-preview" id="previewReadme"></div>
+                <button class="copy-btn" onclick="copiarCodigo('previewReadme')">📋 Copiar</button>
+            </div>
+
+            <div id="tab-preview-env" class="tab-content">
+                <div class="code-preview" id="previewEnv"></div>
+                <button class="copy-btn" onclick="copiarCodigo('previewEnv')">📋 Copiar</button>
+            </div>
+
+            <div id="tab-preview-manifest" class="tab-content">
+                <div class="code-preview" id="previewManifest"></div>
+                <button class="copy-btn" onclick="copiarCodigo('previewManifest')">📋 Copiar</button>
+            </div>
+        </div>
+
+        <!-- FERRAMENTA 6: DOWNLOAD -->
+        <div class="card">
+            <h2>📥 Passo 6: Download do Projeto Recuperado</h2>
+            
+            <div class="info-box">
+                ℹ️ Baixe o projeto completo com todos os arquivos gerados
+            </div>
+
+            <div class="grid-2">
+                <button class="btn" onclick="baixarProjetoCompleto()">📥 Baixar Projeto Completo (ZIP)</button>
+                <button class="btn" onclick="gerarRelatorioRecuperacao()">📋 Gerar Relatório de Recuperação</button>
+            </div>
+
+            <div id="relatorioRecuperacao"></div>
+        </div>
+
+        <div class="footer">
+            <p>© 2024 Recuperador de Projetos | Recupere e Reconstrua Seus Projetos</p>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // ESTADO GLOBAL
+        // ============================================
+
+        let projetos = {
+            1: { arquivos: {}, nome: 'Projeto 1' },
+            2: { arquivos: {}, nome: 'Projeto 2' },
+            3: { arquivos: {}, nome: 'Projeto 3' }
+        };
+
+        let analise = {
+            tipoDetectado: null,
+            arquivosFaltando: [],
+            arquivosEncontrados: [],
+            viabilidade: 0,
+            gerados: {}
+        };
+
+        // ============================================
+        // UPLOAD E PROCESSAMENTO
+        // ============================================
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+        }
+
+        function handleDrop(e, numero) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                document.getElementById(`fileInput${numero}`).files = files;
+                handleFileSelect({ target: { files } }, numero);
+            }
+        }
+
+        function handleFileSelect(event, numero) {
+            const files = event.target.files;
+            if (files.length > 0) {
+                processarProjeto(files[0], numero);
+            }
+        }
+
+        async function processarProjeto(file, numero) {
+            const statusDiv = document.getElementById(`status${numero}`);
+            statusDiv.innerHTML = '<div class="info-box">⏳ Processando...</div>';
+
+            try {
+                const zip = new JSZip();
+                const conteudo = await zip.loadAsync(file);
+
+                projetos[numero].arquivos = {};
+                projetos[numero].nome = file.name.replace('.zip', '');
+
+                for (const [caminho, item] of Object.entries(conteudo.files)) {
+                    if (!item.dir) {
+                        const conteudoArquivo = await item.async('string');
+                        projetos[numero].arquivos[caminho] = {
+                            conteudo: conteudoArquivo,
+                            extensao: caminho.split('.').pop().toLowerCase(),
+                            tamanho: item._data.uncompressedSize
+                        };
+                    }
+                }
+
+                const totalArquivos = Object.keys(projetos[numero].arquivos).length;
+                statusDiv.innerHTML = `<div class="success-box">✅ ${totalArquivos} arquivos carregados</div>`;
+
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="error-box">❌ Erro: ${error.message}</div>`;
+            }
+        }
+
+        // ============================================
+        // ANÁLISE
+        // ============================================
+
+        function analisarTodosProjetos() {
+            analise = {
+                tipoDetectado: null,
+                arquivosFaltando: [],
+                arquivosEncontrados: [],
+                viabilidade: 0,
+                gerados: {}
+            };
+
+            let totalArquivos = 0;
+            let hasPackageJson = false;
+            let hasSrc = false;
+            let hasBackend = false;
+            let hasManifest = false;
+            let hasServiceWorker = false;
+
+            // Analisar todos os projetos
+            for (let i = 1; i <= 3; i++) {
+                for (const [caminho, arquivo] of Object.entries(projetos[i].arquivos)) {
+                    totalArquivos++;
+                    analise.arquivosEncontrados.push(caminho);
+
+                    if (caminho.includes('package.json')) hasPackageJson = true;
+                    if (caminho.includes('src/') || caminho.includes('source/')) hasSrc = true;
+                    if (caminho.includes('backend/') || caminho.includes('api/') || caminho.includes('server/')) hasBackend = true;
+                    if (caminho.includes('manifest.json')) hasManifest = true;
+                    if (caminho.includes('service-worker')) hasServiceWorker = true;
+                }
+            }
+
+            // Detectar tipo
+            if (hasManifest && hasServiceWorker && hasSrc) {
+                analise.tipoDetectado = 'pwa';
+            } else if (hasBackend && hasSrc) {
+                analise.tipoDetectado = 'fullstack';
+            } else if (hasSrc && !hasBackend) {
+                analise.tipoDetectado = 'frontend';
+            } else if (hasBackend && !hasSrc) {
+                analise.tipoDetectado = 'backend';
+            }
+
+            // Definir arquivos faltando
+            const arquivosEssenciais = [
+                'package.json',
+                '.gitignore',
+                'README.md',
+                '.env.example',
+                'tsconfig.json',
+                '.eslintrc.json'
+            ];
+
+            if (analise.tipoDetectado === 'pwa') {
+                arquivosEssenciais.push('manifest.json', 'service-worker.js', 'public/index.html');
+            }
+
+            for (const arquivo of arquivosEssenciais) {
+                const encontrado = analise.arquivosEncontrados.some(a => a.includes(arquivo));
+                if (!encontrado) {
+                    analise.arquivosFaltando.push(arquivo);
+                }
+            }
+
+            // Calcular viabilidade
+            analise.viabilidade = Math.round(((totalArquivos - analise.arquivosFaltando.length) / totalArquivos) * 100) || 0;
+
+            // Atualizar UI
+            atualizarAnalise();
+        }
+
+        function atualizarAnalise() {
+            document.getElementById('totalArquivos').textContent = analise.arquivosEncontrados.length;
+            document.getElementById('totalFaltando').textContent = analise.arquivosFaltando.length;
+            document.getElementById('viabilidade').textContent = analise.viabilidade + '%';
+
+            // Estrutura
+            let html = '<h3>📂 Arquivos Encontrados</h3>';
+            analise.arquivosEncontrados.forEach(arquivo => {
+                html += `<div class="file-item found">✅ ${arquivo}</div>`;
+            });
+            document.getElementById('estruturaAnalise').innerHTML = html;
+
+            // Faltando
+            html = '<h3>❌ Arquivos Faltando</h3>';
+            if (analise.arquivosFaltando.length === 0) {
+                html += '<div class="success-box">✅ Nenhum arquivo faltando!</div>';
+            } else {
+                analise.arquivosFaltando.forEach(arquivo => {
+                    html += `<div class="file-item missing">❌ ${arquivo}</div>`;
+                });
+            }
+            document.getElementById('arquivosFaltando').innerHTML = html;
+
+            // Tipo
+            html = `<div class="analysis-item">
+                <strong>🔍 Tipo Detectado: ${analise.tipoDetectado || 'Desconhecido'}</strong>
+                <p>Viabilidade: ${analise.viabilidade}%</p>
+                <p>Arquivos: ${analise.arquivosEncontrados.length}</p>
+                <p>Faltando: ${analise.arquivosFaltando.length}</p>
+            </div>`;
+            document.getElementById('tipoProjetoAnalise').innerHTML = html;
+        }
+
+        // ============================================
+        // SELEÇÃO DE TIPO
+        // ============================================
+
+        function selecionarTipo(tipo) {
+            analise.tipoDetectado = tipo;
+
+            document.querySelectorAll('.project-type').forEach(el => {
+                el.classList.remove('selected');
+            });
+            event.target.closest('.project-type').classList.add('selected');
+
+            let html = `<div class="success-box">✅ Tipo selecionado: <strong>${tipo.toUpperCase()}</strong></div>`;
+            document.getElementById('tipoSelecionado').innerHTML = html;
+        }
+
+        // ============================================
+        // GERAÇÃO DE ARQUIVOS
+        // ============================================
+
+        function gerarArquivos() {
+            analise.gerados = {};
+
+            if (document.getElementById('genPackageJson').checked) {
+                analise.gerados['package.json'] = gerarPackageJson();
+            }
+            if (document.getElementById('genGitignore').checked) {
+                analise.gerados['.gitignore'] = gerarGitignore();
+            }
+            if (document.getElementById('genReadme').checked) {
+                analise.gerados['README.md'] = gerarReadme();
+            }
+            if (document.getElementById('genEnv').checked) {
+                analise.gerados['.env.example'] = gerarEnv();
+            }
+            if (document.getElementById('genManifest').checked && analise.tipoDetectado === 'pwa') {
+                analise.gerados['manifest.json'] = gerarManifest();
+            }
+            if (document.getElementById('genServiceWorker').checked && analise.tipoDetectado === 'pwa') {
+                analise.gerados['service-worker.js'] = gerarServiceWorker();
+            }
+            if (document.getElementById('genTsconfig').checked) {
+                analise.gerados['tsconfig.json'] = gerarTsconfig();
+            }
+            if (document.getElementById('genEslint').checked) {
+                analise.gerados['.eslintrc.json'] = gerarEslint();
+            }
+
+            exibirPreviews();
+            alert('✅ Arquivos gerados com sucesso!');
+        }
+
+        function gerarPackageJson() {
+            const pkg = {
+                name: 'projeto-recuperado',
+                version: '1.0.0',
+                description: `Projeto ${analise.tipoDetectado}`,
+                main: analise.tipoDetectado === 'backend' ? 'server.js' : 'index.js',
+                scripts: {
+                    start: analise.tipoDetectado === 'backend' ? 'node server.js' : 'react-scripts start',
+                    build: analise.tipoDetectado === 'backend' ? 'echo "No build"' : 'react-scripts build',
+                    test: 'jest',
+                    dev: 'nodemon server.js'
+                },
+                dependencies: {
+                    ...(analise.tipoDetectado.includes('frontend') && {
+                        'react': '^18.0.0',
+                        'react-dom': '^18.0.0',
+                        'react-router-dom': '^6.0.0'
+                    }),
+                    ...(analise.tipoDetectado.includes('backend') && {
+                        'express': '^4.18.0',
+                        'cors': '^2.8.5',
+                        'dotenv': '^16.0.0'
+                    }),
+                    ...(analise.tipoDetectado === 'pwa' && {
+                        'workbox-cli': '^6.5.0'
+                    })
+                },
+                devDependencies: {
+                    'typescript': '^4.9.0',
+                    'eslint': '^8.0.0',
+                    'prettier': '^2.8.0',
+                    'jest': '^29.0.0'
+                }
+            };
+
+            return JSON.stringify(pkg, null, 2);
+        }
+
+        function gerarGitignore() {
+            return `node_modules/
+dist/
+build/
+.env
+.env.local
+.DS_Store
+*.log
+.vscode/
+.idea/
+coverage/
+.next/
+out/
+.cache/
+.parcel-cache/
+.vercel/
+`;
+        }
+
+        function gerarReadme() {
+            return `# Projeto ${analise.tipoDetectado.toUpperCase()}
+
+## 📋 Descrição
+Projeto ${analise.tipoDetectado} recuperado e reconstruído.
+
+## 🚀 Instalação
+
+\`\`\`bash
+npm install
+\`\`\`
+
+## ▶️ Executar
+
+\`\`\`bash
+npm start
+\`\`\`
+
+## 🏗️ Build
+
+\`\`\`bash
+npm run build
+\`\`\`
+
+## 📁 Estrutura
+
+\`\`\`
+${analise.tipoDetectado === 'pwa' ? `
+src/
+  ├── components/
+  ├── pages/
+  ├── App.js
+  └── index.js
+public/
+  ├── index.html
+  ├── manifest.json
+  └── service-worker.js
+` : `
+src/
+  ├── api/
+  ├── models/
+  ├── routes/
+  └── server.js
+config/
+  └── database.js
+`}
+\`\`\`
+
+## 🔧 Configuração
+
+Copie \`.env.example\` para \`.env\` e configure as variáveis:
+
+\`\`\`bash
+cp .env.example .env
+\`\`\`
+
+## 📦 Dependências
+
+- Node.js 14+
+- npm ou yarn
+
+## 📝 Licença
+
+MIT
+`;
+        }
+
+        function gerarEnv() {
+            return `# Configurações do Projeto
+
+# API
+${analise.tipoDetectado.includes('backend') ? 'API_PORT=3000\nAPI_HOST=localhost' : 'REACT_APP_API_URL=http://localhost:3000'}
+
+# Banco de Dados
+${analise.tipoDetectado.includes('backend') ? `DATABASE_URL=mongodb://localhost:27017/projeto
+DATABASE_USER=admin
+DATABASE_PASSWORD=senha` : ''}
+
+# Autenticação
+JWT_SECRET=seu_secret_aqui
+
+# Ambiente
+NODE_ENV=development
+
+# PWA
+${analise.tipoDetectado === 'pwa' ? 'PWA_ENABLED=true' : ''}
+`;
+        }
+
+        function gerarManifest() {
+            return JSON.stringify({
+                name: 'Projeto PWA',
+                short_name: 'PWA',
+                description: 'Progressive Web App Recuperado',
+                start_url: '/',
+                display: 'standalone',
+                background_color: '#ffffff',
+                theme_color: '#667eea',
+                icons: [
+                    {
+                        src: '/icon-192x192.png',
+                        sizes: '192x192',
+                        type: 'image/png'
+                    },
+                    {
+                        src: '/icon-512x512.png',
+                        sizes: '512x512',
+                        type: 'image/png'
+                    }
+                ]
+            }, null, 2);
+        }
+
+        function gerarServiceWorker() {
+            return `const CACHE_NAME = 'v1';
+const urlsToCache = [
+  '/',
+  '/index.html',
+  '/manifest.json'
+];
+
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(urlsToCache))
+  );
+});
+
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => response || fetch(event.request))
+      .catch(() => caches.match('/index.html'))
+  );
+});
+
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
+});
+`;
+        }
+
+        function gerarTsconfig() {
+            return JSON.stringify({
+                compilerOptions: {
+                    target: 'ES2020',
+                    lib: ['ES2020', 'DOM', 'DOM.Iterable'],
+                    jsx: 'react-jsx',
+                    module: 'ESNext',
+                    moduleResolution: 'node',
+                    strict: true,
+                    esModuleInterop: true,
+                    skipLibCheck: true,
+                    forceConsistentCasingInFileNames: true,
+                    resolveJsonModule: true,
+                    outDir: './dist',
+                    baseUrl: './src'
+                },
+                include: ['src'],
+                exclude: ['node_modules']
+            }, null, 2);
+        }
+
+        function gerarEslint() {
+            return JSON.stringify({
+                env: {
+                    browser: true,
+                    es2021: true,
+                    node: true
+                },
+                extends: ['eslint:recommended'],
+                parserOptions: {
+                    ecmaVersion: 'latest',
+                    sourceType: 'module'
+                },
+                rules: {
+                    'no-console': 'warn',
+                    'no-unused-vars': 'warn'
+                }
+            }, null, 2);
+        }
+
+        function exibirPreviews() {
+            document.getElementById('previewPackage').textContent = analise.gerados['package.json'] || 'Não gerado';
+            document.getElementById('previewReadme').textContent = analise.gerados['README.md'] || 'Não gerado';
+            document.getElementById('previewEnv').textContent = analise.gerados['.env.example'] || 'Não gerado';
+            document.getElementById('previewManifest').textContent = analise.gerados['manifest.json'] || 'Não gerado';
+        }
+
+        // ============================================
+        // DOWNLOAD
+        // ============================================
+
+        async function baixarProjetoCompleto() {
+            const zip = new JSZip();
+
+            // Adicionar arquivos originais
+            for (let i = 1; i <= 3; i++) {
+                for (const [caminho, arquivo] of Object.entries(projetos[i].arquivos)) {
+                    zip.file(caminho, arquivo.conteudo);
+                }
+            }
+
+            // Adicionar arquivos gerados
+            for (const [nome, conteudo] of Object.entries(analise.gerados)) {
+                zip.file(nome, conteudo);
+            }
+
+            const blob = await zip.generateAsync({ type: 'blob' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'projeto-recuperado.zip';
+            a.click();
+        }
+
+        function gerarRelatorioRecuperacao() {
+            let relatorio = `
+# 📋 Relatório de Recuperação do Projeto
+
+## 📊 Resumo
+- **Tipo Detectado**: ${analise.tipoDetectado}
+- **Viabilidade**: ${analise.viabilidade}%
+- **Arquivos Encontrados**: ${analise.arquivosEncontrados.length}
+- **Arquivos Faltando**: ${analise.arquivosFaltando.length}
+- **Arquivos Gerados**: ${Object.keys(analise.gerados).length}
+
+## ✅ Arquivos Encontrados
+${analise.arquivosEncontrados.map(a => `- ${a}`).join('\n')}
+
+## ❌ Arquivos Faltando (Gerados)
+${analise.arquivosFaltando.map(a => `- ${a}`).join('\n')}
+
+## 🆕 Arquivos Gerados
+${Object.keys(analise.gerados).map(a => `- ${a}`).join('\n')}
+
+## 🚀 Próximos Passos
+
+1. Extrair o ZIP do projeto recuperado
+2. Executar \`npm install\`
+3. Configurar \`.env\` com as variáveis necessárias
+4. Executar \`npm start\`
+
+## 📝 Notas
+- Revise os arquivos gerados antes de usar em produção
+- Adapte as dependências conforme necessário
+- Teste o projeto completamente
+            `;
+
+            document.getElementById('relatorioRecuperacao').innerHTML = `<pre>${escapeHtml(relatorio)}</pre>`;
+        }
+
+        // ============================================
+        // FUNÇÕES AUXILIARES
+        // ============================================
+
+        function mudarTab(tab) {
+            const btn = event.target;
+            const card = btn.closest('.card');
+
+            card.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            card.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+            btn.classList.add('active');
+            const tabId = `tab-${tab}`;
+            const tabContent = card.querySelector(`#${tabId}`);
+            if (tabContent) {
+                tabContent.classList.add('active');
+            }
+        }
+
+        function copiarCodigo(elementId) {
+            const elemento = document.getElementById(elementId);
+            const texto = elemento.textContent;
+            navigator.clipboard.writeText(texto).then(() => {
+                alert('✅ Copiado!');
+            });
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+    </script>
+</body>
+</html>
