@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Iara Suite v2</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- NAV COM 3 ABAS PRINCIPAIS -->
+<nav id="nav">
+  <div class="nav-logo">⚡ <span>Iara</span> Suite</div>
+  <div class="nav-sep"></div>
+  
+  <!-- ABAS PRINCIPAIS -->
+  <button class="tab-btn active" data-tab="editor" onclick="switchMainTab('editor')">
+    💻 Editor
+  </button>
+  <button class="tab-btn" data-tab="chat" onclick="switchMainTab('chat')">
+    💬 Chat
+  </button>
+  <button class="tab-btn" data-tab="playground" onclick="switchMainTab('playground')">
+    ▶️ Playground
+  </button>
+  
+  <div class="nav-sep"></div>
+  <button class="btn btn-ghost" style="padding:4px 10px;font-size:11px" onclick="openKeysModal()">
+    🔑 Chaves API
+  </button>
+</nav>
+
+<!-- PANELS -->
+<div id="panels">
+
+  <!-- ═══════════════════════════
+       EDITOR (principal)
+  ═══════════════════════════ -->
+  <div id="editor-panel" class="panel active">
+
+    <!-- SIDEBAR -->
+    <div id="ed-sidebar">
+      <div id="ed-sidebar-top">
+        <span>ARQUIVOS</span>
+        <button class="sib" title="Novo arquivo" onclick="treeNewFile()">📄+</button>
+        <button class="sib" title="Nova pasta" onclick="treeNewFolder()">📁+</button>
+        <button class="sib" title="Importar ZIP" onclick="qs('#zip-in').click()">📦</button>
+        <button class="sib" title="Fechar sidebar" onclick="toggleSidebar()">✕</button>
+        <input type="file" id="zip-in" accept=".zip" style="display:none" onchange="handleZipImport(event)">
+      </div>
+      <div id="file-tree"></div>
+    </div>
+
+    <!-- MAIN -->
+    <div id="ed-main">
+
+      <!-- TOOLBAR -->
+      <div id="ed-toolbar">
+        <button class="pmb" id="btn-sidebar" onclick="toggleSidebar()" title="Arquivos">☰</button>
+        <input id="ed-fname" type="text" value="sem arquivo"
+          onblur="renameCurrentFile()"
+          onkeydown="if(event.key==='Enter')this.blur()">
+        <span class="lbadge" id="lbadge"></span>
+
+        <div style="flex:1;min-width:4px"></div>
+
+        <button class="pmb" id="pm-off" onclick="setPM('off')" title="Fechar preview">📝</button>
+        <button class="pmb" id="pm-split" onclick="setPM('split')" title="Preview">⚡</button>
+        <button class="pmb" id="pm-full" onclick="setPM('full')" title="Preview grande">🔲</button>
+        <button class="pmb" onclick="openPrevTab()" title="Abrir em aba">↗</button>
+        <button class="pmb" onclick="saveFile()" title="Salvar Ctrl+S">💾</button>
+        <button class="pmb" onclick="exportZip()" title="Exportar ZIP">📤</button>
+        <button class="pmb" onclick="toggleAI()" title="IA">🤖 IA</button>
+      </div>
+
+      <!-- WORK: código + preview embaixo + IA lateral -->
+      <div id="ed-work">
+
+        <!-- Coluna código+preview -->
+        <div id="code-col" style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0">
+
+          <!-- Código -->
+          <div id="code-wrap">
+            <div id="line-nums"></div>
+            <textarea id="code-ta"
+              placeholder="Selecione ou crie um arquivo…"
+              oninput="onCodeInput()"
+              onscroll="syncScroll()"
+              onkeydown="codeKD(event)"
+              spellcheck="false"></textarea>
+          </div>
+
+          <!-- Preview (embaixo) -->
+          <div id="preview-section">
+            <div id="preview-bar" onmousedown="startVDrag(event)">
+              <button class="prev-btn" onclick="togglePreviewMin()">⬆ Preview</button>
+              <span id="prev-lbl"></span>
+              <button class="prev-btn" onclick="setPM('off')">✕</button>
+            </div>
+            <iframe id="preview-frame"></iframe>
+          </div>
+
+        </div>
+
+        <!-- Divider vertical IA -->
+        <div id="ed-divider-v" style="width:0;cursor:col-resize;flex-shrink:0;background:transparent;transition:.15s"
+          onmousedown="startDrag(event)"></div>
+
+        <!-- Painel IA -->
+        <div id="ai-panel" class="hidden">
+          <div id="ai-head">
+            <div id="ai-head-top">
+              <span style="font-size:12px;font-weight:700">🤖 Jasmim</span>
+              <button class="sib" onclick="toggleAI()">✕</button>
+            </div>
+            <div id="ai-prov">Nenhuma chave ativa</div>
+          </div>
+          <div id="ai-msgs"></div>
+          <div id="ai-foot">
+            <textarea id="ai-ta"
+              placeholder="Pergunte algo… (Ctrl+Enter envia)"
+              onkeydown="aiKD(event)" rows="3"></textarea>
+            <div id="ai-btns">
+              <button class="btn btn-primary" style="font-size:11px;padding:4px 10px" onclick="sendAI()">Enviar</button>
+              <button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="sendWithCode()">+ Código</button>
+              <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="insertCode()">⬇ Inserir</button>
+              <button class="btn btn-ghost" style="font-size:11px;padding:4px 8px" onclick="clearAI()">🗑</button>
+            </div>
+            <div id="ai-st">pronto</div>
+          </div>
+        </div>
+
+      </div><!-- /ed-work -->
+    </div><!-- /ed-main -->
+  </div><!-- /editor-panel -->
+
+  <!-- ═══════════════════════════
+       CHAT (iframe)
+  ═══════════════════════════ -->
+  <div id="chat-panel" class="panel iframe-panel">
+    <iframe src="chat.html" allowfullscreen></iframe>
+  </div>
+
+  <!-- ═══════════════════════════
+       PLAYGROUND (iframe)
+  ═══════════════════════════ -->
+  <div id="playground-panel" class="panel iframe-panel">
+    <iframe src="playground.html" allowfullscreen></iframe>
+  </div>
+
+  <!-- ═══════════════════════════
+       MAPPER
+  ═══════════════════════════ -->
+  <div id="mapper-panel" class="panel">
+    <div id="mapper-inner">
+
+      <div class="card">
+        <div class="flex-between" style="margin-bottom:10px">
+          <div>
+            <div style="font-size:15px;font-weight:700">🗺 Project Mapper</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">
+              Dr. Maikon Caldeira — OAB/MG 183712</div>
+          </div>
+        </div>
+        <div class="drop-zone"
+          ondragover="event.preventDefault();this.classList.add('over')"
+          ondragleave="this.classList.remove('over')"
+          ondrop="mapDrop(event)"
+          onclick="qs('#map-file-in').click()">
+          <div style="font-size:28px;margin-bottom:6px">📦</div>
+          <div style="font-weight:600">Arraste um ZIP aqui</div>
+          <div style="font-size:11px;margin-top:4px;color:var(--muted)">
+            ou clique para selecionar</div>
+          <input type="file" accept=".zip" style="display:none"
+            id="map-file-in" onchange="mapLoaded(event)">
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:flex-end">
+          <button class="btn btn-primary" onclick="qs('#map-file-in').click()">📂 Selecionar ZIP</button>
+          <div class="inp-grp" style="flex:1;min-width:110px">
+            <div class="label">Profundidade</div>
+            <select id="map-depth">
+              <option value="999">Toda</option>
+              <option value="3">3 níveis</option>
+              <option value="2">2 níveis</option>
+              <option value="1">1 nível</option>
+            </select>
+          </div>
+          <div class="inp-grp" style="flex:1;min-width:110px">
+            <div class="label">Arquivos ocultos</div>
+            <select id="map-hidden">
+              <option value="0">Ocultar</option>
+              <option value="1">Mostrar</option>
+            </select>
+          </div>
+          <div class="inp-grp" style="min-width:90px">
+            <div class="label">Alerta grande (KB)</div>
+            <input type="text" id="map-big" value="100" style="width:80px">
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress -->
+      <div id="map-prog" style="display:none" class="card">
+        <div class="flex" style="gap:10px">
+          <div class="spinner"></div>
+          <div style="flex:1">
+            <div id="map-ptxt" style="font-size:12px;font-weight:600">Analisando…</div>
+            <div id="map-psub" style="font-size:10px;color:var(--muted);margin-top:2px"></div>
+          </div>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-bar" id="map-pbar" style="width:0%"></div>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div id="map-results" style="display:none">
+
+        <div class="card">
+          <div class="sec-title">📊 Resumo</div>
+          <div class="stat-grid" id="map-stats"></div>
+        </div>
+
+        <div class="card" style="padding:10px">
+          <div class="ext-tabs">
+            <button class="ext-tab active" onclick="mTab('tree',this)">🌳 Árvore</button>
+            <button class="ext-tab" onclick="mTab('rels',this)">🔗 Relações</button>
+            <button class="ext-tab" onclick="mTab('deps',this)">📦 Deps</button>
+            <button class="ext-tab" onclick="mTab('apis',this)">🔌 APIs</button>
+            <button class="ext-tab" onclick="mTab('db',this)">🗄 Banco</button>
+            <button class="ext-tab" onclick="mTab('issues',this)">⚠️ Alertas</button>
+            <button class="ext-tab" onclick="mTab('report',this)">📄 Relatório</button>
+          </div>
+        </div>
+
+        <!-- Árvore -->
+        <div class="ext-content active card" id="mc-tree">
+          <div class="flex-between" style="margin-bottom:8px">
+            <div class="sec-title" style="margin:0">🌳 Estrutura</div>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="dlTree()">⬇ .txt</button>
+              <button class="btn btn-primary" style="font-size:11px;padding:4px 10px" onclick="genTemplate()">→ Editor</button>
+            </div>
+          </div>
+          <div class="type-bar" id="map-type-bar"></div>
+          <div id="map-tree-div"></div>
+        </div>
+
+        <!-- Relações -->
+        <div class="ext-content card" id="mc-rels">
+          <div class="flex-between" style="margin-bottom:8px">
+            <div>
+              <div class="sec-title" style="margin:0">🔗 Relações</div>
+              <div id="map-rel-sum" style="font-size:10px;color:var(--muted);margin-top:2px"></div>
+            </div>
+            <div style="display:flex;gap:6px;align-items:center">
+              <input type="text" id="map-rel-filter" placeholder="filtrar…"
+                style="width:110px;padding:3px 7px;font-size:11px" oninput="renderRels()">
+              <button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="dlRels()">⬇ .md</button>
+            </div>
+          </div>
+          <div id="map-rels-list"></div>
+        </div>
+
+        <!-- Deps -->
+        <div class="ext-content card" id="mc-deps">
+          <div class="flex-between" style="margin-bottom:8px">
+            <div>
+              <div class="sec-title" style="margin:0">📦 Dependências</div>
+              <div id="map-deps-sum" style="font-size:10px;color:var(--muted);margin-top:2px"></div>
+            </div>
+            <button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="genPkg()">⚙ Gerar pkg</button>
+          </div>
+          <div id="map-deps-list"></div>
+          <div id="map-pkg-out" style="display:none;margin-top:10px">
+            <div class="flex-between" style="margin-bottom:6px">
+              <span class="sec-title" style="margin:0">package.json</span>
+              <div style="display:flex;gap:6px">
+                <button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="copyText(qs('#map-pkg-pre').textContent)">📋 Copiar</button>
+                <button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="dlPkg()">⬇ Baixar</button>
+                <button class="btn btn-success" style="font-size:11px;padding:4px 10px" onclick="sendToEditor('package.json',qs('#map-pkg-pre').textContent)">→ Editor</button>
+              </div>
+            </div>
+            <pre id="map-pkg-pre" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:11px;font-family:'Courier New',monospace;overflow:auto;max-height:40vh;white-space:pre-wrap"></pre>
+          </div>
+        </div>
+
+        <!-- APIs -->
+        <div class="ext-content card" id="mc-apis">
+          <div class="sec-title">🔌 Endpoints</div>
+          <div id="map-apis-list"></div>
+        </div>
+
+        <!-- Banco -->
+        <div class="ext-content card" id="mc-db">
+          <div class="sec-title">🗄 Banco / ORM</div>
+          <div id="map-db-list"></div>
+        </div>
+
+        <!-- Alertas -->
+        <div class="ext-content card" id="mc-issues">
+          <div class="sec-title">⚠️ Problemas</div>
+          <div id="map-issues-list"></div>
+        </div>
+
+        <!-- Relatório -->
+        <div class="ext-content card" id="mc-report">
+          <div class="flex-between" style="margin-bottom:10px;position:sticky;top:0;background:var(--bg2);z-index:5;padding:6px 0">
+            <div class="sec-title" style="margin:0">📄 Relatório</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="copyText(qs('#map-report-pre').textContent)">📋 Copiar</button>
+              <button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="dlReport()">⬇ .md</button>
+              <button class="btn btn-primary" style="font-size:11px;padding:4px 10px" onclick="sendToEditor('relatorio.md',qs('#map-report-pre').textContent)">→ Editor</button>
+            </div>
+          </div>
+          <pre id="map-report-pre"></pre>
+        </div>
+
+      </div><!-- /map-results -->
+    </div><!-- /mapper-inner -->
+  </div><!-- /mapper-panel -->
+
+</div><!-- /panels -->
+
+<!-- CONTEXT MENU -->
+<div id="ctx-menu">
+  <div class="ctx-item" onclick="ctxNewFile()">📄 Novo arquivo aqui</div>
+  <div class="ctx-item" onclick="ctxNewFolder()">📁 Nova pasta aqui</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="ctxRename()">✏️ Renomear</div>
+  <div class="ctx-item" onclick="ctxDuplicate()">⧉ Duplicar</div>
+  <div class="ctx-item" onclick="ctxDownload()">⬇ Baixar</div>
+  <div class="ctx-item" onclick="ctxAnalyzeAI()">🤖 Analisar com IA</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item ctx-danger" onclick="ctxDelete()">🗑 Excluir</div>
+</div>
+
+<!-- MODAL CHAVES -->
+<div id="keys-modal">
+  <div id="keys-box">
+    <div class="flex-between" style="margin-bottom:14px">
+      <span style="font-size:14px;font-weight:700">🔑 Chaves de API</span>
+      <button class="btn btn-ghost" onclick="closeKeysModal()">✕</button>
+    </div>
+    <div class="alert alert-info" style="margin-bottom:12px;font-size:11px">
+      <strong>sk-ant-</strong> Anthropic ·
+      <strong>AIza</strong> Google ·
+      <strong>gsk_</strong> Groq ·
+      <strong>sk-or-</strong> OpenRouter ·
+      <strong>xai-</strong> xAI ·
+      <strong>sk-</strong> OpenAI
+    </div>
+    <div id="slots-wrap"></div>
+    <div class="flex-between" style="margin-top:14px">
+      <button class="btn btn-ghost" onclick="closeKeysModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveKeys()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL RENOMEAR -->
+<div id="rename-modal">
+  <div id="rename-box">
+    <div class="flex-between" style="margin-bottom:12px">
+      <span id="rename-title" style="font-size:13px;font-weight:700">✏️ Renomear</span>
+      <button class="btn btn-ghost" onclick="closeRenameModal()">✕</button>
+    </div>
+    <input type="text" id="rename-input" placeholder="Novo nome…"
+      onkeydown="if(event.key==='Enter')confirmRename();if(event.key==='Escape')closeRenameModal()">
+    <div class="flex-between" style="margin-top:12px">
+      <button class="btn btn-ghost" onclick="closeRenameModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmRename()">✅ Renomear</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCRIPTS -->
+<script src="app.js"></script>
+</body>
+</html>
