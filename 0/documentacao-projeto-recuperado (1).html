@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documentação - projeto-recuperado</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f5f5f5; color: #333; line-height: 1.6; }
+    .container { max-width: 1000px; margin: 0 auto; background: white; padding: 40px; }
+    h1 { color: #a3a082; margin-bottom: 10px; }
+    h2 { color: #4ade80; margin-top: 30px; margin-bottom: 15px; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; }
+    h3 { color: #60a5fa; margin-top: 20px; margin-bottom: 10px; }
+    code { background: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-family: 'Courier New', monospace; }
+    pre { background: #f0f0f0; padding: 15px; border-radius: 5px; overflow-x: auto; margin: 10px 0; }
+    table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+    th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+    th { background: #f0f0f0; font-weight: 600; }
+    .api { background: #f9f9f9; padding: 15px; border-left: 4px solid #60a5fa; margin: 15px 0; border-radius: 4px; }
+    .method { display: inline-block; padding: 4px 8px; border-radius: 3px; color: white; font-size: 12px; font-weight: 600; margin-right: 8px; }
+    .get { background: #60a5fa; }
+    .post { background: #4ade80; }
+    .put { background: #fbbf24; }
+    .delete { background: #f87171; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📚 projeto-recuperado</h1>
+    <p><strong>Versão:</strong> 1.0.0</p>
+    <p><strong>Autor:</strong> Desconhecido</p>
+    
+    <h2>📝 Descrição</h2>
+    <p>Projeto pwa</p>
+    
+    <h2>🔌 Endpoints da API</h2>
+    
+      <div class="api">
+        <span class="method get">GET</span>
+        <code>/projects/:projectId/files</code>
+        <p>GET /projects/:projectId/files</p>
+      </div>
+    
+      <div class="api">
+        <span class="method put">PUT</span>
+        <code>/projects/:projectId/files</code>
+        <p>PUT /projects/:projectId/files</p>
+      </div>
+    
+      <div class="api">
+        <span class="method delete">DELETE</span>
+        <code>/projects/:projectId/files</code>
+        <p>DELETE /projects/:projectId/files</p>
+      </div>
+    
+      <div class="api">
+        <span class="method post">POST</span>
+        <code>/projects/:projectId/files/mkdir</code>
+        <p>POST /projects/:projectId/files/mkdir</p>
+      </div>
+    
+      <div class="api">
+        <span class="method patch">PATCH</span>
+        <code>/projects/:projectId/files</code>
+        <p>PATCH /projects/:projectId/files</p>
+      </div>
+    
+      <div class="api">
+        <span class="method post">POST</span>
+        <code>/projects/:projectId/files/copy</code>
+        <p>POST /projects/:projectId/files/copy</p>
+      </div>
+    
+      <div class="api">
+        <span class="method post">POST</span>
+        <code>/code-assistant</code>
+        <p>POST /code-assistant</p>
+      </div>
+    
+      <div class="api">
+        <span class="method get">GET</span>
+        <code>/healthz</code>
+        <p>GET /healthz</p>
+      </div>
+    
+      <div class="api">
+        <span class="method post">POST</span>
+        <code>/projects/:projectId/exec-stream</code>
+        <p>POST /projects/:projectId/exec-stream</p>
+      </div>
+    
+      <div class="api">
+        <span class="method post">POST</span>
+        <code>/projects/:projectId/exec</code>
+        <p>POST /projects/:projectId/exec</p>
+      </div>
+    
+      <div class="api">
+        <span class="method post">POST</span>
+        <code>/github/create-repo</code>
+        <p>POST /github/create-repo</p>
+      </div>
+    
+      <div class="api">
+        <span class="method post">POST</span>
+        <code>/projects/:projectId/dev-server/start</code>
+        <p>POST /projects/:projectId/dev-server/start</p>
+      </div>
+    
+      <div class="api">
+        <span class="method delete">DELETE</span>
+        <code>/projects/:projectId/dev-server/stop</code>
+        <p>DELETE /projects/:projectId/dev-server/stop</p>
+      </div>
+    
+      <div class="api">
+        <span class="method get">GET</span>
+        <code>/projects/:projectId/dev-server/status</code>
+        <p>GET /projects/:projectId/dev-server/status</p>
+      </div>
+    
+      <div class="api">
+        <span class="method post">POST</span>
+        <code>/code/run</code>
+        <p>POST /code/run</p>
+      </div>
+    
+      <div class="api">
+        <span class="method get">GET</span>
+        <code>/settings</code>
+        <p>GET /settings</p>
+      </div>
+    
+      <div class="api">
+        <span class="method put">PUT</span>
+        <code>/settings</code>
+        <p>PUT /settings</p>
+      </div>
+    
+      <div class="api">
+        <span class="method get">GET</span>
+        <code>/</code>
+        <p>GET /</p>
+      </div>
+    
+      <div class="api">
+        <span class="method get">GET</span>
+        <code>/api/hello</code>
+        <p>GET /api/hello</p>
+      </div>
+    
+      <div class="api">
+        <span class="method get">GET</span>
+        <code>/projects</code>
+        <p>GET /projects</p>
+      </div>
+    
+      <div class="api">
+        <span class="method post">POST</span>
+        <code>/projects</code>
+        <p>POST /projects</p>
+      </div>
+    
+      <div class="api">
+        <span class="method post">POST</span>
+        <code>/projects/blank</code>
+        <p>POST /projects/blank</p>
+      </div>
+    
+      <div class="api">
+        <span class="method get">GET</span>
+        <code>/projects/:projectId</code>
+        <p>GET /projects/:projectId</p>
+      </div>
+    
+      <div class="api">
+        <span class="method get">GET</span>
+        <code>/projects/:projectId/download</code>
+        <p>GET /projects/:projectId/download</p>
+      </div>
+    
+      <div class="api">
+        <span class="method delete">DELETE</span>
+        <code>/projects/:projectId</code>
+        <p>DELETE /projects/:projectId</p>
+      </div>
+    
+      <div class="api">
+        <span class="method post">POST</span>
+        <code>/projects/import-github</code>
+        <p>POST /projects/import-github</p>
+      </div>
+    
+      <div class="api">
+        <span class="method get">GET</span>
+        <code>/projects/:projectId/preview/status</code>
+        <p>GET /projects/:projectId/preview/status</p>
+      </div>
+    
+      <div class="api">
+        <span class="method get">GET</span>
+        <code>/projects/:projectId/preview/*path</code>
+        <p>GET /projects/:projectId/preview/*path</p>
+      </div>
+    
+      <div class="api">
+        <span class="method get">GET</span>
+        <code>/snippets</code>
+        <p>GET /snippets</p>
+      </div>
+    
+      <div class="api">
+        <span class="method post">POST</span>
+        <code>/snippets</code>
+        <p>POST /snippets</p>
+      </div>
+    
+      <div class="api">
+        <span class="method patch">PATCH</span>
+        <code>/snippets/:id</code>
+        <p>PATCH /snippets/:id</p>
+      </div>
+    
+      <div class="api">
+        <span class="method delete">DELETE</span>
+        <code>/snippets/:id</code>
+        <p>DELETE /snippets/:id</p>
+      </div>
+    
+      <div class="api">
+        <span class="method post">POST</span>
+        <code>/ai/chat</code>
+        <p>POST /ai/chat</p>
+      </div>
+    
+      <div class="api">
+        <span class="method post">POST</span>
+        <code>/ai/analyze-file</code>
+        <p>POST /ai/analyze-file</p>
+      </div>
+    
+      <div class="api">
+        <span class="method post">POST</span>
+        <code>/ai/analyze-folder</code>
+        <p>POST /ai/analyze-folder</p>
+      </div>
+    
+      <div class="api">
+        <span class="method post">POST</span>
+        <code>/ai/tts</code>
+        <p>POST /ai/tts</p>
+      </div>
+    
+    
+    <h2>⚙️ Funções</h2>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>getProjectDir(slug: string)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> string</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>detectLanguage(filePath: string)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> string</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>isBinaryFile(filePath: string)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> boolean</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>detectStartCommand(cwd: string)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> string</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>needsInstall(cwd: string)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> boolean</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>isAllowedCommand(cmd: string)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> boolean</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>spawnInProject(cmd: string, cwd: string, env: Record<string, string>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> ChildProcess</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>killProcessGroup(proc: ChildProcess)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>registerTerminalProcess(projectId: number, proc: ChildProcess, port: number, command: string, existingLog: string[])</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> DevServer</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>walk(dir: string, relBase: string)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>isCommandBlocked(cmd: string)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> boolean</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>normalizeCommand(cmd: string)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> string</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>buildEnv()</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>enrichStderr(stderr: string, exitCode: number, normalized: string)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> string</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>resolveProject(projectId: string)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>proxyRequest(req: Request, res: Response, port: number, targetPath: string, errorHtml?: string)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>extractSearch(req: Request)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> string</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>connectionErrorHtml(port: number)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> string</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>App()</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>testar()</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>App()</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>resolveProject(projectId: string)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>toError(value: unknown)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> Error</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>DefaultFallback({ error, resetError }: ErrorFallbackProps)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>AppLayout({ children, hideBottomNav }: { children: React.ReactNode; hideBottomNav?: boolean })</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>SideNavItem({
+  href, icon, active, title, className, }: {
+  href: string; icon: React.ReactNode; active?: boolean; title: string; className?: string;
+})</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>MobileNavItem({
+  href, icon, label, active, }: {
+  href: string; icon: React.ReactNode; label: string; active?: boolean;
+})</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>FileIcon({ name }: { name: string })</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>ContextMenuItems({ actions }: { actions: MenuAction[] })</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>DropdownMenuItems({ actions }: { actions: MenuAction[] })</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>FileTree({
+  node, onSelectFile, onAnalyzeFile, onAnalyzeFolder, selectedPath, level = 0, ops, }: FileTreeProps)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>SmallBtn({ title, onClick, children }: {
+  title: string;
+  onClick: React.MouseEventHandler;
+  children: React.ReactNode;
+})</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>CodeViewer({
+  file, isLoading, canGoBack, canGoForward, onBack, onForward, onPreview, projectId, }: CodeViewerProps)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>ViewerBody({ file }: { file: FileContent })</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>getLanguage(lang: string | undefined, path: string | undefined)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>CodeEditor({
+  value, onChange, language, path, onSave, onCancel, readOnly = false, }: CodeEditorProps)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>ThemeProvider({
+  children, defaultTheme = "dark", storageKey = "codelens-theme", ...props
+}: ThemeProviderProps)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>Badge({ className, variant, ...props }: BadgeProps)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>ButtonGroup({
+  className, orientation, ...props
+}: React.ComponentProps<'div'> & VariantProps<typeof buttonGroupVariants>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>ButtonGroupText({
+  className, asChild = false, ...props
+}: React.ComponentProps<'div'> & {
+  asChild?: boolean;
+})</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>ButtonGroupSeparator({
+  className, orientation = 'vertical', ...props
+}: React.ComponentProps<typeof Separator>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>useCarousel()</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>Calendar({
+  className, classNames, showOutsideDays = true, captionLayout = 'label', buttonVariant = 'ghost', formatters, components, ...props
+}: React.ComponentProps<typeof DayPicker> & {
+  buttonVariant?: React.ComponentProps<typeof Button>['variant'];
+})</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>CalendarDayButton({
+  className, day, modifiers, ...props
+}: React.ComponentProps<typeof DayButton>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>useChart()</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>getPayloadConfigFromPayload(config: ChartConfig, payload: unknown, key: string)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>Empty({ className, ...props }: React.ComponentProps<'div'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>EmptyHeader({ className, ...props }: React.ComponentProps<'div'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>EmptyMedia({
+  className, variant = 'default', ...props
+}: React.ComponentProps<'div'> & VariantProps<typeof emptyMediaVariants>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>EmptyTitle({ className, ...props }: React.ComponentProps<'div'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>EmptyDescription({ className, ...props }: React.ComponentProps<'p'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>EmptyContent({ className, ...props }: React.ComponentProps<'div'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>FieldSet({ className, ...props }: React.ComponentProps<'fieldset'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>FieldLegend({
+  className, variant = 'legend', ...props
+}: React.ComponentProps<'legend'> & { variant?: 'legend' | 'label' })</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>FieldGroup({ className, ...props }: React.ComponentProps<'div'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>Field({
+  className, orientation = 'vertical', ...props
+}: React.ComponentProps<'div'> & VariantProps<typeof fieldVariants>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>FieldContent({ className, ...props }: React.ComponentProps<'div'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>FieldLabel({
+  className, ...props
+}: React.ComponentProps<typeof Label>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>FieldTitle({ className, ...props }: React.ComponentProps<'div'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>FieldDescription({ className, ...props }: React.ComponentProps<'p'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>FieldSeparator({
+  children, className, ...props
+}: React.ComponentProps<'div'> & {
+  children?: React.ReactNode;
+})</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>FieldError({
+  className, children, errors, ...props
+}: React.ComponentProps<'div'> & {
+  errors?: Array<{ message?: string } | undefined>;
+})</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>InputGroup({ className, ...props }: React.ComponentProps<'div'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>InputGroupAddon({
+  className, align = 'inline-start', ...props
+}: React.ComponentProps<'div'> & VariantProps<typeof inputGroupAddonVariants>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>InputGroupButton({
+  className, type = 'button', variant = 'ghost', size = 'xs', ...props
+}: Omit<React.ComponentProps<typeof Button>, 'size'> &
+  VariantProps<typeof inputGroupButtonVariants>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>InputGroupText({ className, ...props }: React.ComponentProps<'span'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>InputGroupInput({
+  className, ...props
+}: React.ComponentProps<'input'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>InputGroupTextarea({
+  className, ...props
+}: React.ComponentProps<'textarea'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>Kbd({ className, ...props }: React.ComponentProps<'kbd'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>KbdGroup({ className, ...props }: React.ComponentProps<'div'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>ItemGroup({ className, ...props }: React.ComponentProps<'div'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>ItemSeparator({
+  className, ...props
+}: React.ComponentProps<typeof Separator>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>Item({
+  className, variant = 'default', size = 'default', asChild = false, ...props
+}: React.ComponentProps<'div'> &
+  VariantProps<typeof itemVariants> & { asChild?: boolean })</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>ItemMedia({
+  className, variant = 'default', ...props
+}: React.ComponentProps<'div'> & VariantProps<typeof itemMediaVariants>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>ItemContent({ className, ...props }: React.ComponentProps<'div'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>ItemTitle({ className, ...props }: React.ComponentProps<'div'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>ItemDescription({ className, ...props }: React.ComponentProps<'p'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>ItemActions({ className, ...props }: React.ComponentProps<'div'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>ItemHeader({ className, ...props }: React.ComponentProps<'div'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>ItemFooter({ className, ...props }: React.ComponentProps<'div'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>MenubarMenu({
+  ...props
+}: React.ComponentProps<typeof MenubarPrimitive.Menu>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>MenubarGroup({
+  ...props
+}: React.ComponentProps<typeof MenubarPrimitive.Group>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>MenubarPortal({
+  ...props
+}: React.ComponentProps<typeof MenubarPrimitive.Portal>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>MenubarRadioGroup({
+  ...props
+}: React.ComponentProps<typeof MenubarPrimitive.RadioGroup>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>MenubarSub({
+  ...props
+}: React.ComponentProps<typeof MenubarPrimitive.Sub>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>Skeleton({
+  className, ...props
+}: React.HTMLAttributes<HTMLDivElement>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>Spinner({ className, ...props }: React.ComponentProps<'svg'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>Toaster()</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>cn(...inputs: ClassValue[])</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>formatBytes(bytes: number, decimals = 2)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> string</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>apiFetch(url: string, opts: RequestInit)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>useFileOps(projectId: string)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>useIsMobile()</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>genId()</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>dispatch(action: Action)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>toast({ ...props }: Toast)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>useToast()</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>NotFound()</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>collectFiles(dir: string, relBase: string, depth = 0)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>getAiSettings()</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>getDefaultBaseUrl(provider: string)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> string</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>getDefaultModel(provider: string)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> string</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>GithubDeployModal({
+  open, onOpenChange, projectId, defaultName = "meu-projeto", }: GithubDeployModalProps)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>PreviewPanel({ projectId, onRunBuild, previewPath, terminalPort }: PreviewPanelProps)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>IframeView({
+  url, iframeKey, iframeRef, viewport, }: {
+  url: string;
+  iframeKey: number;
+  iframeRef: React.RefObject<HTMLIFrameElement | null>;
+  viewport: Viewport;
+})</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>formatDownloads(n: number)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> string</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>PackagesPanel({ projectId, fileTree, onRunCommand }: PackagesPanelProps)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>getBase()</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>ChunkLine({ type, text, exitCode }: { type: "stdout" | "stderr"; text: string; exitCode: number | null })</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>TerminalPanel({
+  projectId, projectName, onClose, pendingCommand, onEntriesChange, onServerDetected, onCommandDone, onAskAi, }: TerminalPanelProps)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>useSidebar()</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>Sidebar({
+  side = 'left', variant = 'sidebar', collapsible = 'offcanvas', className, children, ...props
+}: React.ComponentProps<'div'> & {
+  side?: 'left' | 'right';
+  variant?: 'sidebar' | 'floating' | 'inset';
+  collapsible?: 'offcanvas' | 'icon' | 'none';
+})</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>SidebarTrigger({
+  className, onClick, ...props
+}: React.ComponentProps<typeof Button>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>SidebarRail({ className, ...props }: React.ComponentProps<'button'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>SidebarInset({ className, ...props }: React.ComponentProps<'main'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>SidebarInput({
+  className, ...props
+}: React.ComponentProps<typeof Input>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>SidebarHeader({ className, ...props }: React.ComponentProps<'div'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>SidebarFooter({ className, ...props }: React.ComponentProps<'div'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>SidebarSeparator({
+  className, ...props
+}: React.ComponentProps<typeof Separator>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>SidebarContent({ className, ...props }: React.ComponentProps<'div'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>SidebarGroup({ className, ...props }: React.ComponentProps<'div'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>SidebarGroupLabel({
+  className, asChild = false, ...props
+}: React.ComponentProps<'div'> & { asChild?: boolean })</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>SidebarGroupAction({
+  className, asChild = false, ...props
+}: React.ComponentProps<'button'> & { asChild?: boolean })</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>SidebarGroupContent({
+  className, ...props
+}: React.ComponentProps<'div'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>SidebarMenu({ className, ...props }: React.ComponentProps<'ul'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>SidebarMenuItem({ className, ...props }: React.ComponentProps<'li'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>SidebarMenuButton({
+  asChild = false, isActive = false, variant = 'default', size = 'default', tooltip, className, ...props
+}: React.ComponentProps<'button'> & {
+  asChild?: boolean;
+  isActive?: boolean;
+  tooltip?: string | React.ComponentProps<typeof TooltipContent>;
+} & VariantProps<typeof sidebarMenuButtonVariants>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>SidebarMenuAction({
+  className, asChild = false, showOnHover = false, ...props
+}: React.ComponentProps<'button'> & {
+  asChild?: boolean;
+  showOnHover?: boolean;
+})</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>SidebarMenuBadge({
+  className, ...props
+}: React.ComponentProps<'div'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>SidebarMenuSkeleton({
+  className, showIcon = false, ...props
+}: React.ComponentProps<'div'> & {
+  showIcon?: boolean;
+})</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>SidebarMenuSub({ className, ...props }: React.ComponentProps<'ul'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>SidebarMenuSubItem({
+  className, ...props
+}: React.ComponentProps<'li'>)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>SidebarMenuSubButton({
+  asChild = false, size = 'md', isActive = false, className, ...props
+}: React.ComponentProps<'a'> & {
+  asChild?: boolean;
+  size?: 'sm' | 'md';
+  isActive?: boolean;
+})</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>CodeBlock({ code, lang }: { code: string; lang: string })</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>RenderContent({ text }: { text: string })</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>Assistant()</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>projectColor(name: string)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>Home()</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>ProjectExplorer()</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>CodeBlock({ code, lang }: { code: string; lang: string })</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>RenderText({ text }: { text: string })</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>RenderContent({ text }: { text: string })</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>CodeAssistant()</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>detectProviderOption(key: string)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> ProviderOption</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>saveProfiles(profiles: AiProfile[])</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>loadActiveSlot()</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> number</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>SettingsPage()</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>FileChangeCard({ segment, projectId, onApplied }: FileChangeCardProps)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>CopyButton({ text, className = "" }: { text: string; className?: string })</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>useActiveModel()</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> string</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>AiPanel({ projectId, fileContext, externalMessage, onRunCommand, terminalLog }: AiPanelProps)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>apiBase()</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>apiFetch(path: string, opts?: RequestInit)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>App()</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>preprocessJSX(code: string)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> string</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>Playground()</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>App()</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>testarAPI()</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>preprocessJSX(code: string)</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> string</p>
+      </div>
+    
+      <div style="margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <h3><code>Playground()</code></h3>
+        <p>Função do projeto</p>
+        <p><strong>Retorna:</strong> void</p>
+      </div>
+    
+    
+    <h2>📦 Dependências</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Pacote</th>
+          <th>Versão</th>
+          <th>Tipo</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+          <tr>
+            <td>workbox-cli</td>
+            <td>^6.5.0</td>
+            <td>production</td>
+          </tr>
+        
+          <tr>
+            <td>typescript</td>
+            <td>^4.9.0</td>
+            <td>development</td>
+          </tr>
+        
+          <tr>
+            <td>eslint</td>
+            <td>^8.0.0</td>
+            <td>development</td>
+          </tr>
+        
+          <tr>
+            <td>prettier</td>
+            <td>^2.8.0</td>
+            <td>development</td>
+          </tr>
+        
+          <tr>
+            <td>jest</td>
+            <td>^29.0.0</td>
+            <td>development</td>
+          </tr>
+        
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
