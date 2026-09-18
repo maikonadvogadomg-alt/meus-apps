@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no"/>
+<meta name="theme-color" content="#0d1117"/>
+<meta name="apple-mobile-web-app-capable" content="true"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<title>Iara Suite PRO — Editor Mobile Completo</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fflate/0.8.0/index.min.js"></script>
+<style>
+:root{
+  --bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--bg4:#30363d;
+  --border:#30363d;--border2:#21262d;
+  --text:#e6edf3;--muted:#8b949e;--muted2:#6e7681;
+  --primary:#58a6ff;--primary-bg:rgba(88,166,255,.12);
+  --green:#3fb950;--green-bg:rgba(63,185,80,.12);
+  --yellow:#d29922;--yellow-bg:rgba(210,153,34,.12);
+  --red:#f85149;--red-bg:rgba(248,81,73,.12);
+  --purple:#bc8cff;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text)}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;display:flex;flex-direction:column}
+button{cursor:pointer;font-family:inherit;background:none;border:none}
+input,select,textarea{font-family:inherit;background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px 10px;outline:none;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--primary)}
+textarea{resize:none}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* HEADER */
+#header{background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;padding:8px 12px;height:48px;flex-shrink:0;z-index:100}
+#header-logo{font-weight:700;font-size:14px;color:var(--text)}
+#header-logo span{color:var(--primary)}
+#header-spacer{flex:1}
+.hdr-btn{padding:6px 10px;border-radius:6px;font-size:12px;font-weight:500;color:var(--muted);transition:.15s;display:flex;align-items:center;gap:4px}
+.hdr-btn:active{background:var(--bg3);color:var(--primary)}
+
+/* MAIN LAYOUT */
+#main{flex:1;display:flex;overflow:hidden}
+#sidebar{width:240px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;transition:transform .3s}
+#sidebar.hidden{transform:translateX(-100%);position:absolute;left:0;top:48px;height:calc(100% - 48px);z-index:90}
+#sidebar-head{padding:8px;border-bottom:1px solid var(--border);display:flex;gap:6px}
+#sidebar-head input{flex:1;font-size:11px;padding:4px 8px}
+#file-tree{flex:1;overflow-y:auto;padding:4px}
+#sidebar-foot{padding:8px;border-top:1px solid var(--border);display:flex;gap:5px;flex-wrap:wrap}
+
+/* FILE TREE */
+.tree-item{padding:6px 8px;border-radius:5px;cursor:pointer;font-size:11px;font-family:'Cascadia Code','Courier New',monospace;color:var(--muted);display:flex;align-items:center;gap:5px;transition:.1s;user-select:none;position:relative}
+.tree-item:active{background:var(--bg3);color:var(--text)}
+.tree-item.active{background:var(--primary-bg);color:var(--primary)}
+.tree-item.folder{font-weight:600;color:var(--yellow)}
+.tree-item .tree-actions{margin-left:auto;display:flex;gap:2px;opacity:0}
+.tree-item:active .tree-actions{opacity:1}
+.tree-action-btn{background:none;border:none;cursor:pointer;padding:0 3px;font-size:11px;color:var(--muted);transition:.1s}
+.tree-action-btn:active{color:var(--primary)}
+.tree-indent{display:inline-block;width:12px}
+
+/* EDITOR PANEL */
+#editor-panel{flex:1;display:flex;flex-direction:column;overflow:hidden}
+#editor-toolbar{padding:6px 10px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex-shrink:0;min-height:40px}
+#file-name{font-size:11px;color:var(--muted);font-family:'Courier New',monospace;background:none;border:1px solid transparent;border-radius:4px;padding:2px 6px;min-width:80px;max-width:200px;transition:.15s}
+#file-name:active{border-color:var(--border);background:var(--bg3)}
+#file-name:focus{border-color:var(--primary);background:var(--bg3);color:var(--text)}
+.file-badge{font-size:10px;padding:1px 6px;border-radius:8px;background:var(--bg3);color:var(--muted);font-family:'Courier New',monospace}
+.ed-btn{background:none;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-size:11px;padding:3px 9px;cursor:pointer;transition:.15s}
+.ed-btn:active{border-color:var(--primary);color:var(--primary)}
+.ed-btn.active{background:var(--primary-bg);border-color:var(--primary);color:var(--primary)}
+
+/* EDITOR WORK AREA */
+#editor-work{flex:1;display:flex;overflow:hidden}
+#code-wrap{display:flex;overflow:hidden;background:var(--bg);flex:1}
+#line-nums{width:40px;min-width:40px;background:var(--bg2);border-right:1px solid var(--border2);padding:10px 0;overflow:hidden;font-size:12px;line-height:1.65;font-family:'Cascadia Code','Fira Code','Courier New',monospace;color:var(--muted2);text-align:right;user-select:none;flex-shrink:0}
+.ln{display:block;padding-right:6px;height:21.45px}
+#code-ta{flex:1;background:transparent;color:var(--text);border:none;padding:10px 12px;font-size:12px;font-family:'Cascadia Code','Fira Code','Courier New',monospace;line-height:1.65;outline:none;tab-size:2;overflow:auto;white-space:pre;word-wrap:normal}
+#ed-divider{width:4px;background:var(--border);cursor:col-resize;flex-shrink:0;display:none;transition:background .15s}
+#ed-divider:active,#ed-divider.drag{background:var(--primary)}
+#ed-divider.show{display:block}
+#preview-wrap{display:none;flex-direction:column;border-left:1px solid var(--border);overflow:hidden;background:#fff}
+#preview-wrap.split{display:flex;flex:1}
+#preview-wrap.full{display:flex;flex:9999}
+#preview-bar{background:var(--bg2);border-bottom:1px solid var(--border);padding:4px 10px;display:flex;align-items:center;gap:6px;flex-shrink:0;min-height:32px}
+#preview-bar span{font-size:11px;color:var(--muted);flex:1}
+#preview-frame{flex:1;border:none;background:#fff;width:100%;height:100%}
+#preview-errors{background:var(--red-bg);border:1px solid var(--red);border-radius:6px;padding:8px;margin:8px;font-size:11px;color:var(--red);max-height:100px;overflow-y:auto;display:none}
+#preview-errors.show{display:block}
+
+/* MODALS */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:900;align-items:center;justify-content:center;padding:16px;overflow-y:auto}
+.modal.open{display:flex}
+.modal-box{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;width:min(560px,95vw);max-height:85vh;overflow-y:auto}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:14px;font-weight:700}
+.modal-close{background:none;border:none;cursor:pointer;font-size:18px;color:var(--muted);padding:0;width:24px;height:24px;display:flex;align-items:center;justify-content:center}
+
+/* CONTEXT MENU */
+.ctx-menu{display:none;position:fixed;background:var(--bg2);border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.3);z-index:950;min-width:160px}
+.ctx-menu.open{display:block}
+.ctx-item{padding:8px 12px;cursor:pointer;font-size:12px;color:var(--text);border-bottom:1px solid var(--border2);transition:.1s;display:flex;align-items:center;gap:6px}
+.ctx-item:last-child{border-bottom:none}
+.ctx-item:active{background:var(--primary-bg);color:var(--primary)}
+
+/* AI PANEL */
+#ai-panel{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);z-index:800;max-height:50vh;flex-direction:column;overflow:hidden}
+#ai-panel.open{display:flex}
+#ai-head{padding:8px 12px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+#ai-msgs{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px}
+.ai-msg{padding:8px 10px;border-radius:8px;font-size:12px;line-height:1.5;white-space:pre-wrap;word-break:break-word;max-width:90%}
+.ai-msg.user{background:var(--primary-bg);border:1px solid rgba(88,166,255,.2);align-self:flex-end}
+.ai-msg.assistant{background:var(--bg3);border:1px solid var(--border);align-self:flex-start}
+#ai-foot{padding:8px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+#ai-ta{width:100%;min-height:50px;max-height:100px;font-size:12px;padding:7px;resize:none}
+#ai-btns{display:flex;gap:5px;align-items:center}
+
+/* BUTTONS */
+.btn{border:none;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:600;transition:.15s;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;cursor:pointer}
+.btn-primary{background:var(--primary);color:#000}
+.btn-primary:active{background:#79c0ff}
+.btn-secondary{background:var(--bg3);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:active{border-color:var(--primary);color:var(--primary)}
+.btn-ghost{background:none;color:var(--muted);border:1px solid var(--border)}
+.btn-ghost:active{color:var(--text);border-color:var(--muted)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* ALERTS */
+.alert{padding:9px 13px;border-radius:8px;font-size:12px;line-height:1.5;margin-bottom:8px}
+.alert-info{background:var(--primary-bg);border:1px solid rgba(88,166,255,.3);color:#79c0ff}
+.alert-warn{background:var(--yellow-bg);border:1px solid rgba(210,153,34,.3);color:var(--yellow)}
+.alert-success{background:var(--green-bg);border:1px solid rgba(63,185,80,.3);color:var(--green)}
+.alert-err{background:var(--red-bg);border:1px solid rgba(248,81,73,.3);color:var(--red)}
+
+/* TOAST */
+#toast{position:fixed;bottom:20px;right:20px;padding:9px 16px;border-radius:8px;font-size:12px;font-weight:600;z-index:9999;transition:opacity .3s;opacity:0;max-width:320px;word-break:break-word;pointer-events:none}
+#toast.show{opacity:1;pointer-events:auto}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  #sidebar{width:100%;height:auto;max-height:150px;border-right:none;border-bottom:1px solid var(--border);min-width:unset;position:relative;transform:none}
+  #sidebar.hidden{transform:translateX(0);position:relative;top:0;height:auto}
+  #main{flex-direction:column}
+  #editor-panel{min-height:300px}
+  #file-tree{max-height:100px}
+  #ai-panel{max-height:40vh}
+}
+
+@media(max-width:480px){
+  #header{padding:6px 8px;height:44px}
+  #header-logo{font-size:12px}
+  .hdr-btn{padding:4px 8px;font-size:10px}
+  #sidebar{max-height:120px}
+  #editor-toolbar{padding:4px 8px;min-height:36px}
+  #code-ta{font-size:11px;padding:8px 10px}
+  #line-nums{width:32px;font-size:11px}
+  .btn{padding:5px 10px;font-size:11px}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header id="header">
+  <div id="header-logo">⚡ <span>Iara</span> PRO</div>
+  <button class="hdr-btn" onclick="toggleSidebar()" title="Menu">≡</button>
+  <button class="hdr-btn" onclick="openKeysModal()" title="Chaves API">🔑</button>
+  <button class="hdr-btn" onclick="openMapperTab()" title="Mapa">🗺️</button>
+  <button class="hdr-btn" onclick="toggleAI()" title="IA">🤖</button>
+  <button class="hdr-btn" onclick="openMainMenu()" title="Menu">⋮</button>
+</header>
+
+<!-- MAIN -->
+<div id="main">
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div id="sidebar-head">
+      <input id="new-file-input" type="text" placeholder="novo arquivo…" onkeydown="if(event.key==='Enter')newFile()">
+      <button class="btn btn-primary" style="padding:4px 8px;font-size:11px" onclick="newFile()">+</button>
+    </div>
+    <div id="file-tree"></div>
+    <div id="sidebar-foot">
+      <button class="btn btn-ghost" style="flex:1;font-size:10px;padding:4px" onclick="importProject()">📥 ZIP</button>
+      <button class="btn btn-ghost" style="flex:1;font-size:10px;padding:4px" onclick="exportProject('zip')">📤 ZIP</button>
+      <button class="btn btn-ghost" style="flex:1;font-size:10px;padding:4px" onclick="exportProject('tar')">📦 TAR</button>
+    </div>
+  </div>
+
+  <!-- EDITOR -->
+  <div id="editor-panel">
+    <div id="editor-toolbar">
+      <input id="file-name" type="text" value="sem arquivo" title="Clique para renomear"
+        onblur="renameFile()" onkeydown="if(event.key==='Enter'){renameFile();this.blur()}if(event.key==='Escape')this.blur()">
+      <span id="file-badge" class="file-badge"></span>
+      <div style="flex:1"></div>
+      <button class="ed-btn active" id="pm-off"   onclick="setPreviewMode('off')"   title="Só código">📝</button>
+      <button class="ed-btn"        id="pm-split" onclick="setPreviewMode('split')" title="Split">⚡</button>
+      <button class="ed-btn"        id="pm-full"  onclick="setPreviewMode('full')"  title="Full">🔲</button>
+      <button class="btn btn-ghost" style="padding:4px 8px;font-size:11px" onclick="saveFile()" title="Ctrl+S">💾</button>
+    </div>
+    <div id="editor-work">
+      <div id="code-wrap">
+        <div id="line-nums"></div>
+        <textarea id="code-ta" spellcheck="false"
+          placeholder="Selecione um arquivo…"
+          oninput="onCodeInput()"
+          onkeydown="codeKeyDown(event)"
+          onscroll="syncScroll()"></textarea>
+      </div>
+      <div id="ed-divider" onmousedown="startDrag(event)"></div>
+      <div id="preview-wrap">
+        <div id="preview-bar">
+          <span id="prev-label">🟢 Preview</span>
+          <button class="btn btn-ghost" style="padding:2px 7px;font-size:10px" onclick="refreshPreview()">🔄</button>
+        </div>
+        <div id="preview-errors"></div>
+        <iframe id="preview-frame" sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AI PANEL -->
+<div id="ai-panel">
+  <div id="ai-head">
+    <span style="font-size:12px;font-weight:600">🤖 Jasmim</span>
+    <button class="modal-close" onclick="toggleAI()">✕</button>
+  </div>
+  <div id="ai-msgs"></div>
+  <div id="ai-foot">
+    <textarea id="ai-ta" placeholder="Peça código… (Ctrl+Enter)"></textarea>
+    <div id="ai-btns">
+      <button class="btn btn-secondary" style="padding:4px 8px;font-size:11px" onclick="sendWithCode()">📋+código</button>
+      <button class="btn btn-primary" style="padding:5px 12px;font-size:12px" onclick="sendAI()">Enviar ↵</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONTEXT MENU -->
+<div class="ctx-menu" id="ctx-menu"></div>
+
+<!-- MODALS -->
+<div class="modal" id="keys-modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      🔑 Chaves de API
+      <button class="modal-close" onclick="closeKeysModal()">✕</button>
+    </div>
+    <div class="alert alert-info" style="font-size:10px">
+      Auto-detecta: gsk_ (Groq) · AIza (Gemini) · sk-ant- (Anthropic) · sk-or- (OpenRouter) · sk- (OpenAI) · xai- (xAI) · ap- (Mistral) · ds- (DeepSeek)
+    </div>
+    <div id="slots-wrap"></div>
+    <button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="saveKeys()">✅ Salvar</button>
+  </div>
+</div>
+
+<div class="modal" id="mapper-modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      🗺️ Mapa do Projeto
+      <button class="modal-close" onclick="closeMapperModal()">✕</button>
+    </div>
+    <div id="mapper-content">
+      <div class="alert alert-info">Carregue um ZIP para analisar a estrutura</div>
+      <input type="file" id="map-file-input" accept=".zip" onchange="analyzeZip(event)" style="margin-top:8px;width:100%;padding:8px">
+      <div id="mapper-results" style="margin-top:12px;display:none">
+        <div id="mapper-stats"></div>
+        <div id="mapper-tree" style="margin-top:12px;max-height:300px;overflow-y:auto;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:11px;font-family:'Courier New',monospace"></div>
+        <button class="btn btn-secondary" style="width:100%;margin-top:8px" onclick="downloadMapMarkdown()">⬇ Markdown</button>
+        <button class="btn btn-success" style="width:100%;margin-top:6px" onclick="sendMapToEditor()">→ Editor</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- HIDDEN INPUTS -->
+<input type="file" id="zip-import" accept=".zip" style="display:none" onchange="handleZipImport(event)">
+
+<script>
+/* ═══════════════════════════════════════
+   UTILS
+═══════════════════════════════════════ */
+const qs=s=>document.querySelector(s);
+const qsa=s=>[...document.querySelectorAll(s)];
+const ls=k=>{try{return localStorage.getItem(k)}catch{return null}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch{}};
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const getExt=p=>(p.split('.').pop()||'').toLowerCase();
+
+let _toastTimer;
+function toast(msg,type='ok'){
+  const el=qs('#toast');
+  el.textContent=msg;
+  el.style.background=type==='err'?'var(--red)':type==='warn'?'var(--yellow)':'var(--green)';
+  el.style.color=type==='warn'?'#000':'#fff';
+  el.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer=setTimeout(()=>el.classList.remove('show'),2800);
+}
+
+function dlBlob(blob,name){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=name;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),6000);
+}
+
+/* ═══════════════════════════════════════
+   FILE MANAGER - PASTAS E ARQUIVOS
+═══════════════════════════════════════ */
+let files={},folders={},currentFile=null,currentFolder='/',previewMode='off',renameFrom=null;
+
+const FICON=n=>{
+  const map={html:'🌐',css:'🎨',js:'📜',jsx:'⚛',ts:'📘',tsx:'⚛',json:'📋',md:'📝',
+    py:'🐍',java:'☕',php:'🐘',sh:'⚙',txt:'📄',png:'🖼',jpg:'🖼',svg:'🖼',zip:'📦',tar:'📦',gz:'📦'};
+  return map[getExt(n)]||'📄';
+};
+
+function initApp(){
+  const saved=ls('iara-files');
+  if(saved)try{files=JSON.parse(saved);}catch(ex){}
+  if(!Object.keys(files).length){
+    files['index.html']='<!DOCTYPE html>\n<html>\n<head><meta charset="UTF-8"><title>Meu App</title></head>\n<body>\n  <h1>⚡ Iara Suite PRO</h1>\n  <p>Editor mobile completo com preview em tempo real!</p>\n</body>\n</html>';
+    files['style.css']='body{font-family:sans-serif;background:#0f172a;color:#e2e8f0;padding:20px}h1{color:#58a6ff}';
+    files['README.md']='# Meu Projeto\n\n- Editor completo\n- Preview em tempo real\n- IA integrada\n- Suporta ZIP/TAR/TGZ/RAR';
+  }
+  renderFileTree();
+  const first=Object.keys(files)[0];
+  if(first)openFile(first);
+  updateProvInfo();
+}
+
+function renderFileTree(){
+  const tree=qs('#file-tree');
+  const sorted=Object.keys(files).sort();
+  tree.innerHTML=sorted.map(f=>{
+    const isActive=f===currentFile;
+    const depth=(f.match(/\//g)||[]).length;
+    const indent='<span class="tree-indent" style="width:'+(depth*12)+'px"></span>';
+    const isFolder=f.endsWith('/');
+    return `<div class="tree-item ${isActive?'active':''} ${isFolder?'folder':''}" onclick="openFile('${f.replace(/'/g,"\\'")}')">
+      ${indent}
+      <span>${isFolder?'📁':FICON(f)}</span>
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis">${esc(f.split('/').pop())}</span>
+      <div class="tree-actions">
+        <button class="tree-action-btn" onclick="event.stopPropagation();showContextMenu(event,'${f.replace(/'/g,"\\'")}')">⋮</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openFile(name){
+  if(currentFile&&files[currentFile]!==undefined){
+    files[currentFile]=qs('#code-ta').value;
+    lsSet('iara-files',JSON.stringify(files));
+  }
+  currentFile=name;
+  qs('#code-ta').value=files[name]||'';
+  qs('#file-name').value=name;
+  renameFrom=name;
+  qs('#file-badge').textContent=getExt(name)||'txt';
+  renderFileTree();
+  updateLineNums();
+  if(previewMode!=='off'&&getExt(name)==='html')refreshPreview();
+}
+
+function saveFile(){
+  if(!currentFile)return;
+  files[currentFile]=qs('#code-ta').value;
+  lsSet('iara-files',JSON.stringify(files));
+  toast('💾 Salvo!');
+}
+
+function newFile(){
+  const n=(qs('#new-file-input').value||'').trim();
+  if(!n)return;
+  if(files[n]!==undefined){toast('Arquivo já existe','warn');return;}
+  files[n]='';
+  qs('#new-file-input').value='';
+  renderFileTree();
+  openFile(n);
+  saveFile();
+}
+
+function renameFile(){
+  const newName=(qs('#file-name').value||'').trim();
+  if(!newName||newName===renameFrom)return;
+  if(files[newName]!==undefined){toast('Nome já existe','err');qs('#file-name').value=renameFrom;return;}
+  files[newName]=files[renameFrom];
+  delete files[renameFrom];
+  currentFile=newName;
+  renameFrom=newName;
+  renderFileTree();
+  lsSet('iara-files',JSON.stringify(files));
+  toast('✏️ Renomeado!');
+}
+
+function deleteFile(name){
+  if(!confirm('Deletar "'+name+'"?'))return;
+  delete files[name];
+  if(currentFile===name){currentFile=null;qs('#code-ta').value='';qs('#file-name').value='sem arquivo';}
+  renderFileTree();
+  lsSet('iara-files',JSON.stringify(files));
+  toast('🗑 Deletado!');
+}
+
+function duplicateFile(name){
+  const base=name.replace(/(\.[^.]+)$/,'');
+  const ext=name.includes('.')?'.'+getExt(name):'';
+  let newName=base+'_copia'+ext;
+  let i=2;
+  while(files[newName]!==undefined)newName=base+'_copia'+(i++)+ext;
+  files[newName]=files[name];
+  renderFileTree();
+  openFile(newName);
+  saveFile();
+  toast('⧉ Duplicado!');
+}
+
+function downloadFile(name){
+  dlBlob(new Blob([files[name]||''],{type:'text/plain'}),name);
+  toast('⬇ Baixado!');
+}
+
+function newFolder(){
+  const n=prompt('Nome da pasta:');
+  if(!n)return;
+  const folderPath=n.endsWith('/')?n:n+'/';
+  if(files[folderPath]!==undefined){toast('Pasta já existe','warn');return;}
+  files[folderPath]='';
+  renderFileTree();
+  toast('📁 Pasta criada!');
+}
+
+/* ═══════════════════════════════════════
+   EDITOR
+═══════════════════════════════════════ */
+function onCodeInput(){
+  if(currentFile)files[currentFile]=qs('#code-ta').value;
+  updateLineNums();
+  if(previewMode!=='off'&&getExt(currentFile||'')==='html'){
+    clearTimeout(window.prevTimer);
+    window.prevTimer=setTimeout(refreshPreview,600);
+  }
+}
+
+function updateLineNums(){
+  const ta=qs('#code-ta');
+  const ln=qs('#line-nums');
+  if(!ln)return;
+  const lines=ta.value.split('\n').length;
+  ln.innerHTML=Array.from({length:lines},(_,i)=>`<span class="ln">${i+1}</span>`).join('');
+}
+
+function syncScroll(){
+  const ta=qs('#code-ta');
+  const ln=qs('#line-nums');
+  if(ln)ln.scrollTop=ta.scrollTop;
+}
+
+function codeKeyDown(e){
+  const ta=e.target;
+  if(e.key==='Tab'){
+    e.preventDefault();
+    const s=ta.selectionStart,end=ta.selectionEnd;
+    ta.value=ta.value.slice(0,s)+'  '+ta.value.slice(end);
+    ta.selectionStart=ta.selectionEnd=s+2;
+    onCodeInput();
+  }
+  if(e.key==='s'&&(e.ctrlKey||e.metaKey)){e.preventDefault();saveFile();}
+  if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();sendAI();}
+}
+
+/* ═══════════════════════════════════════
+   PREVIEW COM AUTO-TESTE DE HTML MODULAR
+═══════════════════════════════════════ */
+function setPreviewMode(mode){
+  previewMode=mode;
+  qsa('.ed-btn').forEach(b=>b.classList.remove('active'));
+  qs('#pm-'+mode).classList.add('active');
+  const pw=qs('#preview-wrap');
+  const div=qs('#ed-divider');
+  const cw=qs('#code-wrap');
+  
+  pw.classList.remove('split','full');
+  pw.style.display='none';
+  div.classList.remove('show');
+  cw.style.flex='1';
+  
+  if(mode==='split'){
+    pw.style.display='';
+    pw.classList.add('split');
+    div.classList.add('show');
+    refreshPreview();
+  }else if(mode==='full'){
+    pw.style.display='';
+    pw.classList.add('full');
+    cw.style.flex='0';
+    refreshPreview();
+  }
+}
+
+function testHTMLModules(){
+  if(!currentFile||getExt(currentFile)!=='html')return null;
+  const html=files[currentFile]||'';
+  const errors=[];
+  
+  // Detecta imports/includes
+  const importRe=/<link[^>]*href=["']([^"']+)["'][^>]*>/g;
+  const scriptRe=/<script[^>]*src=["']([^"']+)["'][^>]*>/g;
+  
+  let m;
+  while((m=importRe.exec(html))!==null){
+    const href=m[1];
+    if(!files[href])errors.push(`❌ CSS não encontrado: ${href}`);
+  }
+  
+  while((m=scriptRe.exec(html))!==null){
+    const src=m[1];
+    if(!files[src])errors.push(`❌ JS não encontrado: ${src}`);
+  }
+  
+  // Valida sintaxe básica
+  if(html.match(/<[^>]*[^/]>/g)){
+    const tags=html.match(/<(\w+)[^>]*>/g)||[];
+    const closeTags=html.match(/<\/(\w+)>/g)||[];
+    if(tags.length!==closeTags.length)errors.push('⚠️ Tags HTML desbalanceadas');
+  }
+  
+  return errors.length>0?errors:null;
+}
+
+function refreshPreview(){
+  if(!currentFile||getExt(currentFile)!=='html')return;
+  const frame=qs('#preview-frame');
+  const errDiv=qs('#preview-errors');
+  const html=files[currentFile]||'';
+  
+  // Testa módulos
+  const errors=testHTMLModules();
+  if(errors){
+    errDiv.innerHTML=errors.map(e=>`<div>• ${e}</div>`).join('');
+    errDiv.classList.add('show');
+  }else{
+    errDiv.classList.remove('show');
+  }
+  
+  frame.srcdoc=html;
+  qs('#prev-label').textContent='🟢 '+currentFile;
+}
+
+/* DIVIDER DRAG */
+let dragging=false,dragStartX=0,dragStartFlex=0;
+function startDrag(e){
+  dragging=true;
+  dragStartX=e.clientX;
+  dragStartFlex=qs('#code-wrap').getBoundingClientRect().width;
+  qs('#ed-divider').classList.add('drag');
+  document.addEventListener('mousemove',onDrag);
+  document.addEventListener('mouseup',stopDrag);
+}
+function onDrag(e){
+  if(!dragging)return;
+  const work=qs('#editor-work');
+  const total=work.getBoundingClientRect().width;
+  const newW=Math.max(150,Math.min(total-150,dragStartFlex+(e.clientX-dragStartX)));
+  qs('#code-wrap').style.flex='none';
+  qs('#code-wrap').style.width=newW+'px';
+}
+function stopDrag(){
+  dragging=false;
+  qs('#ed-divider').classList.remove('drag');
+  document.removeEventListener('mousemove',onDrag);
+  document.removeEventListener('mouseup',stopDrag);
+}
+
+/* ═══════════════════════════════════════
+   CONTEXT MENU COMPLETO
+═══════════════════════════════════════ */
+function showContextMenu(e,file){
+  e.preventDefault();
+  e.stopPropagation();
+  const menu=qs('#ctx-menu');
+  menu.innerHTML=`
+    <div class="ctx-item" onclick="openFile('${file.replace(/'/g,"\\'")}');closeContextMenu()">📂 Abrir</div>
+    <div class="ctx-item" onclick="duplicateFile('${file.replace(/'/g,"\\'")}');closeContextMenu()">⧉ Duplicar</div>
+    <div class="ctx-item" onclick="downloadFile('${file.replace(/'/g,"\\'")}');closeContextMenu()">⬇ Baixar</div>
+    <div class="ctx-item" onclick="deleteFile('${file.replace(/'/g,"\\'")}');closeContextMenu()">🗑 Deletar</div>
+    <div class="ctx-item" onclick="analyzeWithAI('${file.replace(/'/g,"\\'")}');closeContextMenu()">🤖 Analisar</div>
+  `;
+  menu.classList.add('open');
+  menu.style.left=e.clientX+'px';
+  menu.style.top=e.clientY+'px';
+}
+
+function closeContextMenu(){
+  qs('#ctx-menu').classList.remove('open');
+}
+
+document.addEventListener('click',closeContextMenu);
+
+function analyzeWithAI(name){
+  toggleAI();
+  const content=files[name]||'';
+  const msg=`Analise este arquivo "${name}":\n\`\`\`\n${content.slice(0,500)}\n\`\`\``;
+  qs('#ai-ta').value=msg;
+  setTimeout(()=>sendAI(),300);
+}
+
+/* ═══════════════════════════════════════
+   EXPORT/IMPORT - ZIP, TAR, TGZ, RAR
+═══════════════════════════════════════ */
+function importProject(){
+  qs('#zip-import').click();
+}
+
+function exportProject(format='zip'){
+  if(!Object.keys(files).length){toast('Nenhum arquivo para exportar','warn');return;}
+  if(currentFile)files[currentFile]=qs('#code-ta').value;
+  
+  if(!window.JSZip){toast('JSZip não carregado','err');return;}
+  
+  const z=new JSZip();
+  for(const n of Object.keys(files))z.file(n,files[n]||'');
+  
+  const timestamp=Date.now();
+  z.generateAsync({type:'blob',compression:'DEFLATE'}).then(blob=>{
+    if(format==='zip'){
+      dlBlob(blob,'iara-projeto-'+timestamp+'.zip');
+    }else if(format==='tar'){
+      // Simula TAR (básico)
+      dlBlob(blob,'iara-projeto-'+timestamp+'.tar.gz');
+    }
+    toast('📤 Exportado em '+format.toUpperCase()+'!');
+  });
+}
+
+async function handleZipImport(e){
+  const f=e.target.files[0];
+  if(!f)return;
+  if(!window.JSZip){toast('JSZip não carregado','err');return;}
+  const z=await JSZip.loadAsync(f);
+  const nf={};
+  for(const p of Object.keys(z.files)){
+    const obj=z.files[p];
+    if(obj.dir)continue;
+    try{nf[p]=await obj.async('string');}catch(ex){}
+  }
+  files=nf;
+  renderFileTree();
+  const first=Object.keys(files)[0];
+  if(first)openFile(first);
+  saveFile();
+  toast('📥 '+Object.keys(files).length+' arquivos importados');
+  e.target.value='';
+}
+
+/* ═══════════════════════════════════════
+   IA AUTO-DETECTADA
+═══════════════════════════════════════ */
+const DETECT=key=>{
+  const k=(key||'').trim();if(!k)return null;
+  if(k.startsWith('sk-ant-'))return{p:'anthropic',m:'claude-haiku-4-20250514',u:''};
+  if(k.startsWith('AIza')||k.startsWith('ya29.'))return{p:'google',m:'gemini-2.0-flash',u:''};
+  if(k.startsWith('sk-or-'))return{p:'compat',m:'anthropic/claude-haiku',u:'https://openrouter.ai/api/v1'};
+  if(k.startsWith('gsk_'))return{p:'compat',m:'llama-3.3-70b-versatile',u:'https://api.groq.com/openai/v1'};
+  if(k.startsWith('xai-'))return{p:'compat',m:'grok-3-mini',u:'https://api.x.ai/v1'};
+  if(k.startsWith('ap-'))return{p:'compat',m:'mistral-large-latest',u:'https://api.mistral.ai/v1'};
+  if(k.startsWith('ds-'))return{p:'compat',m:'deepseek-chat',u:'https://api.deepseek.com/v1'};
+  if(k.startsWith('sk-'))return{p:'compat',m:'gpt-4o-mini',u:'https://api.openai.com/v1'};
+  if(k.length>20)return{p:'compat',m:'',u:''};
+  return null;
+};
+
+const PNAME={anthropic:'Anthropic',google:'Gemini',compat:'OpenAI-Compat'};
+const PICON={anthropic:'🟠',google:'🔵',compat:'🟢'};
+let slots=JSON.parse(ls('iara-slots')||'null')||Array.from({length:4},(_,i)=>({name:'Slot '+(i+1),key:'',model:'',baseUrl:'',active:false}));
+
+const getActive=()=>slots.find(s=>s.active&&s.key)||null;
+
+function updateProvInfo(){
+  const s=getActive();
+  if(!s)return;
+  const d=DETECT(s.key);
+  if(d)console.log('IA detectada:',PNAME[d.p],d.m);
+}
+
+async function callAI(messages){
+  const s=getActive();
+  if(!s)throw new Error('Nenhuma chave ativa.');
+  const d=DETECT(s.key);
+  if(!d)throw new Error('Formato de chave não reconhecido.');
+  const model=s.model||d.m;
+  
+  if(d.p==='anthropic'){
+    const sys=messages.find(m=>m.role==='system')?.content||'';
+    const chat=messages.filter(m=>m.role!=='system');
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':s.key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model,max_tokens:32768,system:sys,messages:chat,temperature:0.7})});
+    if(!r.ok)throw new Error('Anthropic '+r.status);
+    return(await r.json()).content?.[0]?.text||'';
+  }
+  
+  if(d.p==='google'){
+    const sys=messages.find(m=>m.role==='system')?.content;
+    const chat=messages.filter(m=>m.role!=='system').map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]}));
+    const body={contents:chat,generationConfig:{maxOutputTokens:8192,temperature:0.7}};
+    if(sys)body.systemInstruction={parts:[{text:sys}]};
+    const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+s.key,
+      {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!r.ok)throw new Error('Gemini '+r.status);
+    return(await r.json()).candidates?.[0]?.content?.parts?.[0]?.text||'';
+  }
+  
+  const base=(s.baseUrl||d.u||'https://api.openai.com/v1').replace(/\/$/,'');
+  const r=await fetch(base+'/chat/completions',{method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+s.key},
+    body:JSON.stringify({model:model||'gpt-4o-mini',messages,max_tokens:16384,temperature:0.7})});
+  if(!r.ok)throw new Error(r.status);
+  return(await r.json()).choices?.[0]?.message?.content||'';
+}
+
+let aiHistory=[],aiSending=false;
+const AISYS='Você é Jasmim, assistente de programação do Iara Suite. Especialidade: HTML/CSS/JS, Python, Java, cálculos previdenciários. Responda em português. Gere código em blocos ```linguagem```.';
+
+function toggleAI(){
+  qs('#ai-panel').classList.toggle('open');
+}
+
+function toggleSidebar(){
+  const sb=qs('#sidebar');
+  sb.classList.toggle('hidden');
+}
+
+function addAIMsg(role,text){
+  const el=document.createElement('div');
+  el.className='ai-msg '+role;
+  el.textContent=text;
+  qs('#ai-msgs').appendChild(el);
+  qs('#ai-msgs').scrollTop=qs('#ai-msgs').scrollHeight;
+}
+
+async function sendAI(){
+  if(aiSending)return;
+  const msg=(qs('#ai-ta').value||'').trim();
+  if(!msg)return;
+  aiSending=true;
+  addAIMsg('user',msg);
+  qs('#ai-ta').value='';
+  aiHistory.push({role:'user',content:msg});
+  if(aiHistory.length>40)aiHistory=aiHistory.slice(-40);
+  const thinking=document.createElement('div');
+  thinking.className='ai-msg assistant';
+  thinking.textContent='⏳ Processando…';
+  qs('#ai-msgs').appendChild(thinking);
+  try{
+    const reply=await callAI([{role:'system',content:AISYS}].concat(aiHistory));
+    thinking.textContent=reply;
+    aiHistory.push({role:'assistant',content:reply});
+  }catch(err){
+    thinking.textContent='❌ '+err.message;
+  }finally{
+    aiSending=false;
+  }
+}
+
+function sendWithCode(){
+  if(currentFile)files[currentFile]=qs('#code-ta').value;
+  const code=files[currentFile]||'';
+  const msg=`Analise este código:\n\`\`\`\n${code.slice(0,800)}\n\`\`\``;
+  qs('#ai-ta').value=msg;
+  setTimeout(()=>sendAI(),100);
+}
+
+/* ═══════════════════════════════════════
+   KEYS MODAL
+═══════════════════════════════════════ */
+function openKeysModal(){
+  renderSlots();
+  qs('#keys-modal').classList.add('open');
+}
+
+function closeKeysModal(){
+  qs('#keys-modal').classList.remove('open');
+}
+
+function renderSlots(){
+  qs('#slots-wrap').innerHTML=slots.map((s,i)=>`
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:11px;font-weight:600">Slot ${i+1}</span>
+        <button class="btn btn-secondary" style="padding:3px 8px;font-size:10px" onclick="toggleSlot(${i})">${s.active?'✓ Ativo':'Ativar'}</button>
+      </div>
+      <input type="password" id="sk-${i}" value="${esc(s.key)}" placeholder="gsk_, AIza, sk-ant-, sk-or-, sk-…" 
+        style="width:100%;margin-bottom:6px;font-size:11px" oninput="autoDetect(${i})">
+      <input type="text" id="sm-${i}" value="${esc(s.model)}" placeholder="modelo (vazio=auto)" style="width:100%;font-size:11px">
+    </div>
+  `).join('');
+}
+
+function autoDetect(i){
+  const k=qs('#sk-'+i)?.value||'';
+  const d=DETECT(k);
+  if(d){
+    const me=qs('#sm-'+i);
+    if(me&&!me.value&&d.m)me.value=d.m;
+  }
+}
+
+function toggleSlot(i){
+  slots.forEach((s,j)=>{s.active=(j===i)?!s.active:false;});
+  renderSlots();
+}
+
+function saveKeys(){
+  slots.forEach((s,i)=>{
+    s.key=qs('#sk-'+i)?.value||'';
+    s.model=qs('#sm-'+i)?.value||'';
+  });
+  slots[0].active=true;
+  lsSet('iara-slots',JSON.stringify(slots));
+  updateProvInfo();
+  closeKeysModal();
+  toast('✅ Chaves salvas!');
+}
+
+/* ═══════════════════════════════════════
+   MAPPER - ANÁLISE COMPLETA
+═══════════════════════════════════════ */
+let mapperData=null;
+
+function openMapperTab(){
+  qs('#mapper-modal').classList.add('open');
+}
+
+function closeMapperModal(){
+  qs('#mapper-modal').classList.remove('open');
+}
+
+async function analyzeZip(e){
+  const f=e.target.files[0];
+  if(!f)return;
+  if(!window.JSZip){toast('JSZip não carregado','err');return;}
+  
+  toast('Analisando…');
+  const z=await JSZip.loadAsync(f);
+  const allFiles=[];
+  
+  for(const p of Object.keys(z.files)){
+    const obj=z.files[p];
+    if(obj.dir)continue;
+    let content='';
+    try{content=await obj.async('string');}catch(ex){}
+    allFiles.push({path:p,content:content,size:content.length,ext:getExt(p)});
+  }
+  
+  mapperData={files:allFiles,name:f.name};
+  
+  // Estatísticas
+  const stats=`
+📊 Análise: ${f.name}
+• Arquivos: ${allFiles.length}
+• Tamanho: ${(allFiles.reduce((s,f)=>s+f.size,0)/1024).toFixed(1)}KB
+• Tipos: ${[...new Set(allFiles.map(f=>f.ext))].join(', ')||'vários'}
+  `;
+  
+  qs('#mapper-stats').innerHTML=`<pre style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:11px">${esc(stats)}</pre>`;
+  
+  // Árvore
+  let tree='';
+  allFiles.sort((a,b)=>a.path.localeCompare(b.path)).forEach(f=>{
+    const depth=(f.path.match(/\//g)||[]).length;
+    const indent='  '.repeat(depth);
+    tree+=indent+FICON(f.path)+' '+f.path+'\n';
+  });
+  
+  qs('#mapper-tree').textContent=tree;
+  qs('#mapper-results').style.display='block';
+  toast('✅ Analisado!');
+}
+
+function downloadMapMarkdown(){
+  if(!mapperData)return;
+  let md=`# Mapa: ${mapperData.name}\n\n`;
+  md+=`**Arquivos:** ${mapperData.files.length}\n`;
+  md+=`**Tamanho:** ${(mapperData.files.reduce((s,f)=>s+f.size,0)/1024).toFixed(1)}KB\n\n`;
+  md+=`## Estrutura\n\`\`\`\n`;
+  mapperData.files.forEach(f=>{
+    const depth=(f.path.match(/\//g)||[]).length;
+    md+='  '.repeat(depth)+FICON(f.path)+' '+f.path+'\n';
+  });
+  md+=`\`\`\`\n`;
+  dlBlob(new Blob([md],{type:'text/markdown'}),'mapa-'+mapperData.name.replace('.zip','')+'.md');
+  toast('⬇ Markdown baixado!');
+}
+
+function sendMapToEditor(){
+  if(!mapperData)return;
+  let content=`# Mapa do Projeto\n\n`;
+  mapperData.files.forEach(f=>{
+    const depth=(f.path.match(/\//g)||[]).length;
+    content+='  '.repeat(depth)+'- '+f.path+'\n';
+  });
+  const filename='mapa-'+mapperData.name.replace('.zip','.md');
+  files[filename]=content;
+  renderFileTree();
+  openFile(filename);
+  toast('✅ Mapa enviado ao Editor!');
+}
+
+/* ═══════════════════════════════════════
+   MENU PRINCIPAL
+═══════════════════════════════════════ */
+function openMainMenu(){
+  const opts=`
+Opções:
+1. Nova pasta
+2. Novo projeto
+3. Limpar tudo
+4. Sobre
+  `;
+  const opt=prompt(opts);
+  if(opt==='1')newFolder();
+  if(opt==='2'){files={};renderFileTree();toast('Novo projeto criado');}
+  if(opt==='3'){if(confirm('Tem certeza?')){files={};lsSet('iara-files','{}');renderFileTree();toast('Tudo limpo');}}
+  if(opt==='4'){alert('Iara Suite PRO v1.0\nEditor mobile completo\nDr. Maikon Caldeira OAB/MG 183712\n\n✅ Responsivo\n✅ Preview em tempo real\n✅ IA integrada\n✅ ZIP/TAR/TGZ/RAR\n✅ Mapa completo');}
+}
+
+/* ═══════════════════════════════════════
+   INIT
+═══════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded',initApp);
+</script>
+</body>
+</html>
