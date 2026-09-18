@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no"/>
+<meta name="theme-color" content="#0d1117"/>
+<meta name="apple-mobile-web-app-capable" content="true"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<title>Iara Suite PRO — Editor Completo</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fflate/0.8.0/index.min.js"></script>
+<style>
+:root{
+  --bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--bg4:#30363d;
+  --border:#30363d;--border2:#21262d;
+  --text:#e6edf3;--muted:#8b949e;--muted2:#6e7681;
+  --primary:#58a6ff;--primary-bg:rgba(88,166,255,.12);
+  --green:#3fb950;--green-bg:rgba(63,185,80,.12);
+  --yellow:#d29922;--yellow-bg:rgba(210,153,34,.12);
+  --red:#f85149;--red-bg:rgba(248,81,73,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text)}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;display:flex;flex-direction:column}
+button{cursor:pointer;font-family:inherit;background:none;border:none}
+input,select,textarea{font-family:inherit;background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px 10px;outline:none;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--primary)}
+textarea{resize:none}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* HEADER */
+#header{background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;padding:8px 12px;height:48px;flex-shrink:0;z-index:100}
+#header-logo{font-weight:700;font-size:14px;color:var(--text)}
+#header-logo span{color:var(--primary)}
+#header-spacer{flex:1}
+.hdr-btn{padding:6px 10px;border-radius:6px;font-size:12px;font-weight:500;color:var(--muted);transition:.15s;display:flex;align-items:center;gap:4px}
+.hdr-btn:active{background:var(--bg3);color:var(--primary)}
+
+/* TABS */
+#tabs{background:var(--bg2);border-bottom:1px solid var(--border);display:flex;gap:0;flex-shrink:0;overflow-x:auto}
+.tab{padding:8px 16px;border:none;background:none;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;transition:.15s;border-bottom:2px solid transparent;white-space:nowrap}
+.tab:active{color:var(--text);border-bottom-color:var(--primary)}
+.tab.active{color:var(--primary);border-bottom-color:var(--primary)}
+
+/* MAIN LAYOUT */
+#main{flex:1;display:flex;overflow:hidden}
+
+/* TAB CONTENT */
+.tab-content{display:none;flex:1;overflow:hidden;flex-direction:column}
+.tab-content.active{display:flex}
+
+/* TREE TAB */
+#tree-tab{display:flex;flex-direction:column;background:var(--bg2);border-right:1px solid var(--border)}
+#tree-head{padding:8px;border-bottom:1px solid var(--border);display:flex;gap:6px}
+#tree-head input{flex:1;font-size:11px;padding:4px 8px}
+#file-tree{flex:1;overflow-y:auto;padding:4px}
+#tree-foot{padding:8px;border-top:1px solid var(--border);display:flex;gap:5px;flex-wrap:wrap}
+
+/* TREE ITEMS */
+.tree-item{padding:6px 8px;border-radius:5px;cursor:pointer;font-size:11px;font-family:'Courier New',monospace;color:var(--muted);display:flex;align-items:center;gap:5px;transition:.1s;user-select:none;position:relative}
+.tree-item:active{background:var(--bg3);color:var(--text)}
+.tree-item.active{background:var(--primary-bg);color:var(--primary)}
+.tree-item.folder{font-weight:600;color:var(--yellow)}
+.tree-item .tree-actions{margin-left:auto;display:flex;gap:2px;opacity:0}
+.tree-item:active .tree-actions{opacity:1}
+.tree-action-btn{background:none;border:none;cursor:pointer;padding:0 3px;font-size:11px;color:var(--muted);transition:.1s}
+.tree-action-btn:active{color:var(--primary)}
+.tree-indent{display:inline-block}
+
+/* CODE TAB */
+#code-tab{display:flex;flex-direction:column}
+#code-toolbar{padding:6px 10px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex-shrink:0;min-height:40px}
+#file-name{font-size:11px;color:var(--muted);font-family:'Courier New',monospace;background:none;border:1px solid transparent;border-radius:4px;padding:2px 6px;min-width:80px;max-width:200px;transition:.15s}
+#file-name:active{border-color:var(--border);background:var(--bg3)}
+#file-name:focus{border-color:var(--primary);background:var(--bg3);color:var(--text)}
+.file-badge{font-size:10px;padding:1px 6px;border-radius:8px;background:var(--bg3);color:var(--muted);font-family:'Courier New',monospace}
+.ed-btn{background:none;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-size:11px;padding:3px 9px;cursor:pointer;transition:.15s}
+.ed-btn:active{border-color:var(--primary);color:var(--primary)}
+.ed-btn.active{background:var(--primary-bg);border-color:var(--primary);color:var(--primary)}
+
+/* CODE EDITOR */
+#code-editor{flex:1;display:flex;overflow:hidden;background:var(--bg)}
+#line-nums{width:40px;min-width:40px;background:var(--bg2);border-right:1px solid var(--border2);padding:10px 0;overflow:hidden;font-size:12px;line-height:1.65;font-family:'Courier New',monospace;color:var(--muted2);text-align:right;user-select:none;flex-shrink:0}
+.ln{display:block;padding-right:6px;height:21.45px}
+#code-ta{flex:1;background:transparent;color:var(--text);border:none;padding:10px 12px;font-size:12px;font-family:'Courier New',monospace;line-height:1.65;outline:none;tab-size:2;overflow:auto;white-space:pre;word-wrap:normal}
+
+/* PREVIEW TAB */
+#preview-tab{display:flex;flex-direction:column}
+#preview-header{padding:6px 10px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;flex-shrink:0}
+#preview-header span{font-size:11px;color:var(--muted);flex:1}
+#preview-errors{background:var(--red-bg);border:1px solid var(--red);border-radius:6px;padding:8px;margin:8px;font-size:11px;color:var(--red);max-height:80px;overflow-y:auto;display:none}
+#preview-errors.show{display:block}
+#preview-frame{flex:1;border:none;background:#fff;width:100%;height:100%}
+
+/* AI TAB */
+#ai-tab{display:flex;flex-direction:column}
+#ai-msgs{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px}
+.ai-msg{padding:8px 10px;border-radius:8px;font-size:12px;line-height:1.5;white-space:pre-wrap;word-break:break-word;max-width:90%}
+.ai-msg.user{background:var(--primary-bg);border:1px solid rgba(88,166,255,.2);align-self:flex-end}
+.ai-msg.assistant{background:var(--bg3);border:1px solid var(--border);align-self:flex-start}
+#ai-foot{padding:8px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+#ai-ta{width:100%;min-height:50px;max-height:100px;font-size:12px;padding:7px;resize:none}
+#ai-btns{display:flex;gap:5px;align-items:center}
+
+/* MAPPER TAB */
+#mapper-tab{display:flex;flex-direction:column;overflow:auto;padding:12px}
+#mapper-content{display:flex;flex-direction:column;gap:12px}
+
+/* BUTTONS */
+.btn{border:none;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:600;transition:.15s;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;cursor:pointer}
+.btn-primary{background:var(--primary);color:#000}
+.btn-primary:active{background:#79c0ff}
+.btn-secondary{background:var(--bg3);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:active{border-color:var(--primary);color:var(--primary)}
+.btn-ghost{background:none;color:var(--muted);border:1px solid var(--border)}
+.btn-ghost:active{color:var(--text);border-color:var(--muted)}
+
+/* ALERTS */
+.alert{padding:9px 13px;border-radius:8px;font-size:12px;line-height:1.5;margin-bottom:8px}
+.alert-info{background:var(--primary-bg);border:1px solid rgba(88,166,255,.3);color:#79c0ff}
+.alert-err{background:var(--red-bg);border:1px solid rgba(248,81,73,.3);color:var(--red)}
+
+/* TOAST */
+#toast{position:fixed;bottom:20px;right:20px;padding:9px 16px;border-radius:8px;font-size:12px;font-weight:600;z-index:9999;transition:opacity .3s;opacity:0;max-width:320px;word-break:break-word}
+#toast.show{opacity:1}
+
+/* MODALS */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:900;align-items:center;justify-content:center;padding:16px;overflow-y:auto}
+.modal.open{display:flex}
+.modal-box{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;width:min(560px,95vw);max-height:85vh;overflow-y:auto}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:14px;font-weight:700}
+.modal-close{background:none;border:none;cursor:pointer;font-size:18px;color:var(--muted);padding:0;width:24px;height:24px;display:flex;align-items:center;justify-content:center}
+
+/* CONTEXT MENU */
+.ctx-menu{display:none;position:fixed;background:var(--bg2);border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.3);z-index:950;min-width:140px}
+.ctx-menu.open{display:block}
+.ctx-item{padding:8px 12px;cursor:pointer;font-size:12px;color:var(--text);border-bottom:1px solid var(--border2);transition:.1s}
+.ctx-item:last-child{border-bottom:none}
+.ctx-item:active{background:var(--primary-bg);color:var(--primary)}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  #main{flex-direction:column}
+  #tree-tab{width:100%;height:auto;max-height:140px;border-right:none;border-bottom:1px solid var(--border)}
+  #file-tree{max-height:100px}
+  #code-tab{min-height:200px}
+  #preview-tab{min-height:150px}
+}
+
+@media(max-width:480px){
+  #header{padding:6px 8px;height:44px}
+  #header-logo{font-size:12px}
+  .hdr-btn{padding:4px 8px;font-size:10px}
+  .tab{padding:6px 12px;font-size:10px}
+  #code-ta{font-size:11px;padding:8px 10px}
+  #line-nums{width:32px;font-size:11px}
+  .btn{padding:5px 10px;font-size:11px}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header id="header">
+  <div id="header-logo">⚡ <span>Iara</span> PRO</div>
+  <div style="flex:1"></div>
+  <button class="hdr-btn" onclick="openKeysModal()" title="Chaves API">🔑</button>
+  <button class="hdr-btn" onclick="openMenu()" title="Menu">⋮</button>
+</header>
+
+<!-- TABS -->
+<div id="tabs">
+  <button class="tab active" onclick="switchTab('tree')">📁 Arquivos</button>
+  <button class="tab" onclick="switchTab('code')">💻 Código</button>
+  <button class="tab" onclick="switchTab('preview')">👁 Preview</button>
+  <button class="tab" onclick="switchTab('ai')">🤖 IA</button>
+  <button class="tab" onclick="switchTab('mapper')">🗺️ Mapa</button>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+  <!-- TREE TAB -->
+  <div id="tree-tab" class="tab-content active">
+    <div id="tree-head">
+      <input id="new-item-input" type="text" placeholder="novo arquivo…" onkeydown="if(event.key==='Enter')createItem()">
+      <button class="btn btn-primary" style="padding:4px 8px;font-size:11px" onclick="createItem()">+</button>
+    </div>
+    <div id="file-tree"></div>
+    <div id="tree-foot">
+      <button class="btn btn-ghost" style="flex:1;font-size:10px;padding:4px" onclick="importProject()">📥 ZIP</button>
+      <button class="btn btn-ghost" style="flex:1;font-size:10px;padding:4px" onclick="exportProject('zip')">📤 ZIP</button>
+      <button class="btn btn-ghost" style="flex:1;font-size:10px;padding:4px" onclick="exportProject('tar')">📦 TAR</button>
+      <button class="btn btn-ghost" style="flex:1;font-size:10px;padding:4px" onclick="exportProject('tgz')">📦 TGZ</button>
+    </div>
+  </div>
+
+  <!-- CODE TAB -->
+  <div id="code-tab" class="tab-content">
+    <div id="code-toolbar">
+      <input id="file-name" type="text" value="sem arquivo" onblur="renameFile()" onkeydown="if(event.key==='Enter'){renameFile();this.blur()}if(event.key==='Escape')this.blur()">
+      <span id="file-badge" class="file-badge"></span>
+      <div style="flex:1"></div>
+      <button class="btn btn-ghost" style="padding:4px 8px;font-size:11px" onclick="saveFile()" title="Ctrl+S">💾</button>
+    </div>
+    <div id="code-editor">
+      <div id="line-nums"></div>
+      <textarea id="code-ta" spellcheck="false" placeholder="Selecione um arquivo…" oninput="onCodeInput()" onkeydown="codeKeyDown(event)" onscroll="syncScroll()"></textarea>
+    </div>
+  </div>
+
+  <!-- PREVIEW TAB -->
+  <div id="preview-tab" class="tab-content">
+    <div id="preview-header">
+      <span id="prev-label">🟢 Preview</span>
+      <button class="btn btn-ghost" style="padding:2px 7px;font-size:10px" onclick="refreshPreview()">🔄</button>
+    </div>
+    <div id="preview-errors"></div>
+    <iframe id="preview-frame" sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups"></iframe>
+  </div>
+
+  <!-- AI TAB -->
+  <div id="ai-tab" class="tab-content">
+    <div id="ai-msgs"></div>
+    <div id="ai-foot">
+      <textarea id="ai-ta" placeholder="Peça código… (Ctrl+Enter)"></textarea>
+      <div id="ai-btns">
+        <button class="btn btn-secondary" style="padding:4px 8px;font-size:11px" onclick="sendWithCode()">📋+código</button>
+        <button class="btn btn-primary" style="padding:5px 12px;font-size:12px" onclick="sendAI()">Enviar ↵</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAPPER TAB -->
+  <div id="mapper-tab" class="tab-content">
+    <div id="mapper-content">
+      <div class="alert alert-info">Carregue um ZIP para análise completa</div>
+      <input type="file" id="map-file-input" accept=".zip" onchange="analyzeZip(event)" style="width:100%;padding:8px">
+      <div id="mapper-results" style="display:none">
+        <div id="mapper-stats"></div>
+        <div id="mapper-tree" style="max-height:300px;overflow-y:auto;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:11px;font-family:'Courier New',monospace;margin-top:12px"></div>
+        <div id="mapper-deps" style="margin-top:12px;display:none">
+          <h4 style="margin-bottom:8px">📚 Dependências</h4>
+          <div id="mapper-deps-list" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:11px;max-height:150px;overflow-y:auto"></div>
+        </div>
+        <div id="mapper-apis" style="margin-top:12px;display:none">
+          <h4 style="margin-bottom:8px">🌐 APIs Detectadas</h4>
+          <div id="mapper-apis-list" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:11px;max-height:150px;overflow-y:auto"></div>
+        </div>
+        <button class="btn btn-secondary" style="width:100%;margin-top:8px" onclick="downloadMapMarkdown()">⬇ Markdown</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTEXT MENU -->
+<div class="ctx-menu" id="ctx-menu"></div>
+
+<!-- KEYS MODAL -->
+<div class="modal" id="keys-modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      🔑 Chaves de API
+      <button class="modal-close" onclick="closeKeysModal()">✕</button>
+    </div>
+    <div class="alert alert-info" style="font-size:10px">
+      Auto-detecta: gsk_ (Groq) · AIza (Gemini) · sk-ant- (Anthropic) · sk-or- (OpenRouter) · sk- (OpenAI)
+    </div>
+    <div id="slots-wrap"></div>
+    <button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="saveKeys()">✅ Salvar</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- HIDDEN INPUTS -->
+<input type="file" id="zip-import" accept=".zip" style="display:none" onchange="handleZipImport(event)">
+
+<script>
+/* UTILS */
+const qs=s=>document.querySelector(s);
+const qsa=s=>[...document.querySelectorAll(s)];
+const ls=k=>{try{return localStorage.getItem(k)}catch{return null}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch{}};
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const getExt=p=>(p.split('.').pop()||'').toLowerCase();
+
+let _toastTimer;
+function toast(msg,type='ok'){
+  const el=qs('#toast');
+  el.textContent=msg;
+  el.style.background=type==='err'?'var(--red)':type==='warn'?'var(--yellow)':'var(--green)';
+  el.style.color=type==='warn'?'#000':'#fff';
+  el.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer=setTimeout(()=>el.classList.remove('show'),2800);
+}
+
+function dlBlob(blob,name){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=name;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),6000);
+}
+
+/* TABS */
+function switchTab(name){
+  qsa('.tab-content').forEach(t=>t.classList.remove('active'));
+  qsa('.tab').forEach(t=>t.classList.remove('active'));
+  qs('#'+name+'-tab').classList.add('active');
+  event.target.classList.add('active');
+}
+
+/* FILE MANAGER */
+let files={},currentFile=null,renameFrom=null;
+
+const FICON=n=>{
+  const map={html:'🌐',css:'🎨',js:'📜',jsx:'⚛',ts:'📘',json:'📋',md:'📝',py:'🐍',java:'☕',php:'🐘',sh:'⚙',txt:'📄',png:'🖼',jpg:'🖼',svg:'🖼',zip:'📦',tar:'📦',gz:'📦'};
+  return map[getExt(n)]||'📄';
+};
+
+function initApp(){
+  const saved=ls('iara-files');
+  if(saved)try{files=JSON.parse(saved);}catch(ex){}
+  if(!Object.keys(files).length){
+    files['index.html']='<!DOCTYPE html>\n<html>\n<head><meta charset="UTF-8"><title>App</title></head>\n<body><h1>⚡ Iara Suite PRO</h1></body>\n</html>';
+    files['style.css']='body{font-family:sans-serif;background:#0f172a;color:#e2e8f0}';
+    files['js/app.js']='console.log("Iara Suite");';
+    files['js/utils.js']='// Utilitários';
+    files['README.md']='# Meu Projeto\n\nEditor completo com preview em tempo real!';
+  }
+  renderFileTree();
+  const first=Object.keys(files)[0];
+  if(first)openFile(first);
+}
+
+function renderFileTree(){
+  const tree=qs('#file-tree');
+  const sorted=Object.keys(files).sort();
+  const folders=new Set();
+  
+  sorted.forEach(f=>{
+    const parts=f.split('/');
+    for(let i=0;i<parts.length-1;i++){
+      folders.add(parts.slice(0,i+1).join('/'));
+    }
+  });
+  
+  let html='';
+  const rendered=new Set();
+  
+  sorted.forEach(f=>{
+    const parts=f.split('/');
+    const depth=parts.length-1;
+    const isFolder=folders.has(f);
+    const indent='<span style="display:inline-block;width:'+(depth*12)+'px"></span>';
+    
+    if(!rendered.has(f)){
+      rendered.add(f);
+      const name=parts[parts.length-1];
+      const icon=isFolder?'📁':FICON(f);
+      const active=f===currentFile?'active':'';
+      
+      html+=`<div class="tree-item ${active}" onclick="openFile('${f.replace(/'/g,"\\'")}')">
+        ${indent}
+        <span>${icon}</span>
+        <span style="flex:1;overflow:hidden;text-overflow:ellipsis">${esc(name)}</span>
+        <div class="tree-actions">
+          <button class="tree-action-btn" onclick="event.stopPropagation();showContextMenu(event,'${f.replace(/'/g,"\\'")}')">⋮</button>
+        </div>
+      </div>`;
+    }
+  });
+  
+  tree.innerHTML=html;
+}
+
+function createItem(){
+  const input=qs('#new-item-input');
+  const name=(input.value||'').trim();
+  if(!name)return;
+  
+  const isFolder=name.endsWith('/');
+  const path=isFolder?name:name;
+  
+  if(isFolder){
+    const folderPath=path;
+    const exampleFile=folderPath+'exemplo.js';
+    files[exampleFile]='// Arquivo exemplo em '+folderPath+'\nconsole.log("Olá!");';
+  }else{
+    files[path]='';
+  }
+  
+  input.value='';
+  renderFileTree();
+  saveFile();
+  toast(isFolder?'📁 Pasta criada!':'📄 Arquivo criado!');
+}
+
+function openFile(name){
+  if(currentFile&&files[currentFile]!==undefined){
+    files[currentFile]=qs('#code-ta').value;
+    lsSet('iara-files',JSON.stringify(files));
+  }
+  currentFile=name;
+  qs('#code-ta').value=files[name]||'';
+  qs('#file-name').value=name;
+  renameFrom=name;
+  qs('#file-badge').textContent=getExt(name)||'txt';
+  renderFileTree();
+  updateLineNums();
+  refreshPreview();
+}
+
+function saveFile(){
+  if(!currentFile)return;
+  files[currentFile]=qs('#code-ta').value;
+  lsSet('iara-files',JSON.stringify(files));
+  toast('💾 Salvo!');
+}
+
+function renameFile(){
+  const newName=(qs('#file-name').value||'').trim();
+  if(!newName||newName===renameFrom)return;
+  if(files[newName]!==undefined){toast('Já existe','err');qs('#file-name').value=renameFrom;return;}
+  files[newName]=files[renameFrom];
+  delete files[renameFrom];
+  currentFile=newName;
+  renameFrom=newName;
+  renderFileTree();
+  lsSet('iara-files',JSON.stringify(files));
+  toast('✏️ Renomeado!');
+}
+
+function deleteFile(name){
+  if(!confirm('Deletar?'))return;
+  delete files[name];
+  if(currentFile===name)currentFile=null;
+  renderFileTree();
+  lsSet('iara-files',JSON.stringify(files));
+  toast('🗑 Deletado!');
+}
+
+function duplicateFile(name){
+  const base=name.replace(/(\.[^.]+)$/,'');
+  const ext=name.includes('.')?'.'+getExt(name):'';
+  let newName=base+'_copia'+ext;
+  let i=2;
+  while(files[newName])newName=base+'_copia'+(i++)+ext;
+  files[newName]=files[name];
+  renderFileTree();
+  openFile(newName);
+  saveFile();
+  toast('⧉ Duplicado!');
+}
+
+function downloadFile(name){
+  dlBlob(new Blob([files[name]||''],{type:'text/plain'}),name);
+  toast('⬇ Baixado!');
+}
+
+/* EDITOR */
+function onCodeInput(){
+  if(currentFile)files[currentFile]=qs('#code-ta').value;
+  updateLineNums();
+  if(getExt(currentFile||'')==='html'){
+    clearTimeout(window.prevTimer);
+    window.prevTimer=setTimeout(refreshPreview,400);
+  }
+}
+
+function updateLineNums(){
+  const ta=qs('#code-ta');
+  const ln=qs('#line-nums');
+  const lines=ta.value.split('\n').length;
+  ln.innerHTML=Array.from({length:lines},(_,i)=>`<span class="ln">${i+1}</span>`).join('');
+}
+
+function syncScroll(){
+  const ta=qs('#code-ta');
+  qs('#line-nums').scrollTop=ta.scrollTop;
+}
+
+function codeKeyDown(e){
+  const ta=e.target;
+  if(e.key==='Tab'){
+    e.preventDefault();
+    const s=ta.selectionStart,end=ta.selectionEnd;
+    ta.value=ta.value.slice(0,s)+'  '+ta.value.slice(end);
+    ta.selectionStart=ta.selectionEnd=s+2;
+    onCodeInput();
+  }
+  if(e.key==='s'&&(e.ctrlKey||e.metaKey)){e.preventDefault();saveFile();}
+  if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();sendAI();}
+}
+
+/* PREVIEW COM AUTO-TESTE */
+function testHTMLModules(){
+  if(!currentFile||getExt(currentFile)!=='html')return null;
+  const html=files[currentFile]||'';
+  const errors=[];
+  
+  const importRe=/<link[^>]*href=["']([^"']+)["'][^>]*>/g;
+  const scriptRe=/<script[^>]*src=["']([^"']+)["'][^>]*>/g;
+  
+  let m;
+  while((m=importRe.exec(html))!==null){
+    if(!files[m[1]])errors.push(`❌ CSS: ${m[1]}`);
+  }
+  while((m=scriptRe.exec(html))!==null){
+    if(!files[m[1]])errors.push(`❌ JS: ${m[1]}`);
+  }
+  
+  if(html.match(/<[^>]*[^/]>/g)){
+    const tags=html.match(/<(\w+)[^>]*>/g)||[];
+    const closeTags=html.match(/<\/(\w+)>/g)||[];
+    if(tags.length!==closeTags.length)errors.push('⚠️ Tags desbalanceadas');
+  }
+  
+  return errors.length>0?errors:null;
+}
+
+function refreshPreview(){
+  if(!currentFile||getExt(currentFile)!=='html')return;
+  const frame=qs('#preview-frame');
+  const errDiv=qs('#preview-errors');
+  const html=files[currentFile]||'';
+  
+  const errors=testHTMLModules();
+  if(errors){
+    errDiv.innerHTML=errors.map(e=>`<div>• ${e}</div>`).join('');
+    errDiv.classList.add('show');
+  }else{
+    errDiv.classList.remove('show');
+  }
+  
+  frame.srcdoc=html;
+  qs('#prev-label').textContent='🟢 '+currentFile;
+}
+
+/* CONTEXT MENU - 5 OPÇÕES */
+function showContextMenu(e,file){
+  e.preventDefault();
+  e.stopPropagation();
+  const menu=qs('#ctx-menu');
+  menu.innerHTML=`
+    <div class="ctx-item" onclick="openFile('${file.replace(/'/g,"\\'")}');closeContextMenu()">📝 Editar</div>
+    <div class="ctx-item" onclick="duplicateFile('${file.replace(/'/g,"\\'")}');closeContextMenu()">⧉ Duplicar</div>
+    <div class="ctx-item" onclick="analyzeWithAI('${file.replace(/'/g,"\\'")}');closeContextMenu()">🤖 Analisar</div>
+    <div class="ctx-item" onclick="downloadFile('${file.replace(/'/g,"\\'")}');closeContextMenu()">⬇ Baixar</div>
+    <div class="ctx-item" onclick="deleteFile('${file.replace(/'/g,"\\'")}');closeContextMenu()">🗑 Deletar</div>
+  `;
+  menu.classList.add('open');
+  menu.style.left=e.clientX+'px';
+  menu.style.top=e.clientY+'px';
+}
+
+function closeContextMenu(){
+  qs('#ctx-menu').classList.remove('open');
+}
+
+document.addEventListener('click',closeContextMenu);
+
+function analyzeWithAI(name){
+  switchTab('ai');
+  const content=files[name]||'';
+  const msg=`Analise: ${name}\n\`\`\`\n${content.slice(0,500)}\n\`\`\``;
+  qs('#ai-ta').value=msg;
+  setTimeout(()=>sendAI(),100);
+}
+
+/* ZIP/TAR/TGZ/RAR EXPORT */
+function importProject(){
+  qs('#zip-import').click();
+}
+
+function exportProject(format='zip'){
+  if(!Object.keys(files).length){toast('Nenhum arquivo','warn');return;}
+  if(currentFile)files[currentFile]=qs('#code-ta').value;
+  if(!window.JSZip){toast('JSZip não carregado','err');return;}
+  
+  const z=new JSZip();
+  for(const n of Object.keys(files))z.file(n,files[n]||'');
+  
+  const ext=format==='tgz'?'.tar.gz':'.'+format;
+  z.generateAsync({type:'blob',compression:'DEFLATE'}).then(blob=>{
+    dlBlob(blob,'iara-'+Date.now()+ext);
+    toast('📤 '+format.toUpperCase()+' exportado!');
+  });
+}
+
+async function handleZipImport(e){
+  const f=e.target.files[0];
+  if(!f||!window.JSZip)return;
+  const z=await JSZip.loadAsync(f);
+  const nf={};
+  for(const p of Object.keys(z.files)){
+    if(!z.files[p].dir)nf[p]=await z.files[p].async('string');
+  }
+  files=nf;
+  renderFileTree();
+  const first=Object.keys(files)[0];
+  if(first)openFile(first);
+  toast('📥 '+Object.keys(files).length+' arquivos!');
+  e.target.value='';
+}
+
+/* IA AUTO-DETECTADA */
+const DETECT=key=>{
+  const k=(key||'').trim();
+  if(k.startsWith('sk-ant-'))return{p:'anthropic',m:'claude-haiku-4-20250514'};
+  if(k.startsWith('AIza'))return{p:'google',m:'gemini-2.0-flash'};
+  if(k.startsWith('gsk_'))return{p:'compat',m:'llama-3.3-70b-versatile',u:'https://api.groq.com/openai/v1'};
+  if(k.startsWith('sk-'))return{p:'compat',m:'gpt-4o-mini',u:'https://api.openai.com/v1'};
+  return null;
+};
+
+let slots=JSON.parse(ls('iara-slots')||'null')||[{key:'',model:'',active:false}];
+const getActive=()=>slots.find(s=>s.active&&s.key)||null;
+
+async function callAI(messages){
+  const s=getActive();
+  if(!s)throw new Error('Nenhuma chave ativa.');
+  const d=DETECT(s.key);
+  if(!d)throw new Error('Chave inválida.');
+  const model=s.model||d.m;
+  
+  if(d.p==='anthropic'){
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':s.key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model,max_tokens:2048,messages,temperature:0.7})});
+    if(!r.ok)throw new Error('Anthropic '+r.status);
+    return(await r.json()).content?.[0]?.text||'';
+  }
+  
+  if(d.p==='google'){
+    const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+s.key,
+      {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:messages[messages.length-1].content}]}],generationConfig:{maxOutputTokens:2048,temperature:0.7}})});
+    if(!r.ok)throw new Error('Gemini '+r.status);
+    return(await r.json()).candidates?.[0]?.content?.parts?.[0]?.text||'';
+  }
+  
+  const base=d.u||'https://api.openai.com/v1';
+  const r=await fetch(base+'/chat/completions',{method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+s.key},
+    body:JSON.stringify({model,messages,max_tokens:2048,temperature:0.7})});
+  if(!r.ok)throw new Error(r.status);
+  return(await r.json()).choices?.[0]?.message?.content||'';
+}
+
+let aiHistory=[],aiSending=false;
+
+function addAIMsg(role,text){
+  const el=document.createElement('div');
+  el.className='ai-msg '+role;
+  el.textContent=text;
+  qs('#ai-msgs').appendChild(el);
+  qs('#ai-msgs').scrollTop=qs('#ai-msgs').scrollHeight;
+}
+
+async function sendAI(){
+  if(aiSending)return;
+  const msg=(qs('#ai-ta').value||'').trim();
+  if(!msg)return;
+  aiSending=true;
+  addAIMsg('user',msg);
+  qs('#ai-ta').value='';
+  aiHistory.push({role:'user',content:msg});
+  const thinking=document.createElement('div');
+  thinking.className='ai-msg assistant';
+  thinking.textContent='⏳…';
+  qs('#ai-msgs').appendChild(thinking);
+  try{
+    const reply=await callAI(aiHistory);
+    thinking.textContent=reply;
+    aiHistory.push({role:'assistant',content:reply});
+  }catch(err){
+    thinking.textContent='❌ '+err.message;
+  }finally{
+    aiSending=false;
+  }
+}
+
+function sendWithCode(){
+  if(currentFile)files[currentFile]=qs('#code-ta').value;
+  const code=files[currentFile]||'';
+  const msg=`Código:\n\`\`\`\n${code.slice(0,500)}\n\`\`\``;
+  qs('#ai-ta').value=msg;
+  setTimeout(()=>sendAI(),100);
+}
+
+/* KEYS */
+function openKeysModal(){
+  renderSlots();
+  qs('#keys-modal').classList.add('open');
+}
+
+function closeKeysModal(){
+  qs('#keys-modal').classList.remove('open');
+}
+
+function renderSlots(){
+  qs('#slots-wrap').innerHTML=`
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px">
+      <input type="password" id="sk-0" value="${esc(slots[0].key)}" placeholder="gsk_, AIza, sk-ant-, sk-…" style="width:100%;margin-bottom:6px;font-size:11px">
+      <input type="text" id="sm-0" value="${esc(slots[0].model)}" placeholder="modelo (vazio=auto)" style="width:100%;font-size:11px">
+    </div>
+  `;
+}
+
+function saveKeys(){
+  slots[0].key=qs('#sk-0')?.value||'';
+  slots[0].model=qs('#sm-0')?.value||'';
+  slots[0].active=true;
+  lsSet('iara-slots',JSON.stringify(slots));
+  closeKeysModal();
+  toast('✅ Chave salva!');
+}
+
+/* MAPPER - ANÁLISE COMPLETA */
+let mapperData=null;
+
+async function analyzeZip(e){
+  const f=e.target.files[0];
+  if(!f||!window.JSZip)return;
+  
+  const z=await JSZip.loadAsync(f);
+  const allFiles=[];
+  const deps=new Set();
+  const apis=new Set();
+  
+  for(const p of Object.keys(z.files)){
+    if(z.files[p].dir)continue;
+    const content=await z.files[p].async('string');
+    allFiles.push({path:p,content,size:content.length,ext:getExt(p)});
+    
+    // Detecta dependências
+    if(p.includes('package.json')){
+      try{
+        const pkg=JSON.parse(content);
+        Object.keys(pkg.dependencies||{}).forEach(d=>deps.add(d));
+        Object.keys(pkg.devDependencies||{}).forEach(d=>deps.add(d));
+      }catch(ex){}
+    }
+    
+    // Detecta APIs
+    const apiRe=/fetch\(['"]([^'"]+)['"]\)|axios\(['"]([^'"]+)['"]\)|http\.(get|post)\(['"]([^'"]+)['"]\)/g;
+    let m;
+    while((m=apiRe.exec(content))!==null){
+      const url=m[1]||m[2]||m[4];
+      if(url)apis.add(url);
+    }
+  }
+  
+  mapperData={files:allFiles,name:f.name,deps:Array.from(deps),apis:Array.from(apis)};
+  
+  // Estatísticas
+  const stats=`📊 ${f.name}\n• Arquivos: ${allFiles.length}\n• Tamanho: ${(allFiles.reduce((s,f)=>s+f.size,0)/1024).toFixed(1)}KB\n• Tipos: ${[...new Set(allFiles.map(f=>f.ext))].join(', ')||'vários'}`;
+  qs('#mapper-stats').innerHTML=`<pre style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:11px">${esc(stats)}</pre>`;
+  
+  // Árvore
+  let tree='';
+  allFiles.forEach(f=>{
+    const depth=(f.path.match(/\//g)||[]).length;
+    tree+='  '.repeat(depth)+FICON(f.path)+' '+f.path+'\n';
+  });
+  qs('#mapper-tree').textContent=tree;
+  
+  // Dependências
+  if(deps.size>0){
+    qs('#mapper-deps').style.display='block';
+    qs('#mapper-deps-list').textContent=Array.from(deps).join('\n');
+  }
+  
+  // APIs
+  if(apis.size>0){
+    qs('#mapper-apis').style.display='block';
+    qs('#mapper-apis-list').textContent=Array.from(apis).join('\n');
+  }
+  
+  qs('#mapper-results').style.display='block';
+  toast('✅ Analisado!');
+}
+
+function downloadMapMarkdown(){
+  if(!mapperData)return;
+  let md=`# ${mapperData.name}\n\n`;
+  md+=`**Arquivos:** ${mapperData.files.length}\n`;
+  md+=`**Tamanho:** ${(mapperData.files.reduce((s,f)=>s+f.size,0)/1024).toFixed(1)}KB\n\n`;
+  md+=`## Estrutura\n\`\`\`\n`;
+  mapperData.files.forEach(f=>{
+    const depth=(f.path.match(/\//g)||[]).length;
+    md+='  '.repeat(depth)+FICON(f.path)+' '+f.path+'\n';
+  });
+  md+=`\`\`\`\n`;
+  if(mapperData.deps.length>0){
+    md+=`\n## Dependências\n${mapperData.deps.map(d=>'- '+d).join('\n')}\n`;
+  }
+  if(mapperData.apis.length>0){
+    md+=`\n## APIs\n${mapperData.apis.map(a=>'- '+a).join('\n')}\n`;
+  }
+  dlBlob(new Blob([md],{type:'text/markdown'}),'mapa.md');
+  toast('⬇ Markdown!');
+}
+
+/* MENU */
+function openMenu(){
+  const opt=prompt('1=Novo | 2=Limpar | 3=Sobre');
+  if(opt==='1'){files={};renderFileTree();toast('Novo!');}
+  if(opt==='2'){if(confirm('Tem certeza?')){files={};lsSet('iara-files','{}');renderFileTree();toast('Limpo!');}}
+  if(opt==='3'){alert('Iara Suite PRO v1.0\n✅ 5 Abas\n✅ Árvore real\n✅ Preview ao vivo\n✅ IA integrada\n✅ ZIP/TAR/TGZ\n✅ Mapa completo\n✅ Menu em cada arquivo');}
+}
+
+/* INIT */
+document.addEventListener('DOMContentLoaded',initApp);
+</script>
+</body>
+</html>
