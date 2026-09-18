@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerador de APK — EAS Config</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+  body { background: #0d1117; color: #e6edf3; font-family: system-ui, sans-serif; }
+  input, select, textarea { background: #161b22; border: 1px solid #30363d; color: #e6edf3; border-radius: 6px; padding: 8px 10px; font-size: 13px; }
+  input:focus, select:focus { outline: none; border-color: #58a6ff; }
+  .card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+  .label { font-size: 12px; color: #8b949e; margin-bottom: 4px; display: block; }
+  .btn { padding: 10px 20px; border-radius: 6px; font-size: 13px; font-weight: 600; border: none; cursor: pointer; }
+  .btn-primary { background: #238636; color: white; }
+  .btn-primary:hover { background: #2ea043; }
+  .btn-secondary { background: #21262d; color: #e6edf3; border: 1px solid #30363d; }
+  .btn-secondary:hover { background: #30363d; }
+  .step { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 13px; }
+  .step-num { width: 24px; height: 24px; border-radius: 50%; background: #58a6ff; color: #000; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+  #drop-zone { border: 2px dashed #30363d; border-radius: 8px; padding: 40px; text-align: center; cursor: pointer; transition: all .2s; }
+  #drop-zone:hover, #drop-zone.drag { border-color: #58a6ff; background: #0d2040; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .badge-green { background: #0d2e16; color: #3fb950; }
+  .badge-blue { background: #0d1f40; color: #58a6ff; }
+  .file-item { display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-family: monospace; }
+  .file-item:hover { background: #21262d; }
+</style>
+</head>
+<body class="min-h-screen p-4">
+
+<div style="max-width: 700px; margin: 0 auto;">
+  
+  <!-- Header -->
+  <div style="text-align: center; margin-bottom: 28px; padding-top: 16px;">
+    <div style="font-size: 32px; margin-bottom: 8px;">📦</div>
+    <h1 style="font-size: 22px; font-weight: 700; color: #58a6ff;">Gerador de Config EAS</h1>
+    <p style="color: #8b949e; font-size: 13px; margin-top: 4px;">Importe qualquer projeto Expo e gere os arquivos prontos para virar APK</p>
+  </div>
+
+  <!-- PASSO 1: Importar ZIP -->
+  <div class="card">
+    <h2 style="font-size: 14px; font-weight: 700; margin-bottom: 12px; color: #e6edf3;">
+      <span style="color: #58a6ff;">1.</span> Importar Projeto (ZIP)
+    </h2>
+    <div id="drop-zone" onclick="document.getElementById('zip-input').click()">
+      <div style="font-size: 28px; margin-bottom: 8px;">📁</div>
+      <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px;">Clique ou arraste o ZIP aqui</div>
+      <div style="font-size: 12px; color: #8b949e;">Qualquer projeto Expo (package.json + app.json)</div>
+    </div>
+    <input type="file" id="zip-input" accept=".zip" style="display:none" onchange="loadZip(this)">
+    <div id="zip-status" style="margin-top: 12px; font-size: 12px; color: #8b949e;"></div>
+    <div id="zip-files" style="margin-top: 8px;"></div>
+  </div>
+
+  <!-- PASSO 2: Configurações -->
+  <div class="card">
+    <h2 style="font-size: 14px; font-weight: 700; margin-bottom: 16px; color: #e6edf3;">
+      <span style="color: #58a6ff;">2.</span> Configurar seu App
+    </h2>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+      <div>
+        <label class="label">Nome do App</label>
+        <input type="text" id="app-name" placeholder="Meu App" style="width: 100%;">
+      </div>
+      <div>
+        <label class="label">Slug (sem espaços)</label>
+        <input type="text" id="app-slug" placeholder="meu-app" style="width: 100%;" oninput="autoSlug(this)">
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+      <div>
+        <label class="label">Owner (seu usuário Expo)</label>
+        <input type="text" id="app-owner" placeholder="seuusuario" style="width: 100%;">
+      </div>
+      <div>
+        <label class="label">Versão</label>
+        <input type="text" id="app-version" value="1.0.0" style="width: 100%;">
+      </div>
+    </div>
+
+    <div style="margin-bottom: 12px;">
+      <label class="label">
+        Project ID do EAS 
+        <span style="color: #58a6ff; cursor: help;" title="Encontre em expo.dev → seu projeto → Settings">(?)</span>
+      </label>
+      <input type="text" id="project-id" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" style="width: 100%; font-family: monospace;">
+      <div style="font-size: 11px; color: #8b949e; margin-top: 4px;">
+        📍 Onde achar: <a href="https://expo.dev" target="_blank" style="color: #58a6ff;">expo.dev</a> → seu projeto → Settings → Project ID
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+      <div>
+        <label class="label">Pacote Android (com.xxx.yyy)</label>
+        <input type="text" id="android-package" placeholder="com.seuapp.nome" style="width: 100%;" oninput="autoPackage()">
+      </div>
+      <div>
+        <label class="label">Scheme (deep link)</label>
+        <input type="text" id="app-scheme" placeholder="meuapp" style="width: 100%;">
+      </div>
+    </div>
+  </div>
+
+  <!-- PASSO 3: Perfil de build -->
+  <div class="card">
+    <h2 style="font-size: 14px; font-weight: 700; margin-bottom: 12px; color: #e6edf3;">
+      <span style="color: #58a6ff;">3.</span> Tipo de Build
+    </h2>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+      <label style="display: flex; align-items: flex-start; gap: 10px; padding: 12px; border-radius: 6px; border: 2px solid #30363d; cursor: pointer;" id="opt-apk">
+        <input type="radio" name="build-type" value="apk" checked onchange="selectBuild(this)" style="margin-top: 2px; accent-color: #58a6ff;">
+        <div>
+          <div style="font-weight: 600; font-size: 13px;">APK <span class="badge badge-green">Recomendado</span></div>
+          <div style="font-size: 11px; color: #8b949e; margin-top: 2px;">Instala direto no Android. Profile: preview</div>
+        </div>
+      </label>
+      <label style="display: flex; align-items: flex-start; gap: 10px; padding: 12px; border-radius: 6px; border: 2px solid #30363d; cursor: pointer;" id="opt-aab">
+        <input type="radio" name="build-type" value="aab" onchange="selectBuild(this)" style="margin-top: 2px; accent-color: #58a6ff;">
+        <div>
+          <div style="font-weight: 600; font-size: 13px;">AAB <span class="badge badge-blue">Play Store</span></div>
+          <div style="font-size: 11px; color: #8b949e; margin-top: 2px;">Para publicar na Google Play. Profile: production</div>
+        </div>
+      </label>
+    </div>
+  </div>
+
+  <!-- BOTÃO GERAR -->
+  <button onclick="generateFiles()" class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 15px; margin-bottom: 16px;">
+    ⚡ Gerar Arquivos e Baixar ZIP
+  </button>
+
+  <!-- RESULTADO -->
+  <div id="result" style="display:none;" class="card">
+    <h2 style="font-size: 14px; font-weight: 700; margin-bottom: 12px; color: #3fb950;">✅ Arquivos gerados!</h2>
+    <div id="result-files" style="margin-bottom: 16px;"></div>
+    
+    <div style="background: #0a0e14; border-radius: 6px; padding: 14px; margin-bottom: 12px;">
+      <div style="font-size: 12px; font-weight: 600; color: #58a6ff; margin-bottom: 8px;">📋 Próximos passos:</div>
+      <div class="step"><span class="step-num">1</span><span>Extraia o ZIP gerado na pasta do seu projeto</span></div>
+      <div class="step"><span class="step-num">2</span><span>No terminal: <code style="background:#161b22;padding:2px 6px;border-radius:4px;color:#3fb950;">npm install</code></span></div>
+      <div class="step"><span class="step-num">3</span><span>Faça login: <code style="background:#161b22;padding:2px 6px;border-radius:4px;color:#3fb950;">npx eas login</code></span></div>
+      <div class="step" id="step-build"><span class="step-num">4</span><span>Gere o APK: <code style="background:#161b22;padding:2px 6px;border-radius:4px;color:#3fb950;">eas build --profile preview --platform android</code></span></div>
+      <div class="step"><span class="step-num">5</span><span>Baixe o APK no link que aparecer no terminal</span></div>
+    </div>
+
+    <div style="background: #1a1500; border: 1px solid #d29922; border-radius: 6px; padding: 10px; font-size: 12px; color: #d29922;">
+      ⚠️ Precisa ter Node.js e uma conta gratuita em expo.dev para funcionar.
+    </div>
+  </div>
+
+</div>
+
+<script>
+let loadedZip = null;
+let loadedFiles = {};
+
+// Drag and drop
+const dz = document.getElementById('drop-zone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag'); if (e.dataTransfer.files[0]) processZipFile(e.dataTransfer.files[0]); });
+
+async function loadZip(input) {
+  if (input.files[0]) processZipFile(input.files[0]);
+}
+
+async function processZipFile(file) {
+  const status = document.getElementById('zip-status');
+  status.textContent = '⏳ Lendo ZIP...';
+  status.style.color = '#8b949e';
+
+  try {
+    const zip = await JSZip.loadAsync(file);
+    loadedZip = zip;
+    loadedFiles = {};
+
+    let appJson = null, pkgJson = null;
+    const fileList = [];
+
+    for (const [name, entry] of Object.entries(zip.files)) {
+      if (entry.dir) continue;
+      const content = await entry.async('text').catch(() => null);
+      if (content !== null) {
+        loadedFiles[name] = content;
+        fileList.push(name);
+        const baseName = name.split('/').pop();
+        if (baseName === 'app.json') appJson = { path: name, content };
+        if (baseName === 'package.json') pkgJson = { path: name, content };
+      }
+    }
+
+    // Auto-preencher campos com dados do projeto importado
+    if (appJson) {
+      try {
+        const data = JSON.parse(appJson.content);
+        const expo = data.expo || data;
+        if (expo.name) document.getElementById('app-name').value = expo.name;
+        if (expo.slug) document.getElementById('app-slug').value = expo.slug;
+        if (expo.owner) document.getElementById('app-owner').value = expo.owner;
+        if (expo.version) document.getElementById('app-version').value = expo.version;
+        if (expo.scheme) document.getElementById('app-scheme').value = expo.scheme;
+        if (expo.android?.package) document.getElementById('android-package').value = expo.android.package;
+        if (expo.extra?.eas?.projectId) document.getElementById('project-id').value = expo.extra.eas.projectId;
+        status.innerHTML = '✅ app.json encontrado e campos preenchidos automaticamente!';
+        status.style.color = '#3fb950';
+      } catch { status.textContent = '⚠️ Leu o ZIP mas não conseguiu ler o app.json'; status.style.color = '#d29922'; }
+    } else {
+      status.textContent = '⚠️ Não encontrou app.json — preencha os campos manualmente';
+      status.style.color = '#d29922';
+    }
+
+    // Mostrar arquivos principais
+    const important = fileList.filter(f => {
+      const b = f.split('/').pop();
+      return ['app.json','package.json','eas.json','babel.config.js','metro.config.js','tsconfig.json'].includes(b);
+    });
+    document.getElementById('zip-files').innerHTML = important.map(f =>
+      `<div class="file-item"><span style="color:#8b949e">${f}</span><span class="badge badge-green">encontrado</span></div>`
+    ).join('');
+
+  } catch(e) {
+    status.textContent = '❌ Erro ao ler ZIP: ' + e.message;
+    status.style.color = '#f85149';
+  }
+}
+
+function autoSlug(input) {
+  input.value = input.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  autoPackage();
+}
+
+function autoPackage() {
+  const slug = document.getElementById('app-slug').value.replace(/-/g, '');
+  const owner = document.getElementById('app-owner').value.replace(/-/g, '').toLowerCase();
+  if (slug && owner && !document.getElementById('android-package').value) {
+    document.getElementById('android-package').value = `com.${owner}.${slug}`;
+  }
+  const schemeEl = document.getElementById('app-scheme');
+  if (!schemeEl.value && slug) schemeEl.value = slug;
+}
+
+function selectBuild(radio) {
+  document.getElementById('opt-apk').style.borderColor = radio.value === 'apk' ? '#58a6ff' : '#30363d';
+  document.getElementById('opt-aab').style.borderColor = radio.value === 'aab' ? '#58a6ff' : '#30363d';
+  const step = document.getElementById('step-build');
+  if (radio.value === 'aab') {
+    step.querySelector('span:last-child').innerHTML = 'Gere o AAB: <code style="background:#161b22;padding:2px 6px;border-radius:4px;color:#3fb950;">eas build --profile production --platform android</code>';
+  } else {
+    step.querySelector('span:last-child').innerHTML = 'Gere o APK: <code style="background:#161b22;padding:2px 6px;border-radius:4px;color:#3fb950;">eas build --profile preview --platform android</code>';
+  }
+}
+
+async function generateFiles() {
+  const name = document.getElementById('app-name').value.trim();
+  const slug = document.getElementById('app-slug').value.trim();
+  const owner = document.getElementById('app-owner').value.trim();
+  const version = document.getElementById('app-version').value.trim() || '1.0.0';
+  const projectId = document.getElementById('project-id').value.trim();
+  const androidPkg = document.getElementById('android-package').value.trim();
+  const scheme = document.getElementById('app-scheme').value.trim() || slug;
+
+  if (!name || !slug || !owner || !projectId || !androidPkg) {
+    alert('Preencha todos os campos obrigatórios:\n- Nome, Slug, Owner, Project ID e Pacote Android');
+    return;
+  }
+
+  // Gerar app.json
+  const appJson = {
+    expo: {
+      name, slug, version,
+      orientation: "portrait",
+      icon: "./assets/images/icon.png",
+      scheme,
+      userInterfaceStyle: "dark",
+      newArchEnabled: true,
+      splash: { image: "./assets/images/icon.png", resizeMode: "contain", backgroundColor: "#0d1117" },
+      ios: { supportsTablet: false, bundleIdentifier: androidPkg },
+      android: {
+        package: androidPkg,
+        versionCode: 1,
+        softwareKeyboardLayoutMode: "resize",
+        adaptiveIcon: { foregroundImage: "./assets/images/icon.png", backgroundColor: "#0d1117" },
+        permissions: ["android.permission.INTERNET","android.permission.READ_EXTERNAL_STORAGE","android.permission.WRITE_EXTERNAL_STORAGE"]
+      },
+      web: { favicon: "./assets/images/icon.png", bundler: "metro" },
+      plugins: ["expo-router","expo-font","expo-web-browser",["expo-sqlite",{"enableFTS":true,"useSQLCipher":false}]],
+      experiments: { typedRoutes: true, reactCompiler: false },
+      owner,
+      extra: { eas: { projectId } }
+    }
+  };
+
+  // Gerar eas.json
+  const easJson = {
+    cli: { version: ">= 16.0.0", appVersionSource: "local" },
+    build: {
+      preview: {
+        android: { buildType: "apk", gradleCommand: ":app:assembleRelease", resourceClass: "medium" },
+        distribution: "internal",
+        cache: { disabled: false },
+        node: "20.18.0",
+        env: {}
+      },
+      development: {
+        developmentClient: true,
+        distribution: "internal",
+        android: { buildType: "apk", resourceClass: "medium" },
+        node: "20.18.0",
+        cache: { disabled: false }
+      },
+      production: {
+        android: { buildType: "app-bundle", resourceClass: "medium" },
+        node: "20.18.0",
+        cache: { disabled: false }
+      }
+    },
+    submit: { production: {} }
+  };
+
+  // Gerar .easignore
+  const easIgnore = `node_modules/\n.git/\ndist/\n*.log\n.env\n`;
+
+  // Criar ZIP de saída
+  const outZip = new JSZip();
+
+  // Se tinha ZIP importado, adicionar os arquivos originais (exceto os que vamos substituir)
+  if (loadedZip) {
+    for (const [name, content] of Object.entries(loadedFiles)) {
+      const baseName = name.split('/').pop();
+      if (!['app.json','eas.json','.easignore'].includes(baseName)) {
+        outZip.file(name, content);
+      }
+    }
+  }
+
+  // Adicionar/substituir arquivos configurados
+  const prefix = loadedZip ? (Object.keys(loadedFiles)[0]?.split('/')[0] + '/') : '';
+  outZip.file(prefix + 'app.json', JSON.stringify(appJson, null, 2));
+  outZip.file(prefix + 'eas.json', JSON.stringify(easJson, null, 2));
+  outZip.file(prefix + '.easignore', easIgnore);
+
+  // Gerar e baixar
+  const blob = await outZip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${slug}-eas-config.zip`;
+  a.click();
+  URL.revokeObjectURL(url);
+
+  // Mostrar resultado
+  document.getElementById('result').style.display = 'block';
+  document.getElementById('result-files').innerHTML = `
+    <div class="file-item"><span style="color:#3fb950;font-family:monospace;">app.json</span><span style="color:#8b949e;font-size:11px;">nome, slug, owner, projectId configurados</span></div>
+    <div class="file-item"><span style="color:#3fb950;font-family:monospace;">eas.json</span><span style="color:#8b949e;font-size:11px;">preview (APK) + development + production</span></div>
+    <div class="file-item"><span style="color:#3fb950;font-family:monospace;">.easignore</span><span style="color:#8b949e;font-size:11px;">ignora node_modules no build</span></div>
+  `;
+  document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Inicializar estilo do radio selecionado
+document.getElementById('opt-apk').style.borderColor = '#58a6ff';
+</script>
+</body>
+</html>
