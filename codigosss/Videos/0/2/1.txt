@@ -1,0 +1,25 @@
+### Depois (Recomendado - Futuro)
+```
+index.html (800 linhas)
+app.js (500 linhas - Inicialização)
+  ├─ src/
+  │  ├─ config-manager.js (300 linhas)
+  │  ├─ gerenciador-ia.js (300 linhas)
+  │  ├─ interface-chat.js (500 linhas)
+  │  ├─ modais.js (400 linhas)
+  │  ├─ temas.js (150 linhas)
+  │  ├─ exportacao.js (200 linhas)
+  │  ├─ ia-local.js (300 linhas)
+  │  ├─ utilidades.js (200 linhas)
+  │  ├─ documentacao.js (400 linhas)
+  │  ├─ briefing.js (300 linhas)
+  │  └─ validacao.js (300 linhas)
+  ├─ docs/
+  │  ├─ ARQUITETURA.md
+  │  ├─ GUIA_USUARIO.md
+  │  └─ TROUBLESHOOTING.md
+  └─ tests/
+     ├─ config-manager.test.js
+     ├─ gerenciador-ia.test.js
+     └─ interface-chat.test.js
+```
