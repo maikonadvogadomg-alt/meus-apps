@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔪 Fatiador de Código</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Courier New', monospace;
+      background: #0d1117;
+      color: #c9d1d9;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      color: #58a6ff;
+      margin-bottom: 20px;
+      text-align: center;
+      font-size: 2em;
+    }
+    
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .panel {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 20px;
+    }
+    
+    h2 {
+      color: #79c0ff;
+      margin-bottom: 15px;
+      font-size: 1.2em;
+      border-bottom: 2px solid #30363d;
+      padding-bottom: 10px;
+    }
+    
+    textarea {
+      width: 100%;
+      height: 400px;
+      background: #0d1117;
+      color: #c9d1d9;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 15px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      resize: vertical;
+    }
+    
+    button {
+      background: #238636;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      margin: 10px 5px 10px 0;
+      transition: all 0.3s;
+    }
+    
+    button:hover {
+      background: #2ea043;
+    }
+    
+    .resultado {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 15px;
+      max-height: 600px;
+      overflow-y: auto;
+      margin-top: 15px;
+    }
+    
+    .modulo {
+      background: #161b22;
+      border-left: 4px solid #58a6ff;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 4px;
+    }
+    
+    .modulo-nome {
+      color: #79c0ff;
+      font-weight: bold;
+      margin-bottom: 10px;
+      font-size: 1.1em;
+    }
+    
+    .modulo-tipo {
+      color: #8b949e;
+      font-size: 11px;
+      margin-bottom: 8px;
+    }
+    
+    .modulo-codigo {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+      max-height: 200px;
+      overflow-y: auto;
+      font-size: 11px;
+      line-height: 1.4;
+    }
+    
+    .btn-copiar {
+      background: #1f6feb;
+      font-size: 11px;
+      padding: 6px 12px;
+      margin-top: 8px;
+    }
+    
+    .btn-copiar:hover {
+      background: #388bfd;
+    }
+    
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin: 20px 0;
+    }
+    
+    .stat {
+      background: #161b22;
+      border: 1px solid #30363d;
+      padding: 15px;
+      border-radius: 6px;
+      text-align: center;
+    }
+    
+    .stat-numero {
+      color: #58a6ff;
+      font-size: 2em;
+      font-weight: bold;
+    }
+    
+    .stat-label {
+      color: #8b949e;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+    
+    .aviso {
+      background: #161b22;
+      border-left: 4px solid #d29922;
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 4px;
+      color: #d29922;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🔪 Fatiador de Código</h1>
+  
+  <div class="grid">
+    <!-- ENTRADA -->
+    <div class="panel">
+      <h2>📥 Cole o Código Quebrado</h2>
+      <textarea id="codigo-entrada" placeholder="Cole aqui o HTML/JavaScript quebrado..."></textarea>
+      <button onclick="fatiar()">🔪 FATIAR AGORA</button>
+      <button onclick="limpar()">🗑️ Limpar</button>
+    </div>
+    
+    <!-- STATS -->
+    <div class="panel">
+      <h2>📊 Estatísticas</h2>
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-numero" id="stat-funcoes">0</div>
+          <div class="stat-label">Funções</div>
+        </div>
+        <div class="stat">
+          <div class="stat-numero" id="stat-classes">0</div>
+          <div class="stat-label">Classes</div>
+        </div>
+        <div class="stat">
+          <div class="stat-numero" id="stat-objetos">0</div>
+          <div class="stat-label">Objetos</div>
+        </div>
+        <div class="stat">
+          <div class="stat-numero" id="stat-linhas">0</div>
+          <div class="stat-label">Linhas</div>
+        </div>
+      </div>
+      <div class="aviso">
+        ⚠️ Quanto mais pedaços, melhor para testar!
+      </div>
+    </div>
+  </div>
+  
+  <!-- RESULTADO -->
+  <div class="panel">
+    <h2>📦 Módulos Identificados</h2>
+    <div class="resultado" id="resultado">
+      <p style="color: #8b949e; text-align: center; padding: 40px;">
+        Cole o código e clique em "FATIAR AGORA"
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+function fatiar() {
+  const codigo = document.getElementById('codigo-entrada').value;
+  
+  if (!codigo.trim()) {
+    alert('❌ Cole um código primeiro!');
+    return;
+  }
+  
+  // Extrair funções
+  const funcoes = extrairFuncoes(codigo);
+  
+  // Extrair classes
+  const classes = extrairClasses(codigo);
+  
+  // Extrair objetos
+  const objetos = extrairObjetos(codigo);
+  
+  // Extrair CSS
+  const css = extrairCSS(codigo);
+  
+  // Extrair HTML
+  const html = extrairHTML(codigo);
+  
+  // Atualizar stats
+  document.getElementById('stat-funcoes').textContent = funcoes.length;
+  document getElementById('stat-classes').textContent = classes.length;
+  document.getElementById('stat-objetos').textContent = objetos.length;
+  document.getElementById('stat-linhas').textContent = codigo.split('\n').length;
+  
+  // Renderizar resultado
+  renderizarResultado(funcoes, classes, objetos, css, html);
+}
+
+function extrairFuncoes(codigo) {
+  const regex = /(?:async\s+)?function\s+(\w+)\s*\([^)]*\)\s*\{[\s\S]*?\n\}/g;
+  const regex2 = /(?:const|let|var)\s+(\w+)\s*=\s*(?:async\s*)?\([^)]*\)\s*=>\s*\{[\s\S]*?\n\}/g;
+  
+  const funcoes1 = [...codigo.matchAll(regex)].map(m => ({
+    nome: m[1],
+    tipo: 'function',
+    codigo: m[0]
+  }));
+  
+  const funcoes2 = [...codigo.matchAll(regex2)].map(m => ({
+    nome: m[1],
+    tipo: 'arrow function',
+    codigo: m[0]
+  }));
+  
+  return [...funcoes1, ...funcoes2];
+}
+
+function extrairClasses(codigo) {
+  const regex = /class\s+(\w+)\s*(?:extends\s+\w+)?\s*\{[\s\S]*?\n\}/g;
+  
+  return [...codigo.matchAll(regex)].map(m => ({
+    nome: m[1],
+    tipo: 'class',
+    codigo: m[0]
+  }));
+}
+
+function extrairObjetos(codigo) {
+  const regex = /(?:const|let|var)\s+(\w+)\s*=\s*\{[\s\S]*?\n\}/g;
+  
+  return [...codigo.matchAll(regex)].map(m => ({
+    nome: m[1],
+    tipo: 'object',
+    codigo: m[0]
+  }));
+}
+
+function extrairCSS(codigo) {
+  const regex = /<style[^>]*>([\s\S]*?)<\/style>/g;
+  const matches = [...codigo.matchAll(regex)];
+  
+  return matches.map((m, i) => ({
+    nome: `CSS_${i + 1}`,
+    tipo: 'style',
+    codigo: m[1]
+  }));
+}
+
+function extrairHTML(codigo) {
+  const regex = /<body[^>]*>([\s\S]*?)<\/body>/g;
+  const matches = [...codigo.matchAll(regex)];
+  
+  return matches.map((m, i) => ({
+    nome: `HTML_${i + 1}`,
+    tipo: 'html',
+    codigo: m[1]
+  }));
+}
+
+function renderizarResultado(funcoes, classes, objetos, css, html) {
+  let resultado = '';
+  
+  // Funções
+  if (funcoes.length > 0) {
+    resultado += '<h3 style="color: #58a6ff; margin: 20px 0 10px 0;">📌 FUNÇÕES</h3>';
+    funcoes.forEach(f => {
+      resultado += criarModuloHTML(f);
+    });
+  }
+  
+  // Classes
+  if (classes.length > 0) {
+    resultado += '<h3 style="color: #58a6ff; margin: 20px 0 10px 0;">📌 CLASSES</h3>';
+    classes.forEach(c => {
+      resultado += criarModuloHTML(c);
+    });
+  }
+  
+  // Objetos
+  if (objetos.length > 0) {
+    resultado += '<h3 style="color: #58a6ff; margin: 20px 0 10px 0;">📌 OBJETOS</h3>';
+    objetos.forEach(o => {
+      resultado += criarModuloHTML(o);
+    });
+  }
+  
+  // CSS
+  if (css.length > 0) {
+    resultado += '<h3 style="color: #58a6ff; margin: 20px 0 10px 0;">🎨 ESTILOS</h3>';
+    css.forEach(c => {
+      resultado += criarModuloHTML(c);
+    });
+  }
+  
+  // HTML
+  if (html.length > 0) {
+    resultado += '<h3 style="color: #58a6ff; margin: 20px 0 10px 0;">🏗️ ESTRUTURA</h3>';
+    html.forEach(h => {
+      resultado += criarModuloHTML(h);
+    });
+  }
+  
+  document.getElementById('resultado').innerHTML = resultado;
+}
+
+function criarModuloHTML(modulo) {
+  const id = 'modulo_' + Math.random().toString(36).substr(2, 9);
+  
+  return `
+    <div class="modulo">
+      <div class="modulo-nome">📦 ${modulo.nome}</div>
+      <div class="modulo-tipo">${modulo.tipo}</div>
+      <div class="modulo-codigo">${escapeHtml(modulo.codigo)}</div>
+      <button class="btn-copiar" onclick="copiarModulo('${id}')">📋 Copiar</button>
+      <textarea id="${id}" style="display: none;">${modulo.codigo}</textarea>
+    </div>
+  `;
+}
+
+function copiarModulo(id) {
+  const textarea = document.getElementById(id);
+  textarea.select();
+  document.execCommand('copy');
+  alert('✅ Copiado!');
+}
+
+function escapeHtml(text) {
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+function limpar() {
+  document.getElementById('codigo-entrada').value = '';
+  document.getElementById('resultado').innerHTML = '<p style="color: #8b949e; text-align: center; padding: 40px;">Cole o código e clique em "FATIAR AGORA"</p>';
+  document.getElementById('stat-funcoes').textContent = '0';
+  document.getElementById('stat-classes').textContent = '0';
+  document.getElementById('stat-objetos').textContent = '0';
+  document.getElementById('stat-linhas').textContent = '0';
+}
+</script>
+
+</body>
+</html>
