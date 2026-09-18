@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Construtor Visual - Desenhe Seu Projeto</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            gap: 0;
+        }
+
+        /* PAINEL ESQUERDO */
+        .painel-esquerdo {
+            width: 280px;
+            background: white;
+            border-right: 3px solid #ddd;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+
+        .painel-esquerdo h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 18px;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 10px;
+        }
+
+        .secao-elementos {
+            margin-bottom: 25px;
+        }
+
+        .secao-elementos h3 {
+            color: #555;
+            font-size: 13px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+
+        .elemento {
+            background: #007bff;
+            color: white;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            cursor: grab;
+            text-align: center;
+            font-weight: bold;
+            transition: all 0.3s;
+            user-select: none;
+            border: 2px solid #0056b3;
+        }
+
+        .elemento:hover {
+            background: #0056b3;
+            transform: translateX(5px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            cursor: grabbing;
+        }
+
+        .elemento.campo {
+            background: #28a745;
+            border-color: #1e7e34;
+        }
+
+        .elemento.campo:hover {
+            background: #1e7e34;
+        }
+
+        .elemento.secao {
+            background: #6f42c1;
+            border-color: #5a32a3;
+        }
+
+        .elemento.secao:hover {
+            background: #5a32a3;
+        }
+
+        .elemento.texto {
+            background: #fd7e14;
+            border-color: #cc6b0f;
+        }
+
+        .elemento.texto:hover {
+            background: #cc6b0f;
+        }
+
+        /* PAINEL CENTRAL - CANVAS */
+        .painel-central {
+            flex: 1;
+            background: #e8e8e8;
+            margin: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .preview-header {
+            background: #333;
+            color: white;
+            padding: 15px 20px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #007bff;
+        }
+
+        .preview-header button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-left: 10px;
+            transition: all 0.3s;
+            font-size: 13px;
+        }
+
+        .preview-header button:hover {
+            background: #1e7e34;
+            transform: scale(1.05);
+        }
+
+        .preview-header button.danger {
+            background: #dc3545;
+        }
+
+        .preview-header button.danger:hover {
+            background: #c82333;
+        }
+
+        .preview-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #e8e8e8;
+        }
+
+        .canvas {
+            background: white;
+            min-height: 500px;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border: 3px dashed #ccc;
+            position: relative;
+        }
+
+        .canvas.drag-over {
+            background: #f0f8ff;
+            border-color: #007bff;
+            box-shadow: 0 0 20px rgba(0,123,255,0.3);
+        }
+
+        .vazio {
+            text-align: center;
+            color: #999;
+            padding: 60px 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* ELEMENTOS NO CANVAS */
+        .elemento-canvas {
+            background: #f9f9f9;
+            border: 2px solid #ddd;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+        }
+
+        .elemento-canvas:hover {
+            border-color: #007bff;
+            background: #f0f8ff;
+            box-shadow: 0 2px 8px rgba(0,123,255,0.3);
+        }
+
+        .elemento-canvas.selecionado {
+            border-color: #007bff;
+            background: #e7f3ff;
+            box-shadow: 0 0 10px rgba(0,123,255,0.5);
+            border-width: 3px;
+        }
+
+        .elemento-canvas .remover {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: none;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .elemento-canvas:hover .remover {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .elemento-canvas .remover:hover {
+            background: #c82333;
+            transform: scale(1.1);
+        }
+
+        .elemento-conteudo {
+            flex: 1;
+            word-break: break-word;
+        }
+
+        /* PAINEL DIREITO - PROPRIEDADES */
+        .painel-direito {
+            width: 280px;
+            background: white;
+            border-left: 3px solid #ddd;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+        }
+
+        .painel-direito h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 18px;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 10px;
+        }
+
+        .propriedade {
+            margin-bottom: 15px;
+        }
+
+        .propriedade label {
+            display: block;
+            color: #555;
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+
+        .propriedade input,
+        .propriedade textarea,
+        .propriedade select {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        .propriedade input:focus,
+        .propriedade textarea:focus,
+        .propriedade select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0,123,255,0.3);
+        }
+
+        .propriedade textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .info-selecionado {
+            background: #e7f3ff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            color: #004085;
+            font-size: 12px;
+            border-left: 4px solid #007bff;
+        }
+
+        .botao-aplicar {
+            width: 100%;
+            padding: 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+
+        .botao-aplicar:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- PAINEL ESQUERDO - ELEMENTOS -->
+        <div class="painel-esquerdo">
+            <h2>🎨 Elementos</h2>
+
+            <div class="secao-elementos">
+                <h3>📦 Seções</h3>
+                <div class="elemento secao" draggable="true" data-tipo="secao">+ Seção</div>
+                <div class="elemento secao" draggable="true" data-tipo="header">+ Cabeçalho</div>
+                <div class="elemento secao" draggable="true" data-tipo="menu">+ Menu</div>
+            </div>
+
+            <div class="secao-elementos">
+                <h3>📝 Campos</h3>
+                <div class="elemento campo" draggable="true" data-tipo="input">+ Campo Texto</div>
+                <div class="elemento campo" draggable="true" data-tipo="textarea">+ Área Texto</div>
+                <div class="elemento campo" draggable="true" data-tipo="select">+ Seleção</div>
+            </div>
+
+            <div class="secao-elementos">
+                <h3>🔘 Controles</h3>
+                <div class="elemento" draggable="true" data-tipo="button">+ Botão</div>
+                <div class="elemento" draggable="true" data-tipo="link">+ Link</div>
+            </div>
+
+            <div class="secao-elementos">
+                <h3>📄 Texto</h3>
+                <div class="elemento texto" draggable="true" data-tipo="h1">+ Título H1</div>
+                <div class="elemento texto" draggable="true" data-tipo="h2">+ Título H2</div>
+                <div class="elemento texto" draggable="true" data-tipo="p">+ Parágrafo</div>
+            </div>
+        </div>
+
+        <!-- PAINEL CENTRAL - CANVAS -->
+        <div class="painel-central">
+            <div class="preview-header">
+                <span>📱 Seu Projeto (Arraste elementos aqui)</span>
+                <div>
+                    <button onclick="copiarCodigo()">📋 Copiar</button>
+                    <button onclick="baixarHTML()" class="danger">⬇️ Baixar</button>
+                </div>
+            </div>
+            <div class="preview-area">
+                <div class="canvas" id="canvas">
+                    <div class="vazio">👇 Arraste elementos aqui para começar</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAINEL DIREITO - PROPRIEDADES -->
+        <div class="painel-direito">
+            <h2>⚙️ Propriedades</h2>
+            <div id="propriedades">
+                <div class="info-selecionado">
+                    Selecione um elemento para editar
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let elementoSelecionado = null;
+        let elementos = [];
+
+        // DRAG E DROP - ELEMENTOS
+        document.querySelectorAll('.elemento').forEach(el => {
+            el.addEventListener('dragstart', (e) => {
+                e.dataTransfer.effectAllowed = 'copy';
+                e.dataTransfer.setData('tipo', el.dataset.tipo);
+            });
+        });
+
+        const canvas = document.getElementById('canvas');
+
+        canvas.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+            canvas.classList.add('drag-over');
+        });
+
+        canvas.addEventListener('dragleave', () => {
+            canvas.classList.remove('drag-over');
+        });
+
+        canvas.addEventListener('drop', (e) => {
+            e.preventDefault();
+            canvas.classList.remove('drag-over');
+            const tipo = e.dataTransfer.getData('tipo');
+            adicionarElemento(tipo);
+        });
+
+        function adicionarElemento(tipo) {
+            const id = 'elem_' + Date.now();
+            let conteudo = '';
+            let label = '';
+
+            switch(tipo) {
+                case 'secao':
+                    conteudo = 'Seção';
+                    label = 'Seção';
+                    break;
+                case 'header':
+                    conteudo = 'Cabeçalho do Site';
+                    label = 'Cabeçalho';
+                    break;
+                case 'menu':
+                    conteudo = 'Menu | Opção 1 | Opção 2';
+                    label = 'Menu';
+                    break;
+                case 'input':
+                    conteudo = '[Campo de Texto]';
+                    label = 'Campo Texto';
+                    break;
+                case 'textarea':
+                    conteudo = '[Área de Texto Maior]';
+                    label = 'Área Texto';
+                    break;
+                case 'select':
+                    conteudo = '[Seleção: Opção 1, Opção 2]';
+                    label = 'Seleção';
+                    break;
+                case 'button':
+                    conteudo = 'Botão';
+                    label = 'Botão';
+                    break;
+                case 'link':
+                    conteudo = 'Link';
+                    label = 'Link';
+                    break;
+                case 'h1':
+                    conteudo = 'Título Principal';
+                    label = 'Título H1';
+                    break;
+                case 'h2':
+                    conteudo = 'Subtítulo';
+                    label = 'Título H2';
+                    break;
+                case 'p':
+                    conteudo = 'Parágrafo de texto';
+                    label = 'Parágrafo';
+                    break;
+            }
+
+            if (canvas.querySelector('.vazio')) {
+                canvas.innerHTML = '';
+            }
+
+            const div = document.createElement('div');
+            div.className = 'elemento-canvas';
+            div.id = id;
+            div.innerHTML = `
+                <button class="remover" onclick="removerElemento('${id}')">×</button>
+                <div class="elemento-conteudo">${conteudo}</div>
+            `;
+
+            div.addEventListener('click', () => selecionarElemento(id, tipo, label));
+
+            canvas.appendChild(div);
+            elementos.push({ id, tipo, label, conteudo });
+            selecionarElemento(id, tipo, label);
+        }
+
+        function selecionarElemento(id, tipo, label) {
+            document.querySelectorAll('.elemento-canvas').forEach(el => {
+                el.classList.remove('selecionado');
+            });
+
+            elementoSelecionado = { id, tipo, label };
+            document.getElementById(id).classList.add('selecionado');
+
+            atualizarPropriedades(id, tipo, label);
+        }
+
+        function atualizarPropriedades(id, tipo, label) {
+            const props = document.getElementById('propriedades');
+            props.innerHTML = `
+                <div class="info-selecionado">
+                    <strong>Tipo:</strong> ${label}
+                </div>
+                <div class="propriedade">
+                    <label>Texto/Conteúdo:</label>
+                    <textarea id="conteudo" placeholder="Digite o conteúdo aqui">${document.getElementById(id).querySelector('.elemento-conteudo').textContent}</textarea>
+                </div>
+                <div class="propriedade">
+                    <label>Cor de Fundo:</label>
+                    <input type="color" id="bgColor" value="#f9f9f9">
+                </div>
+                <div class="propriedade">
+                    <label>Cor do Texto:</label>
+                    <input type="color" id="textColor" value="#333333">
+                </div>
+                <div class="propriedade">
+                    <label>Tamanho Fonte (px):</label>
+                    <input type="number" id="fontSize" value="14" min="8" max="48">
+                </div>
+                <div class="propriedade">
+                    <label>Padding (px):</label>
+                    <input type="number" id="padding" value="15" min="0" max="50">
+                </div>
+                <button class="botao-aplicar" onclick="aplicarPropriedades('${id}')">
+                    ✓ Aplicar Mudanças
+                </button>
+            `;
+        }
+
+        function aplicarPropriedades(id) {
+            const el = document.getElementById(id);
+            const conteudo = document.getElementById('conteudo').value;
+            const bgColor = document.getElementById('bgColor').value;
+            const textColor = document.getElementById('textColor').value;
+            const fontSize = document.getElementById('fontSize').value;
+            const padding = document.getElementById('padding').value;
+
+            el.style.background = bgColor;
+            el.style.color = textColor;
+            el.style.fontSize = fontSize + 'px';
+            el.style.padding = padding + 'px';
+
+            el.querySelector('.elemento-conteudo').textContent = conteudo;
+
+            alert('✓ Propriedades aplicadas!');
+        }
+
+        function removerElemento(id) {
+            document.getElementById(id).remove();
+            elementos = elementos.filter(e => e.id !== id);
+            if (canvas.children.length === 0) {
+                canvas.innerHTML = '<div class="vazio">👇 Arraste elementos aqui para começar</div>';
+            }
+        }
+
+        function copiarCodigo() {
+            const html = gerarHTML();
+            navigator.clipboard.writeText(html).then(() => {
+                alert('✓ Código copiado para a área de transferência!');
+            }).catch(() => {
+                alert('Erro ao copiar. Tente novamente.');
+            });
+        }
+
+        function baixarHTML() {
+            const html = gerarHTML();
+            const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'meu-projeto.html';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function gerarHTML() {
+            const conteudoCanvas = document.getElementById('canvas').innerHTML;
+            
+            return `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Projeto</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        ${conteudoCanvas}
+    </div>
+</body>
+</html>`;
+        }
+    </script>
+</body>
+</html>
